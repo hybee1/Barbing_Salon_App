@@ -1,0 +1,706 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Barber Dashboard | Levelz Cuts</title>
+
+    <link rel="stylesheet" href="{% static 'css/depending-on-the-staff-dashboard.css' %}">
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+</head>
+
+<body>
+
+<div class="dashboard">
+
+    <!-- =========================================================
+         SIDEBAR
+    ========================================================== -->
+
+    <aside class="sidebar">
+
+        <div class="logo">
+
+            <i class="fa-solid fa-scissors"></i>
+
+            <div>
+
+                <h2>Levelz Cuts</h2>
+
+                <small>Staff Dashboard</small>
+
+            </div>
+
+        </div>
+
+
+        <nav id="sidebarNavigation">
+
+            <!-- Dashboard -->
+
+            <a href="#dashboard"
+               class="nav-link active"
+               data-page="dashboard">
+
+                <i class="fa-solid fa-chart-line"></i>
+
+                <span>Dashboard</span>
+
+            </a>
+
+
+            <!-- Today's Bookings -->
+
+            <a href="#bookings"
+               class="nav-link"
+               data-page="bookings">
+
+                <i class="fa-solid fa-calendar-days"></i>
+
+                <span>Today's Bookings</span>
+
+            </a>
+
+
+            <!-- My Breaks -->
+
+            <a href="#breaks" class="nav-link" data-page="breaks">
+
+                <i class="fa-solid fa-mug-hot"></i>
+
+                <span>My Breaks</span>
+
+            </a>
+
+            <!-- Settings -->
+            <a href="#settings" class="nav-link" data-page="settings">
+
+                <i class="fa-solid fa-gear"></i>
+                <span>Settings</span>
+
+            </a>
+
+        </nav>
+
+        <div class="sidebar-footer">
+
+            <button id="logoutBtn">
+
+                <i class="fa-solid fa-right-from-bracket"></i>
+
+                Logout
+
+            </button>
+
+        </div>
+
+    </aside>
+
+
+    <!-- =========================================================
+         MAIN CONTENT
+    ========================================================== -->
+
+    <main class="main-content">
+
+
+        <!-- =====================================================
+             TOP BAR
+        ====================================================== -->
+
+        <div class="topbar">
+
+            <div>
+
+                <h1 id="pageTitle">Welcome</h1>
+
+                <p id="userName"></p>
+
+            </div>
+
+
+            <div class="topbar-right">
+
+                <div id="clock" class="clock"></div>
+
+                <div id="avatar" class="avatar"></div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =====================================================
+             EXISTING DASHBOARD
+
+             DO NOT MODIFY THE CONTENT INSIDE THIS SECTION
+        ====================================================== -->
+
+        <section id="dashboardPage" class="page-section">
+
+
+            <!-- =================================================
+                 STATS
+            ================================================== -->
+
+            <section class="stats">
+
+                <div class="stat-card">
+
+                    <div>
+
+                        <small> Today's Clients </small>
+
+                        <h2 id="todayBookings"> 0 </h2>
+
+                    </div>
+
+                    <i class="fa-solid fa-users"></i>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div>
+
+                        <small> Completed </small>
+
+                        <h2 id="completedBookings"> 0 </h2>
+
+                    </div>
+
+                    <i class="fa-solid fa-circle-check"></i>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div>
+
+                        <small> Upcoming </small>
+
+                        <h2 id="upcomingBookings"> 0 </h2>
+
+                    </div>
+
+                    <i class="fa-solid fa-clock"></i>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div>
+
+                        <small> Break Status </small>
+
+                        <h2 id="breakStatus"> OFF </h2>
+
+                    </div>
+
+                    <i class="fa-solid fa-mug-hot"></i>
+
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 QUICK ACTIONS
+            ================================================== -->
+
+            <section class="quick-actions">
+
+
+                <button class="gold-btn" id="createBookingBtn">
+
+                    <i class="fa-solid fa-plus"></i>
+
+                    Create Booking
+
+                </button>
+
+
+                <button class="gold-btn"
+                        id="createBreakBtn">
+
+                    <i class="fa-solid fa-mug-hot"></i>
+
+                    Schedule Break Time
+
+                </button>
+
+
+            </section>
+
+
+            <!-- =================================================
+                 EXISTING TODAY'S BOOKINGS
+            ================================================== -->
+
+            <section id="bookings" class="card dashboard-section">
+
+                <div class="card-header">
+
+                    <h2> Upcoming Bookings For Today </h2>
+
+                </div>
+
+
+                <table>
+
+                    <thead>
+
+                    <tr>
+
+                        <th> Time</th>
+
+                        <th> Customer</th>
+
+                        <th> Service</th>
+
+                        <th> Hairstyle</th>
+
+                        <th> Color</th>
+
+                        <th> Status</th>
+
+                    </tr>
+
+                    </thead>
+
+
+                    <tbody id="upcomingBookingTable">
+
+                    </tbody>
+
+                </table>
+
+            </section>
+
+
+        </section>
+
+
+        <!-- =====================================================
+             TODAY'S BOOKINGS PAGE
+        ====================================================== -->
+
+        <section id="bookingsPage" class="page-section" hidden>
+
+            <!-- =================================================
+                 BOOKING LIST
+            ================================================== -->
+
+            <div class="card">
+
+                <div class="card-header">
+
+                    <div>
+
+                        <h2>
+                            Today's Bookings
+                        </h2>
+
+                        <p>
+                            View and manage your bookings for today.
+                        </p>
+
+                    </div>
+
+
+                    <button class="gold-btn"
+                            id="todayCreateBookingBtn">
+
+                        <i class="fa-solid fa-calendar-plus"></i>
+
+                        Create Booking
+
+                    </button>
+
+                </div>
+
+
+                <div class="table-scroll">
+
+                    <table>
+
+                        <thead>
+
+                        <tr>
+
+                            <th>
+                                Time
+                            </th>
+
+                            <th>
+                                Customer
+                            </th>
+
+                            <th>
+                                Service
+                            </th>
+
+                            <th>
+                                Hairstyle
+                            </th>
+
+                            <th>
+                                Color
+                            </th>
+
+                            <th>
+                                Status
+                            </th>
+
+                        </tr>
+
+                        </thead>
+
+
+                        <tbody id="todayBookingTable">
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 MARK BOOKING COMPLETED
+            ================================================== -->
+
+            <div class="card">
+
+                <div class="card-header">
+
+                    <div>
+
+                        <h2>
+                            Mark Booking Completed
+                        </h2>
+
+                        <p>
+                            Select a booking that you have finished.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <form id="completeBookingForm"
+                      class="schedule-break-time-form">
+
+
+                    <div class="form-group">
+
+                        <label for="completeBookingSelect">
+
+                            Booking
+
+                        </label>
+
+
+                        <select id="completeBookingSelect"
+                                required>
+
+                            <option value="">
+
+                                Select booking
+
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="form-actions">
+
+                        <button type="submit"
+                                class="gold-btn"
+                                id="completeBookingBtn">
+
+                            <i class="fa-solid fa-circle-check"></i>
+
+                            Mark Completed
+
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             MY BREAKS PAGE
+        ====================================================== -->
+
+        <section id="breaksPage" class="page-section" hidden>
+
+
+            <!-- =================================================
+                 BREAK RECORDS
+            ================================================== -->
+
+            <div class="card">
+
+                <div class="card-header">
+
+                    <div>
+
+                        <h2>
+                            My Break Records
+                        </h2>
+
+                        <p>
+                            View your scheduled and previous breaks.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="table-scroll">
+
+                    <table>
+
+                        <thead>
+
+                        <tr>
+
+                            <th>
+                                Date
+                            </th>
+
+                            <th>
+                                Start Time
+                            </th>
+
+                            <th>
+                                End Time
+                            </th>
+
+                            <th>
+                                Status
+                            </th>
+
+                            <th>
+                                Reason
+                            </th>
+
+                        </tr>
+
+                        </thead>
+
+
+                        <tbody id="myBreakTable">
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 SCHEDULE BREAK
+            ================================================== -->
+
+            <div class="card">
+
+                <div class="card-header">
+
+                    <div>
+
+                        <h2>
+                            Schedule Break
+                        </h2>
+
+                        <p>
+                            Schedule a break during your working time.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <form id="myBreakForm"
+                      class="schedule-break-time-form">
+
+
+                    <div class="form-group">
+
+                        <label for="myBreakDate">
+                            Date
+                        </label>
+
+                        <input type="date"
+                               id="myBreakDate"
+                               required>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="myBreakStartTime">
+                            Start Time
+                        </label>
+
+                        <input type="time"
+                               id="myBreakStartTime"
+                               required>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="myBreakEndTime">
+                            End Time
+                        </label>
+
+                        <input type="time"
+                               id="myBreakEndTime"
+                               required>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="myBreakStatusSelect">
+                            Type
+                        </label>
+
+                        <select id="myBreakStatusSelect"
+                                required>
+
+                            <option value="">
+                                Select type
+                            </option>
+
+                            <option value="break">
+                                Break
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="form-group full-width">
+
+                        <label for="myBreakReason">
+                            Reason
+                        </label>
+
+                        <textarea id="myBreakReason"
+                                  placeholder="Reason for this break..."></textarea>
+
+                    </div>
+
+
+                    <div class="form-actions">
+
+                        <button type="submit"
+                                class="gold-btn"
+                                id="saveMyBreakBtn">
+
+                            <i class="fa-solid fa-mug-hot"></i>
+
+                            Schedule Break
+
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+                            SETTINGS PAGE
+        ====================================================== -->
+
+        <section id="settingsPage" class="page-section" hidden>
+
+            <div class="card">
+
+                <h2>Settings</h2>
+
+                <div id="settingsContainer"></div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+
+<!-- =========================================================
+     CORE API
+========================================================== -->
+
+<script src="{% static 'js/api.js' %}"></script>
+
+
+<!-- =========================================================
+     LOGOUT
+========================================================== -->
+
+<script src="{% static 'js/dashboard-logout.js' %}"></script>
+
+
+<!-- =========================================================
+     BARBER MODULES
+========================================================== -->
+
+<script src="{% static 'js/barber-dashboard.js' %}"></script>
+
+<script src="{% static 'js/barber-bookings.js' %}"></script>
+
+<script src="{% static 'js/barber-breaks.js' %}"></script>
+
+<script src="{% static 'js/barber-dashboard-settings.js' %}"></script>
+
+
+<!-- =========================================================
+     ROUTER MUST BE LAST
+========================================================== -->
+
+<script src="{% static 'js/barber-dashboard-router.js' %}"></script>
+
+
+</body>
+
+</html>

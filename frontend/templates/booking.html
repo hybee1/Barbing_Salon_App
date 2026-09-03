@@ -1,0 +1,190 @@
+
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Appointment | LevelZCuts</title>
+
+<!--    <link rel="stylesheet" href="../static/css/style.css">-->
+<!--    <link rel="stylesheet" href="../static/css/booking.css">-->
+
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/booking.css' %}">
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+
+<body>
+
+<header>
+    <nav class="navbar container">
+        <div class="logo">
+            <a href="/">
+                <i class="fa-solid fa-scissors"></i>
+                <span>Levelz Cuts</span>
+            </a>
+        </div>
+
+        <ul class="nav-links">
+            <li><a href="/">Home</a></li>
+        </ul>
+    </nav>
+</header>
+
+<section class="booking">
+
+    <div class="container">
+
+        <h1>Book Appointment</h1>
+
+        <!-- STEP PROGRESS -->
+        <div class="steps-progress">
+            <div class="step active">Service</div>
+            <div class="step">Hairstyle</div>
+             <div class="step">Color</div>
+            <div class="step">Barber</div>
+            <div class="step">Date</div>
+            <div class="step">Time</div>
+            <div class="step">Details</div>
+        </div>
+
+        <!-- STEP 1 -->
+        <div class="step-box active" id="step-1">
+            <h2>Select Service</h2>
+            <div class="grid" id="servicesBox"></div>
+            <div class="booking-actions">
+                <button id="serviceNextBtn" class="btn btn-primary" onclick="nextStep()"
+                        disabled> Next
+                </button>
+            </div>
+        </div>
+
+        <!-- STEP 2 -->
+        <div class="step-box" id="step-2">
+            <h2>Select Hairstyle (Optional)</h2>
+            <div class="horizontal-grid" id="stylesBox"></div>
+
+            <div class="booking-actions">
+                <button class="btn" onclick="prevStep()">Back</button>
+                <button class="btn btn-primary" onclick="nextStep()">Next</button>
+            </div>
+        </div>
+
+        <!-- STEP 3 -->
+        <div class="step-box" id="step-3">
+            <h2>Select Hair Color (Optional)</h2>
+
+             <div class="grid" id="colorsBox"></div>
+
+            <div class="booking-actions">
+                <button class="btn" onclick="prevStep()"> Back </button>
+
+                <button class="btn btn-primary" onclick="nextStep()"> Next </button>
+            </div>
+        </div>
+
+        <!-- STEP 4 -->
+        <div class="step-box" id="step-4">
+            <h2>Select Barber</h2>
+            <div class="grid" id="barbersBox"></div>
+
+            <div class="booking-actions">
+                <button class="btn" onclick="prevStep()">Back</button>
+                <button
+                    id="barberNextBtn" class="btn btn-primary" onclick="nextStep()"
+                    disabled> Next
+                </button>
+            </div>
+        </div>
+
+        <!-- STEP 5 -->
+        <div class="step-box" id="step-5">
+            <h2>Select Date</h2>
+            <input type="date" id="dateInput">
+
+            <div class="booking-actions">
+                <button class="btn" onclick="prevStep()">Back</button>
+                <button id="dateNextBtn" class="btn btn-primary" onclick="nextStep()"
+                        disabled> Next
+                </button>
+            </div>
+        </div>
+
+        <!-- STEP 6 -->
+        <div class="step-box" id="step-6">
+            <h2>Select Time</h2>
+            <div class="grid" id="timeBox"></div>
+
+            <div class="booking-actions">
+                <button class="btn" onclick="prevStep()">Back</button>
+                <button
+                    id="timeNextBtn" class="btn btn-primary" onclick="nextStep()" disabled>
+                    Next</button>
+            </div>
+        </div>
+
+        <!-- STEP 7 -->
+        <div class="step-box" id="step-7">
+            <h2>Your Details</h2>
+
+            <input type="text" id="CustomerName" placeholder="Customer Name">
+<!--            <input type="email" id="email" placeholder="Email">-->
+            <input type="text" id="phone" placeholder="Phone Number">
+
+            <div class="booking-actions">
+                <button class="btn" onclick="prevStep()">Back</button>
+                <button class="btn btn-primary" onclick="submitBooking()">Confirm Booking</button>
+            </div>
+            </div>
+
+    </div>
+
+</section>
+
+<!-- ==========================
+BOOKING SUCCESS MODAL
+========================== -->
+
+<div id="successModal" class="success-modal" style="display:none;">
+
+    <div class="success-content">
+
+        <i class="fa-solid fa-circle-check"
+           style="font-size:70px;color:#d4af37;margin-bottom:20px;"></i>
+
+        <h2>Booking Successful</h2>
+
+        <p>Your booking reference is</p>
+
+        <div id="bookingReference" class="booking-reference"> </div>
+
+        <p>
+            Please save this reference. It will be required if you want
+            to reschedule, cancel or verify your booking.
+        </p>
+
+        <div class="success-actions">
+
+            <button class="btn" onclick="copyBookingReference()">
+
+                <i class="fa-regular fa-copy"></i> Copy </button>
+
+            <button class="btn btn-primary" onclick="goHome()"> Home </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!--<script src="{% static 'js/main.js' %}"></script>-->
+<script src="{% static 'js/public-api-calls.js' %}"></script>
+<script src="{% static 'js/booking.js' %}"></script>
+</body>
+</html>

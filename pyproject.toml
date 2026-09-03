@@ -1,0 +1,18 @@
+[project]
+name = "barbing-salon-app"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "django>=6.0.6",
+    "django-cors-headers>=4.9.0",
+    "django-phonenumber-field[phonenumbers]>=8.5.0",
+    "django-timezone-field>=7.2.2",
+    "djangorestframework>=3.17.1",
+    "djangorestframework-simplejwt>=5.5.1",
+    "pillow>=12.3.0",
+    "psycopg>=3.3.5",
+    "pycountry>=26.2.16",
+    "python-dotenv>=1.2.3",
+]

@@ -1,0 +1,478 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Levelz Cuts Barbershop</title>
+
+    <!--    <link rel="stylesheet" href="../static/css/style.css">-->
+
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@500;600;700&display=swap"
+          rel="stylesheet">
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+</head>
+
+<body>
+
+<!-- ===========================
+NAVBAR
+============================ -->
+
+<header>
+
+    <nav class="navbar container">
+
+        <div class="logo">
+
+            <i class="fa-solid fa-scissors"></i>
+
+            <span>Levelz Cuts</span>
+
+        </div>
+
+        <ul class="nav-links">
+
+            <li><a href="#home">Home</a></li>
+
+            <li><a href="#services">Services</a></li>
+
+            <li><a href="#gallery">Gallery</a></li>
+
+            <li><a href="#barbers">Barbers</a></li>
+
+            <li><a href="#booking">Book</a></li>
+
+            <li><a href="#contact">Contact</a></li>
+
+        </ul>
+
+        <button class="menu-btn" aria-label="Open Menu">
+
+            <i class="fa-solid fa-bars"></i>
+
+        </button>
+
+    </nav>
+
+</header>
+
+<!-- ===========================
+HERO
+============================ -->
+
+<section class="hero" id="home">
+
+    <div class="overlay"></div>
+
+    <div class="hero-content container">
+
+        <div class="hero-tagline">
+
+            <span> SHARP LOOKS. HIGHER LEVEL. </span>
+            <hr>
+
+        </div>
+
+        <h1> LOOK SHARP.<br> STAY CONFIDENT. </h1>
+
+        <p>
+
+            Premium haircut, clean fades and beard grooming<br>
+            tailored to your style.
+
+        </p>
+
+        <!--<div class="hero-buttons">-->
+        <div class="hero-button">
+            <a href="#booking" class="btn btn-primary"> Book Appointment </a>
+        </div>
+
+    </div>
+
+    </div>
+
+</section>
+
+<!-- ===========================
+STATS
+============================ -->
+
+<section class="stats">
+
+    <div class="container stats-grid">
+
+        <div class="stat-item">
+            <div class="stat-top">
+                <i class="fa-solid fa-users"></i>
+                <h2>5000+</h2>
+            </div>
+
+            <p>Happy Customers</p>
+
+        </div>
+
+        <div class="stat-item">
+            <div class="stat-top">
+                <i class="fa-solid fa-chair"></i>
+                <h2>2</h2>
+            </div>
+
+            <p>Professional Barbers</p>
+
+        </div>
+
+        <div class="stat-item">
+            <div class="stat-top">
+                <i class="fa-regular fa-star"></i>
+                <h2>8+</h2>
+            </div>
+
+            <p>Years Experience</p>
+
+        </div>
+
+        <div class="stat-item">
+            <div class="stat-top">
+                <i class="fa-solid fa-star"></i>
+                <h2>4.9</h2>
+            </div>
+
+            <p>Customer Rating</p>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- ===========================
+SERVICES
+============================ -->
+
+<section id="services" class="container">
+
+    <div class="section-title">
+
+        <h2>Our Services</h2>
+
+        <p> Professional grooming services. </p>
+
+    </div>
+
+    <div class="services-grid">
+
+    </div>
+
+</section>
+
+<!-- ===========================
+GALLERY
+============================ -->
+
+<section id="gallery">
+
+    <div class="container">
+
+        <div class="section-title">
+
+            <h2>Popular Hairstyles</h2>
+
+            <p> Explore our latest styles. </p>
+
+        </div>
+
+
+        <div class="gallery-wrapper">
+
+            <div class="gallery-grid">
+
+                <!-- JS will inject gallery items here -->
+
+            </div>
+
+        </div>
+
+
+        <div class="gallery-action">
+
+            <a href="/gallery/hairstyles/" class="btn btn-primary"> View All Styles </a>
+
+        </div>
+
+
+    </div>
+
+</section>
+
+<!-- ===========================
+BARBERS
+============================ -->
+
+<section id="barbers" class="container">
+
+    <div class="section-title">
+
+        <h2>Meet Our Barbers</h2>
+
+    </div>
+
+    <div class="barbers-grid">
+
+        <div class="barber-card">
+
+            <!--<div class="avatar"></div>-->
+
+            <!--<h3>John</h3>-->
+
+            <!--<p>Senior Barber</p>-->
+
+            <!--<span>★★★★★</span>-->
+
+        </div>
+
+        <div class="barber-card">
+
+            <!--<div class="avatar"></div>-->
+
+            <!--<h3>Michael</h3>-->
+
+            <!--<p>Hair Stylist</p>-->
+
+            <!--<span>★★★★★</span>-->
+
+        </div>
+
+        <div class="barber-card">
+
+            <!--<div class="avatar"></div>-->
+
+            <!--<h3>David</h3>-->
+
+            <!--<p>Dreadlock Expert</p>-->
+
+            <!--<span>★★★★★</span>-->
+
+        </div>
+
+        <div class="barber-card">
+
+            <!--<div class="avatar"></div>-->
+
+            <!--<h3>Samuel</h3>-->
+
+            <!--<p>Fade Specialist</p>-->
+
+            <!--<span>★★★★★</span>-->
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- ===========================
+HOW IT WORKS
+============================ -->
+
+<section class="how">
+
+    <div class="container">
+
+        <div class="section-title">
+
+            <h2>How Booking Works</h2>
+
+        </div>
+
+        <div class="steps">
+
+            <div>
+
+                <h3>1</h3>
+
+                <p>Select Service</p>
+
+            </div>
+
+            <div>
+
+                <h3>2</h3>
+
+                <p>Choose Hairstyle</p>
+
+            </div>
+
+            <div>
+
+                <h3>3</h3>
+
+                <p>Select Barber</p>
+
+            </div>
+
+            <div>
+
+                <h3>4</h3>
+
+                <p>Choose Time</p>
+
+            </div>
+
+            <div>
+
+                <h3>5</h3>
+
+                <p>Confirm Booking</p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- ===========================
+BOOK CTA
+============================ -->
+
+<section id="booking" class="booking-banner">
+
+    <div class="container">
+
+        <h2> Ready for a Fresh Look? </h2>
+
+        <p> Book your appointment today. </p>
+
+        <a href="bookings" class="btn btn-primary"> Book Now </a>
+
+    </div>
+
+</section>
+
+<!-- ===========================
+TESTIMONIALS
+============================ -->
+
+<section class="container">
+
+    <div class="section-title">
+
+        <h2> Customer Reviews </h2>
+
+    </div>
+
+    <div class="testimonial-grid">
+
+        <div class="testimonial">
+
+            <p class="star"> ★★★★★ </p>
+
+            <p> Best haircut I've had in years. </p>
+
+            <h4>James</h4>
+
+        </div>
+
+        <div class="testimonial">
+
+            <p class="star"> ★★★★★ </p>
+
+            <p> Booking was fast and easy. </p>
+
+            <h4>Daniel</h4>
+
+        </div>
+
+        <div class="testimonial">
+
+            <p class="star"> ★★★★★ </p>
+
+            <p>
+
+                Very professional staff.
+
+            </p>
+
+            <h4>Mike</h4>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- ===========================
+CONTACT
+============================ -->
+
+<footer id="contact">
+
+    <div class="container footer-grid">
+
+        <div>
+
+            <h3>Levelz Cuts</h3>
+
+            <p> Professional Modern hair cut style. </p>
+
+        </div>
+
+        <div>
+
+            <h3>Contact</h3>
+
+            <p id="salonPhoneNumber" > Phone: phone number </p>
+
+            <p id="salonEmail" > Email: dummy-email@salon.com </p>
+
+        </div>
+
+        <div>
+
+            <h3>Hours</h3>
+
+            <p> Monday - Sunday </p>
+
+            <p id="salonOpenAndCloseTime"> 00:00 AM - 00:00 PM </p>
+
+        </div>
+
+        <div>
+
+            <h3>Social</h3>
+
+            <i class="fab fa-facebook"></i>
+
+            <i class="fab fa-instagram"></i>
+
+            <i class="fab fa-x-twitter"></i>
+
+        </div>
+
+    </div>
+
+    <div class="copyright">
+        © 2026 Synogies Technologies. Email: info.synogiestechnologies@gmail.com
+    </div>
+
+</footer>
+
+<!--<script src="../static/js/main.js"></script>-->
+<script src="{% static 'js/main.js' %}"></script>
+
+</body>
+</html>

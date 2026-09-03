@@ -1,0 +1,497 @@
+{% load static %}
+
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Hairstyle Gallery | Levelz Cuts</title>
+
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+    <link rel="stylesheet" href="{% static 'css/gallery.css' %}">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@500;600;700&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+</head>
+
+
+<body>
+
+
+<!-- ==========================================================
+     NAVBAR
+========================================================== -->
+
+<header>
+
+    <nav class="navbar container">
+
+        <div class="logo">
+
+            <i class="fa-solid fa-scissors"></i>
+
+            <span>Levelz Cuts</span>
+
+        </div>
+
+
+        <ul class="nav-links">
+
+            <li>
+                <a href="/#home"> Home </a>
+            </li>
+
+            <li>
+                <a href="/#services"> Services </a>
+            </li>
+
+            <li>
+                <a href="/gallery/" class="active"> Gallery </a>
+            </li>
+
+            <li>
+                <a href="/#barbers"> Barbers </a>
+            </li>
+
+            <li>
+                <a href="/#booking"> Book </a>
+            </li>
+
+            <li>
+                <a href="/#contact"> Contact </a>
+            </li>
+
+        </ul>
+
+        <button class="menu-btn" aria-label="Open Menu" type="button">
+
+            <i class="fa-solid fa-bars"></i>
+
+        </button>
+
+    </nav>
+
+</header>
+
+
+
+<!-- ==========================================================
+     GALLERY PAGE
+========================================================== -->
+
+<main class="gallery-page">
+
+
+    <!-- ======================================================
+         GALLERY HERO
+    ======================================================= -->
+
+    <section class="gallery-hero">
+
+        <div class="container">
+
+            <div class="gallery-hero-content">
+
+                <span class="gallery-eyebrow"> </span>
+
+                <h1> Hairstyle Gallery </h1>
+
+                <p> Explore our collection of cuts and styles
+                    and find the look that's right for you.
+                </p>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ======================================================
+         GALLERY CONTENT
+    ======================================================= -->
+
+    <section class="gallery-catalog">
+
+        <div class="container">
+
+
+            <!-- ==================================================
+                 SEARCH + FILTER AREA
+            =================================================== -->
+
+            <div class="gallery-toolbar">
+
+
+                <!-- Search -->
+
+                <div class="gallery-search">
+
+                    <i class="fa-solid fa-magnifying-glass"></i>
+
+                    <input type="search" id="hairstyleSearch" placeholder="Search hairstyles..."
+                        autocomplete="off">
+
+                </div>
+
+
+                <!-- Category Filters -->
+
+                <div class="gallery-filters" id="galleryFilters">
+
+                    <button type="button" class="gallery-filter active"
+                        data-filter="all">
+
+                        All Styles
+
+                    </button>
+
+
+                    <button type="button" class="gallery-filter" data-filter="fade">
+
+                        Fades
+
+                    </button>
+
+
+                    <button type="button" class="gallery-filter" ata-filter="afro">
+
+                        Afro
+
+                    </button>
+
+
+                    <button type="button" class="gallery-filter" data-filter="dread">
+
+                        Dreadlocks
+
+                    </button>
+
+
+                    <button
+                        type="button"
+                        class="gallery-filter"
+                        data-filter="mohawk">
+
+                        Mohawk
+
+                    </button>
+
+
+                    <button
+                        type="button"
+                        class="gallery-filter"
+                        data-filter="other">
+
+                        Other
+
+                    </button>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- ==================================================
+                 RESULTS INFORMATION
+            =================================================== -->
+
+            <div class="gallery-results-bar">
+
+                <p id="galleryResults">
+                    Loading styles...
+                </p>
+
+            </div>
+
+
+
+            <!-- ==================================================
+                 GALLERY GRID
+            =================================================== -->
+
+            <div
+                class="gallery-catalog-grid" id="galleryCatalogGrid">
+
+                <!-- JavaScript injects hairstyle cards -->
+
+            </div>
+
+
+
+            <!-- ==================================================
+                 EMPTY STATE
+            =================================================== -->
+
+            <div
+                class="gallery-empty"
+                id="galleryEmpty"
+                hidden>
+
+                <div class="gallery-empty-icon">
+
+                    <i class="fa-solid fa-scissors"></i>
+
+                </div>
+
+                <h3>
+                    No hairstyles found
+                </h3>
+
+                <p>
+                    Try another hairstyle name or category.
+                </p>
+
+                <button
+                    type="button"
+                    class="btn btn-primary"
+                    id="clearGallerySearch">
+
+                    Clear Search
+
+                </button>
+
+            </div>
+
+
+
+            <!-- ==================================================
+                 LOADING
+            =================================================== -->
+
+            <div
+                class="gallery-loading"
+                id="galleryLoading">
+
+                <span class="gallery-spinner"></span>
+
+                <p>
+                    Loading hairstyles...
+                </p>
+
+            </div>
+
+
+        </div>
+
+    </section>
+
+
+
+    <!-- ======================================================
+         BOOK CTA
+    ======================================================= -->
+
+    <section class="gallery-booking-cta">
+
+        <div class="container">
+
+            <div class="gallery-booking-content">
+
+                <span>
+                    FOUND YOUR STYLE?
+                </span>
+
+                <h2>
+                    Ready for a Fresh Look?
+                </h2>
+
+                <p>
+                    Choose your preferred style and book your appointment.
+                </p>
+
+                <a
+                    href="/backend/bookings/"
+                    class="btn btn-primary">
+
+                    <i class="fa-solid fa-calendar-check"></i>
+
+                    Book Appointment
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+</main>
+
+
+
+<!-- ==========================================================
+     IMAGE MODAL
+========================================================== -->
+
+<div
+    class="gallery-modal"
+    id="galleryModal"
+    aria-hidden="true">
+
+    <div class="gallery-modal-backdrop"></div>
+
+    <div
+        class="gallery-modal-content"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="galleryModalTitle">
+
+
+        <button
+            type="button"
+            class="gallery-modal-close"
+            id="galleryModalClose"
+            aria-label="Close">
+
+            <i class="fa-solid fa-xmark"></i>
+
+        </button>
+
+
+        <div class="gallery-modal-image-wrapper">
+
+            <img
+                id="galleryModalImage"
+                src=""
+                alt="">
+
+        </div>
+
+
+        <div class="gallery-modal-info">
+
+            <h3 id="galleryModalTitle"></h3>
+
+            <a
+                href="/backend/bookings/"
+                class="btn btn-primary"
+                id="galleryModalBook">
+
+                <i class="fa-solid fa-calendar-check"></i>
+
+                Book This Style
+
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<!-- ==========================================================
+     FOOTER
+========================================================== -->
+
+<footer id="contact">
+
+    <div class="container footer-grid">
+
+
+        <div>
+
+            <h3>
+                Levelz Cuts
+            </h3>
+
+            <p>
+                Professional Modern hair cut style.
+            </p>
+
+        </div>
+
+
+        <div>
+
+            <h3>
+                Contact
+            </h3>
+
+            <p>
+                Phone: +234 816 911 1804
+            </p>
+
+            <p>
+                Email: info.levelzcut@gmail.com
+            </p>
+
+        </div>
+
+
+        <div>
+
+            <h3>
+                Hours
+            </h3>
+
+            <p>
+                Monday - Sunday
+            </p>
+
+            <p>
+                9:00 AM - 8:30 PM
+            </p>
+
+        </div>
+
+
+        <div>
+
+            <h3>
+                Social
+            </h3>
+
+            <i class="fab fa-facebook"></i>
+
+            <i class="fab fa-instagram"></i>
+
+            <i class="fab fa-x-twitter"></i>
+
+        </div>
+
+
+    </div>
+
+
+    <div class="copyright">
+
+        © 2026 Synogies Technologies.
+        Email: info.synogiestechnologies@gmail.com
+
+    </div>
+
+</footer>
+
+
+
+<!-- ==========================================================
+     GALLERY JAVASCRIPT
+========================================================== -->
+
+<script src="{% static 'js/public-api-calls.js' %}"></script>
+
+<script src="{% static 'js/gallery.js' %}"></script>
+
+
+</body>
+
+</html>

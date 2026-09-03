@@ -1,0 +1,637 @@
+
+/* ==========================================
+BOOKING PAGE STYLES
+========================================== */
+
+.booking{
+    padding:120px 20px 80px;
+    /*background:var(--bg);*/
+    background:var(--background-black);
+}
+
+.booking h1{
+    text-align:center;
+    font-size:2.4rem;
+    margin-bottom:40px;
+    color: var(--primary-gold); /* added me me */
+}
+
+/* ==========================================
+STEP PROGRESS
+========================================== */
+
+.steps-progress{
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:40px;
+    gap:10px;
+    flex-wrap:wrap;
+}
+
+.steps-progress .step{
+    flex:1;
+    min-width:120px;
+    text-align:center;
+    padding:10px;
+    border-radius:999px;
+
+    /*background:#e2e8f0;*/
+
+    background: transparent;
+
+    font-weight:600;
+    font-size:.9rem;
+    /* color:#64748b; */
+    color: var(--primary-gold);
+    transition:.3s;
+}
+
+.steps-progress .step.active{
+    /*background:var(--background-black);*/
+    background: var(--primary-gold);
+
+    /*color:white;*/
+    color: var(--text-black)
+}
+
+/* ==========================================
+STEP BOX
+========================================== */
+
+.step-box{
+    display:none;
+    /*background:white;*/
+    background: var(--background-black);
+    padding:30px;
+    border-radius:var(--radius);
+    box-shadow:var(--shadow-sm);
+    animation:fadeUp .3s ease;
+}
+
+.step-box.active{
+    display:block;
+}
+
+.step-box h2{
+    margin-bottom:25px;
+    /*color:var(--primary);*/
+    color:var(--primary-gold);
+}
+
+
+/* ==========================================
+GRID OPTIONS, GENERAL BOOKING GRID
+========================================== */
+
+.grid {
+    display:grid;
+
+    /* Desktop */
+    grid-template-columns:repeat(5, minmax(0, 1fr));
+
+    gap:20px;
+
+    align-items:stretch;
+    justify-items:stretch;
+    margin-bottom: 40px;   /* Add this */
+}
+
+.grid p{
+    color:white;
+}
+/* ==========================================
+HORIZONTAL GRID (Hairstyles)
+========================================== */
+
+.horizontal-grid{
+
+    display:grid;
+
+    grid-auto-flow:column;
+
+    grid-template-rows:repeat(2, 1fr);
+
+    grid-auto-columns:220px;
+
+    gap:20px;
+
+    overflow-x:auto;
+
+    padding-bottom:12px;
+
+    margin-bottom:40px;
+
+    scroll-behavior:smooth;
+
+}
+
+.horizontal-grid::-webkit-scrollbar{
+
+    height:8px;
+
+}
+
+.horizontal-grid::-webkit-scrollbar-track{
+
+    background:#222;
+
+    border-radius:20px;
+
+}
+
+.horizontal-grid::-webkit-scrollbar-thumb{
+
+    background:var(--primary-gold);
+
+    border-radius:20px;
+
+}
+
+.horizontal-grid .card{
+    width:200px;
+    height:330px;
+
+    display:flex;
+    flex-direction:column;
+
+    overflow:hidden;
+
+    padding:0;
+
+    border-radius:16px;
+}
+
+/* ==========================================
+ONLY BARBER CARD
+========================================== */
+
+.barber-card{
+    position:relative;
+    overflow:hidden;
+
+    width:100%;
+    min-height:320px;
+
+    background:var(--text-black);
+    border:2px solid var(--primary-gold);
+
+    display:flex;
+    align-items:flex-end;
+
+    border-radius:var(--radius);
+
+    box-shadow:var(--shadow-sm);
+    transition:var(--transition);
+}
+
+.barber-card:hover{
+
+    transform:translateY(-10px);
+
+    box-shadow:var(--shadow-lg);
+
+}
+
+.barber-bg{
+    position:absolute;
+    inset:0;
+
+    width:100%;
+    height:100%;
+
+    object-fit:cover;
+}
+
+.barber-overlay{
+
+    position:absolute;
+
+    inset:0;
+
+    background:linear-gradient(
+        to top,
+        rgba(0,0,0,.8),
+        rgba(0,0,0,.15)
+    );
+
+}
+
+.barber-content{
+    position:relative;
+    z-index:2;
+
+    width:100%;
+    padding:22px;
+
+    color: var(--text-black);
+}
+
+.barber-content h3{
+    color: var(--text-white);
+}
+
+.barber-content p{
+    color: var(--text-white);
+}
+
+.barber-content span{
+
+    color: var(--text-white);
+}
+
+/* ==========================================
+SERVICE / STYLE / BARBER CARD
+========================================== */
+
+.card{
+
+    width:100%;
+    max-width:none;
+
+    aspect-ratio:1;
+
+    box-sizing:border-box;
+
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+
+    text-align:center;
+
+    gap:12px;
+
+    padding:18px;
+
+    border:1px solid var(--primary-gold);
+
+    border-radius:16px;
+
+    background:#121212;
+
+    cursor:pointer;
+
+    transition:.3s;
+
+}
+
+.card:hover{
+    transform:translateY(-5px);
+    box-shadow:var(--shadow-sm);
+}
+
+.card.selected{
+    /*border:2px solid var(--secondary);*/
+    border:2px solid var(--primary-gold);
+    /*background:#eff6ff;*/
+    background: var(--primary-gold);
+    color: var(--text-black); /* added by me */
+}
+
+.card h3,.card p,.card strong{
+    color:white;
+}
+
+.card.selected:not(.barber-card){
+
+    background:var(--primary-gold);
+
+    border-color:var(--primary-gold);
+
+}
+
+.card.selected:not(.barber-card) h3,
+.card.selected:not(.barber-card) p,
+.card.selected:not(.barber-card) strong{
+
+    color:var(--text-black);
+
+}
+
+/* ==========================================
+STYLE IMAGE
+========================================== */
+
+#stylesBox .card img {
+    width:100%;
+    height:280px;
+
+    object-fit:cover;
+    object-position:center top;
+
+    display:block;
+
+    border-radius:0;
+}
+
+#stylesBox .card h3{
+    margin:0;
+    padding:12px 12px 16px;
+
+    color:white;
+
+    font-size:1rem;
+    line-height:1.3;
+
+    text-align:center;
+
+    flex-shrink:0;
+}
+
+/* ==========================================
+TIME SLOT BUTTONS
+========================================== */
+
+.time-slot{
+    padding:12px;
+    border-radius:999px;
+    border:1px solid var(--primary-gold);
+    text-align:center;
+    cursor:pointer;
+    transition:.3s;
+    font-weight:600;
+    color: var(--primary-gold);
+    background: var(--text-black);
+
+}
+
+.time-slot:hover{
+    /* background: var(--primary-black); */
+    transform: translateY(-10px);
+}
+
+.time-slot.selected{
+    background:var(--primary-gold);
+    color: var(--text-black);
+    border-color:var(--primary-gold);
+}
+
+.time-slot.disabled{
+    background:#f1f5f9;
+    color:#94a3b8;
+    cursor:not-allowed;
+}
+
+/* ==========================================
+INPUTS
+========================================== */
+
+input, select{
+    width:100%;
+    padding:14px;
+    margin-bottom:15px;
+    border-radius:10px;
+    border:1px solid var(--border);
+    outline:none;
+    font-size:1rem;
+}
+
+input:focus{
+    border-color:var(--secondary);
+}
+
+/* ==========================================
+BUTTONS
+========================================== */
+.booking-actions{
+    display:flex;
+    justify-content:flex-end;
+    align-items:center;
+    gap:15px;
+    margin-top:20px;
+    flex-wrap:wrap;
+}
+
+.btn{
+    display:inline-block;
+    padding:12px 25px;
+    border-radius:999px;
+    border:2px solid var(--primary-gold);
+    cursor:pointer;
+    font-weight:600;
+    transition:.3s;
+    /*margin-right:10px;*/
+}
+
+/* BACK BUTTON */
+.btn{
+    background:transparent;
+    color:var(--primary-gold);
+}
+
+.btn:hover{
+    background:var(--primary-gold);
+    color:var(--text-black);
+    transform:translateY(-2px);
+}
+
+/* NEXT BUTTON */
+.btn-primary{
+    background:var(--primary-gold);
+    color:var(--text-black);
+}
+
+.btn-primary:hover{
+    background:var(--text-black);
+    color:var(--primary-gold);
+}
+
+/* Disabled button */
+.btn:disabled,
+.btn-primary:disabled{
+
+    opacity:.45;
+    cursor:not-allowed;
+    pointer-events:none;
+}
+
+/* ==========================================
+BOOKING SUCCESS MODAL
+========================================== */
+
+.success-modal{
+
+    position:fixed;
+
+    inset:0;
+
+    background:rgba(0,0,0,.75);
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    z-index:9999;
+
+}
+
+.success-content{
+
+    width:min(420px,90%);
+
+    background:var(--background-black);
+
+    border:2px solid var(--primary-gold);
+
+    border-radius:18px;
+
+    padding:35px;
+
+    text-align:center;
+
+}
+
+.success-content h2{
+
+    color:var(--primary-gold);
+
+    margin-bottom:15px;
+
+}
+
+.success-content p{
+
+    color:white;
+
+}
+
+.booking-reference{
+
+    margin:20px 0;
+
+    padding:18px;
+
+    font-size:1.4rem;
+
+    font-weight:bold;
+
+    border:2px dashed var(--primary-gold);
+
+    color:var(--primary-gold);
+
+    border-radius:12px;
+
+    letter-spacing:2px;
+
+}
+
+.success-actions{
+
+    display:flex;
+
+    justify-content:center;
+
+    gap:15px;
+
+    margin-top:20px;
+
+    flex-wrap:wrap;
+
+}
+
+/* ==========================================
+RESPONSIVE GRID
+========================================== */
+
+@media (max-width: 1100px) {
+
+    .grid {
+        grid-template-columns:repeat(4, minmax(0, 1fr));
+        gap:18px;
+        margin-bottom: 40px;   /* Add this */
+    }
+
+}
+
+
+@media (max-width: 900px) {
+
+    .grid {
+        /*grid-template-columns:repeat(3, minmax(0, 1fr));*/
+        grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+
+        gap:15px;
+        margin-bottom: 40px;   /* Add this */
+    }
+
+}
+
+
+@media (max-width:600px){
+
+    .horizontal-grid{
+        grid-auto-columns:170px;
+    }
+
+    .horizontal-grid .card{
+        width:170px;
+        height:290px;
+    }
+
+    #stylesBox .card img{
+        height:240px;
+    }
+
+    #stylesBox .card h3{
+        font-size:.9rem;
+        padding:10px 10px 14px;
+    }
+
+    .booking{
+
+        padding:100px 15px 60px;
+
+    }
+
+    .booking-actions{
+        gap:12px;
+    }
+
+    .booking-actions .btn{
+        flex:1;
+        margin-right:0;
+    }
+
+    .step-box{
+
+        padding:20px;
+
+        /*border:1px solid var(--primary-gold);*/
+
+        border-radius:18px;
+
+    }
+
+    .steps-progress{
+
+        justify-content:center;
+
+        gap:8px;
+
+    }
+
+    .steps-progress .step{
+
+        flex:none;
+
+        min-width:90px;
+
+        font-size:.8rem;
+
+        padding:8px 12px;
+
+    }
+}
+
+
+@media (max-width: 380px) {
+
+    .grid {
+        grid-template-columns:1fr;
+        gap:12px;
+        margin-bottom: 40px;   /* Add this */
+    }
+
+}

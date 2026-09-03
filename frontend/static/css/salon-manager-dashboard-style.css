@@ -1,0 +1,1416 @@
+/* ==========================================
+   salon-manager-dashboard-style.css
+========================================== */
+
+:root{
+
+    --primary:#0f172a;
+    --secondary:#2563eb;
+    --accent:#f59e0b;
+
+    --success:#16a34a;
+    --danger:#dc2626;
+
+    --bg:#f8fafc;
+    --white:#ffffff;
+
+    --text:#1e293b;
+    --text-light:#64748b;
+
+    --border:#e2e8f0;
+
+    --shadow-sm:0 2px 8px rgba(0,0,0,.06);
+    --shadow-md:0 8px 20px rgba(0,0,0,.08);
+    --shadow-lg:0 18px 40px rgba(0,0,0,.12);
+
+    --radius:14px;
+
+    --transition:.3s ease;
+
+    --container:1200px;
+
+    /*new*/
+    --primary-gold: #C89B3C;
+    --gold-hover: #B88A2D;
+
+    --background-black: #0B0B0B;
+    --card-black: #141414;
+
+    --text-white: #FFFFFF;
+    --text-light: #D6D6D6;
+    --text-muted: #A0A0A0;
+    --text-black: #111111;
+
+    --btn-background: #B88A2D;
+
+}
+
+/* ==========================================
+RESET
+========================================== */
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+html{
+
+    scroll-behavior:smooth;
+
+}
+
+body{
+
+    /*background:var(--bg);*/
+
+    background: var(--background-black);
+
+    color:var(--text);
+
+    font-family:'Inter',sans-serif;
+
+    line-height:1.6;
+
+}
+
+img{
+
+    display:block;
+
+    max-width:100%;
+
+}
+
+a{
+
+    color:inherit;
+
+    text-decoration:none;
+
+}
+
+ul{
+
+    list-style:none;
+
+}
+
+.container{
+
+    width:min(92%,var(--container));
+
+    margin:auto;
+
+}
+
+/* ==========================================
+TYPOGRAPHY
+========================================== */
+
+h1,h2,h3,h4{
+
+    font-family:'Poppins',sans-serif;
+
+    color:var(--primary);
+
+}
+
+.section-title{
+
+    text-align:center;
+    margin-bottom:35px;
+
+}
+
+.section-title h2{
+
+    font-size:2.4rem;
+    margin-bottom:10px;
+    color:var(--primary-gold); /* me me */
+
+}
+
+.section-title p{
+
+    /*color:var(--text-light);*/
+    color:var(--primary-gold);
+
+    max-width:650px;
+    margin:auto;
+
+}
+
+/* ==========================================
+BUTTONS
+========================================== */
+
+.btn{
+
+    display:inline-flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    gap:10px;
+
+    padding:15px 28px;
+
+    border-radius:999px;
+
+    transition:var(--transition);
+
+    font-weight:600;
+
+    cursor:pointer;
+
+}
+
+.btn-primary{
+
+    /*background:var(--secondary);*/
+
+    background:var(--primary-gold);
+    color: var(--text-black);
+}
+
+.btn-primary:hover{
+
+    /*background:#1d4ed8;*/
+    background: var(--background-black); /*me me*/
+    color: var(--gold-hover); /*me me*/
+    border: 2px solid var(--primary-gold);
+    transform:translateY(-2px);
+    box-shadow:var(--shadow-md);
+
+}
+/* ==========================================
+HEADER
+========================================== */
+
+
+header{
+
+    position:fixed;
+    top:0;
+    left:0;
+
+    width:100%;
+
+    z-index:9999;
+
+    background:rgba(11,11,11,.95);
+
+    backdrop-filter:blur(10px);
+
+}
+
+
+.navbar{
+
+    height:80px;
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+}
+
+
+.logo{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:10px;
+
+    color:var(--primary-gold);
+
+    font-size:1.7rem;
+
+    font-weight:700;
+
+}
+
+
+.logo i{
+
+    color:white;
+
+}
+
+
+
+.nav-links{
+
+    display:flex;
+
+    gap:40px;
+
+}
+
+
+
+.nav-links a{
+
+    color:white;
+
+    font-weight:500;
+
+}
+
+
+
+.menu-btn{
+
+    display:none;
+
+    color:white;
+
+    font-size:1.8rem;
+
+    cursor:pointer;
+
+    background:none;
+    border:none;
+
+}
+
+/* ==========================================
+HERO
+========================================== */
+
+.hero{
+
+    margin-top: 75px;  /* added me me */
+    min-height:100vh; /*100*/
+
+    position:relative;
+
+    display:flex;
+
+    align-items:center;
+
+    overflow:hidden;
+
+    background:
+
+    linear-gradient(rgba(0,0,0,.45),
+    rgba(0,0,0,.55)),
+
+    url("../images/levelz-cut-hero-banner-3.png");
+
+    background-size:cover;
+
+    background-position:center;
+
+}
+
+.hero-content{
+
+    position:relative;
+    z-index:2;
+    color:white;
+
+}
+
+.hero-tagline {
+  display: flex;
+  align-items: center;   /* vertically align text and line */
+  gap: 12px;             /* space between text and line */
+  justify-content: flex-start;  /* keep everything on the left */
+
+  margin-bottom:25px;
+}
+
+.hero-tagline span {
+  font-weight: 600;
+  color: var(--primary-gold);   /* or another brand color */
+}
+
+.hero-tagline hr {
+  flex: 0 0 15%;              /* line takes 15% of container width */
+  border: none;
+  border-top: 2px solid var(--primary-gold); /* gold line */
+}
+
+.hero-content h1{
+
+    color:white;
+    font-size:3.1rem;
+
+    /*transform: scaleX(0.7);
+    transform: scaleY(1.63);
+    transform-origin: 0 0;*/
+
+    font-size:3.1rem;
+    line-height:1;
+    margin-bottom:50px;
+
+    /*line-height:0.9;
+    margin-bottom:80px;*/
+}
+
+.hero-content p{
+
+    max-width:650px;
+
+    font-size:1.1rem;
+
+    margin-bottom:35px;
+
+    /*color:#e2e8f0;*/
+    color: var(--text-muted);
+}
+
+.hero-buttons{
+
+    display:flex;
+
+    gap:20px;
+
+    flex-wrap:wrap;
+
+}
+
+/* ==========================================
+STATS
+========================================== */
+
+.stats{
+
+    background: var(--background-black);
+    border-top: 1px solid var(--primary-gold); /* gold line */
+    border-bottom: 1px solid var(--primary-gold); /* gold line */
+
+}
+
+.stats-grid{
+
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:30px;
+    text-align:center;
+
+}
+
+.stat-item{
+
+    position:relative;
+
+    display:flex;
+    flex-direction:column;
+
+    align-items:center;
+    justify-content:center;
+
+    min-height:80px;
+
+    padding:14px 20px;
+}
+
+.stat-item:not(:last-child)::after{
+
+    content:"";
+
+    position:absolute;
+
+    top:18px;
+    bottom:18px;
+
+    right:0;
+
+    width:1px;
+
+    background:rgba(255,255,255,.15);
+}
+
+.stat-top{
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    gap:12px;
+
+    margin-bottom:4px;
+}
+
+.stat-top i{
+
+    color:#C89B3C;
+
+    font-size:28px;
+}
+
+.stat-top h2{
+
+    margin:0;
+
+    color:#C89B3C;
+
+    font-size:2rem;
+
+    font-weight:700;
+
+    line-height:1;
+}
+
+.stat-item p{
+
+    margin:0;
+
+    color:#D8D8D8;
+
+    font-size:.95rem;
+
+    text-align:center;
+}
+
+/* ==========================================
+SERVICES
+========================================== */
+
+#services {
+  padding: 35px 0;
+}
+
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 4fr));
+  gap: 30px;
+}
+
+/* Service Card */
+.service-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius);
+  min-height: 320px;
+
+  display: flex;
+  align-items: flex-end; /* keeps content at bottom */
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+}
+
+.service-card:hover {
+  transform: translateY(-10px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Background image */
+.service-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0; /* lowest layer */
+}
+
+/* Overlay */
+.service-overlay {
+  position: absolute;
+  inset: 0;
+  /*background: linear-gradient(
+    rgba(0, 0, 0, 0.45),
+    rgba(0, 0, 0, 0.65)
+  );*/
+  z-index: 1; /* above image */
+}
+
+/* Content */
+.service-content {
+  position: relative;
+  z-index: 2; /* above overlay */
+  width: 100%;
+  padding: 30px;
+  text-align: center;
+  color: #fff;
+}
+
+.service-content h3 {
+  color: #fff;
+  margin-bottom: 10px;
+}
+
+.service-content p {
+  color: #f1f5f9;
+  margin-bottom: 12px;
+}
+
+.service-content span {
+  display: block;
+  margin-bottom: 18px;
+  color: var(--accent) !important; /* amber/gold */
+  font-size: 1.2rem;
+  font-weight: 700;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+}
+
+.service-content a {
+  display: inline-block;
+  padding: 12px 28px;
+  border-radius: 999px;
+  background: var(--accent); /* use accent instead of secondary */
+  color: var(--white);
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  transition: transform var(--transition), box-shadow var(--transition), background var(--transition);
+}
+
+.service-content a:hover {
+  background: #d97706; /* darker amber for hover */
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+}
+
+/* ==========================================
+   GALLERY
+========================================== */
+
+#gallery{
+
+    padding:35px 0;
+
+}
+
+/* Homepage gallery container */
+
+.gallery-wrapper{
+
+    overflow:hidden;
+
+}
+
+/* Gallery grid */
+
+.gallery-grid{
+
+    display:grid;
+
+    grid-template-columns:repeat(4,1fr);
+
+    gap:20px;
+
+}
+
+/* Gallery cards */
+
+.gallery-item{
+
+    /*aspect-ratio: 0.85/1;*/
+
+    height: 350px;   /* instead of a square */
+
+    border-radius:var(--radius);
+
+    overflow:hidden;
+
+    position:relative;
+
+    cursor:pointer;
+
+    box-shadow:var(--shadow-sm);
+
+    transition:var(--transition);
+
+}
+
+/* Images */
+
+.gallery-item img{
+
+    width:100%;
+
+    height:100%;
+
+    object-fit: cover;
+    object-position: 50% 20%;
+
+    transition:.4s ease;
+
+}
+
+/* Hover zoom */
+
+.gallery-item:hover img{
+
+    transform:scale(1.08);
+
+}
+
+/* Dark overlay */
+
+.gallery-item::before{
+
+    content:"";
+
+    position:absolute;
+
+    inset:0;
+
+    background:rgba(0,0,0,.45);
+
+    opacity:0;
+
+    transition:.3s ease;
+
+    z-index:1;
+
+}
+
+/* Hover text */
+
+.gallery-item::after{
+
+    content:"View Style";
+
+    position:absolute;
+
+    left:50%;
+
+    top:50%;
+
+    transform:translate(-50%,-50%);
+
+    color:white;
+
+    font-weight:600;
+
+    opacity:0;
+
+    transition:.3s ease;
+
+    z-index:2;
+
+}
+
+/* Activate hover */
+
+.gallery-item:hover::before,
+.gallery-item:hover::after{
+
+    opacity:1;
+
+}
+
+/* View all button */
+
+.gallery-action{
+
+    text-align:center;
+
+    margin-top:40px;
+
+}
+
+/* ==========================================
+BARBERS
+========================================== */
+
+#barbers{
+
+    padding:35px 0;
+
+}
+
+.barbers-grid{
+
+    display:grid;
+
+    grid-template-columns:repeat(auto-fit,minmax(260px,1fr));  /*260*/
+
+    gap:30px;
+
+    place-items: center;
+
+}
+
+.barber-card{
+    position:relative;
+    overflow:hidden;
+    border-radius:var(--radius);
+    min-height:320px;  /*380px*/
+
+    background: var(--text-black);
+    border: 2px solid var(--primary-gold);
+
+    display:flex;
+    /*align-items:flex-end;*/
+    justify-content: center;
+    align-items: center;
+
+    box-shadow:var(--shadow-sm);
+    transition:var(--transition);
+
+    width: 100%;
+    max-width: 200px;  /*220px*/
+}
+
+.barber-card:hover{
+
+    transform:translateY(-10px);
+
+    box-shadow:var(--shadow-lg);
+
+}
+
+.barber-bg{
+    position:absolute;
+    inset:0;
+
+    width:100%;
+    height:100%;
+
+    object-fit:cover;
+}
+
+.barber-content{
+    position:relative;
+    z-index:2;
+
+    width:100%;
+    padding:28px;
+
+    color: var(--text-black);
+
+    text-align: center;
+    transform: translateY(27px); /* noticed it is too centered so move down a bit */
+
+}
+
+.barber-content h3{
+    color: var(--text-white);
+}
+
+.barber-content p{
+    color: var(--text-white);
+}
+
+.barber-content span{
+
+    color: var(--text-white);
+}
+
+.service-card span{
+
+    display:block;
+
+    margin:20px 0;
+
+    font-size:1.2rem;
+
+    color:var(--secondary);
+
+    font-weight:700;
+
+}
+
+/* ==========================================
+HOW IT WORKS
+========================================== */
+
+.how{
+
+    padding:35px 0;
+}
+
+.steps{
+
+    display:grid;
+
+    grid-template-columns:repeat(5,1fr);
+
+    gap:30px;
+
+}
+
+.steps>div{
+
+    text-align:center;
+
+}
+
+.steps h3{
+
+    width:70px;
+
+    height:70px;
+
+    margin:auto;
+
+    margin-bottom:20px;
+
+    display:grid;
+
+    place-items:center;
+
+    border-radius:50%;
+
+    background:var(--primary-gold);
+
+    color:black;
+
+    font-size:1.6rem;
+
+}
+
+.steps p{
+
+    /*color:var(--text-light);*/
+
+    color:var(--primary-gold);
+
+    font-weight:500;
+
+}
+
+/* ==========================================
+BOOKING CTA
+========================================== */
+
+.booking-banner{
+
+    padding:35px 0;
+
+    text-align:center;
+
+
+}
+
+.booking-banner h2{
+
+    /*color:white;*/
+    color: var(--primary-gold);
+    font-size:2.6rem;
+    margin-bottom:35px;
+
+}
+
+.booking-banner p{
+
+    margin-bottom:35px;
+    /* color:#dbeafe; */
+
+    color: var(--primary-gold);
+
+}
+
+/* added me me*/
+.booking-banner a{
+
+    background:var(--primary-gold);
+    color: var(--text-black);
+
+}
+
+/* added me me*/
+.booking-banner a:hover{
+
+    background: var(--background-black); /*me me*/
+    color: var(--gold-hover); /*me me*/
+    border: 2px solid var(--primary-gold);
+    transform:translateY(-2px);
+    box-shadow:var(--shadow-md);
+
+}
+
+/* ==========================================
+TESTIMONIALS
+========================================== */
+
+.testimonial-grid{
+
+    display:grid;
+
+    grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+
+    gap:30px;
+
+    padding-bottom:35px;
+
+}
+
+.testimonial{
+
+    /*background:white;*/
+    background: var(--primary-gold);
+
+    padding:35px;
+
+    border-radius:var(--radius);
+
+    box-shadow:var(--shadow-sm);
+
+    transition:.3s;
+
+}
+
+.testimonial:hover{
+
+    transform:translateY(-8px);
+
+    box-shadow:var(--shadow-lg);
+
+}
+
+.testimonial:first-child{
+
+    color:var(--accent);
+
+}
+
+.testimonial .star{
+    color: white;
+}
+
+.testimonial p{
+
+    margin:20px 0;
+
+    color:var(--text-black);
+
+}
+
+.testimonial h4{
+
+    /*color:var(--text-black);*/
+    color: white;
+
+}
+
+/* ==========================================
+FOOTER
+========================================== */
+
+footer{
+
+    background:var(--primary);
+
+    color:white;
+
+    padding-top:70px;
+
+}
+
+.footer-grid{
+
+    display:grid;
+
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+
+    gap:40px;
+
+}
+
+.footer-grid h3{
+
+    color:white;
+
+    margin-bottom:20px;
+
+}
+
+.footer-grid p{
+
+    color:#cbd5e1;
+
+    margin-bottom:10px;
+
+}
+
+.footer-grid i{
+
+    width:42px;
+
+    height:42px;
+
+    border-radius:50%;
+
+    display:inline-grid;
+
+    place-items:center;
+
+    margin-right:10px;
+
+    background:rgba(255,255,255,.08);
+
+    transition:.3s;
+
+    cursor:pointer;
+
+}
+
+.footer-grid i:hover{
+
+    background:var(--secondary);
+
+}
+
+.copyright{
+
+    text-align:center;
+
+    margin-top:50px;
+
+    padding:25px;
+
+    border-top:1px solid rgba(255,255,255,.08);
+
+    color:#94a3b8;
+
+}
+
+/* ==========================================
+ANIMATIONS
+========================================== */
+
+@keyframes fadeUp{
+
+    from{
+
+        opacity:0;
+
+        transform:translateY(40px);
+
+    }
+
+    to{
+
+        opacity:1;
+
+        transform:translateY(0);
+
+    }
+
+}
+
+.hero-content{
+
+    animation:fadeUp .9s ease;
+
+}
+
+.service-card, .gallery-item, .barber-card, .testimonial{
+
+    animation:fadeUp .8s ease;
+
+}
+
+/* ==========================================
+SCROLLBAR
+========================================== */
+
+::-webkit-scrollbar{
+
+    width:10px;
+
+}
+
+::-webkit-scrollbar-thumb{
+
+    background:var(--secondary);
+
+    border-radius:10px;
+
+}
+
+::-webkit-scrollbar-track{
+
+    background:#e2e8f0;
+
+}
+
+/* ==========================================
+RESPONSIVE
+========================================== */
+
+
+/* TABLETS + MOBILE MENU */
+
+@media(max-width:992px){
+
+    .navbar{
+
+        height:70px;
+
+    }
+
+
+    .menu-btn{
+
+        display:block;
+
+    }
+
+
+    .nav-links{
+
+        position:fixed;
+
+        top:70px;
+
+        right:-100%;
+
+        width: 230px; /*280px*/
+
+        height:calc(100vh - 70px);
+
+        background:#0B0B0B;
+
+        display:flex;
+
+        flex-direction:column;
+
+        gap:30px;
+
+        padding:40px 30px;
+
+        border-left:1px solid var(--primary-gold);
+
+        /*transition:.3s ease;*/
+
+        transition:right .55s ease;
+
+        z-index:99999;
+
+    }
+
+
+    .nav-links.active{
+
+        right:0;
+
+    }
+
+
+    .nav-links a{
+
+        font-size:1.1rem;
+
+    }
+
+}
+
+/* TABLETS */
+
+@media(max-width:768px){
+
+
+    .hero{
+
+        min-height:90vh;
+
+        background:
+            linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,.55)),
+            url("../images/levelz-cut-hero-banner-mobile-4-copy.png");
+
+        background-size:cover;
+        background-position:72% center;
+
+        align-items:flex-end;
+
+        padding:0;               /* Hero touches every edge */
+    }
+
+    .hero-content{
+
+        width:100%;
+
+        max-width:320px;
+
+        margin-bottom:30px;
+
+        text-align:left;  /* Space from right */
+    }
+
+    .hero-content h1{
+        font-size:2.3rem;
+    }
+
+    .hero-content p{
+        font-size:1rem;
+        color:white;
+        max-width:280px;
+    }
+
+    .hero-tagline{
+        justify-content:flex-start;
+    }
+
+
+    .stats-grid{
+
+        grid-template-columns:repeat(2,1fr);
+
+    }
+
+
+    .stat-item:not(:last-child)::after{
+
+        display:none;
+
+    }
+
+
+    .services-grid,
+    .testimonial-grid{
+
+        grid-template-columns:1fr;
+
+    }
+
+
+    /* Gallery tablet layout */
+
+    .gallery-grid{
+
+        grid-template-columns:repeat(2,1fr);
+
+    }
+
+
+    /* Barber cards */
+
+    .barbers-grid{
+
+        grid-template-columns:1fr;
+
+    }
+
+
+    .barber-card{
+
+        max-width:260px;
+
+    }
+
+
+    .steps{
+
+        grid-template-columns:1fr;
+
+    }
+
+}
+
+
+
+/* PHONES */
+
+@media(max-width:480px){
+
+
+    .container{
+
+        /*width:92%;*/
+        width:min(92%,1200px);
+
+    }
+
+
+    .logo{
+
+        font-size:1.3rem;
+
+    }
+
+    .hero{
+
+        min-height:90vh;
+
+        background:
+            linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,.55)),
+            url("../images/levelz-cut-hero-banner-mobile-4-copy.png");
+
+        background-size:cover;
+        background-position:72% center;
+
+        align-items:flex-start;
+
+        padding-top:10px;               /* Hero touches every edge */
+    }
+
+    .hero-content{
+
+        width:100%;
+
+        max-width:320px;
+
+        margin-top:100px;
+
+        text-align:left;  /* Space from right */
+    }
+
+    .hero-content h1{
+
+        font-size:1.5rem; /*2rem */
+    }
+
+    .hero-content p{
+        display: none;
+        font-size:.6rem;
+        padding-bottom: 120px;
+
+    }
+
+    .hero-button {
+        margin-top: 182px;
+    }
+
+    .section-title h1{
+
+        font-size:1.8rem;
+
+    }
+
+
+    .stats-grid{
+
+        grid-template-columns:1fr;
+
+    }
+
+
+    .btn{
+
+        width:100%;
+
+    }
+
+
+    .booking-banner h2{
+
+        font-size:2rem;
+
+    }
+
+
+    .footer-grid{
+
+        grid-template-columns:1fr;
+
+        text-align:center;
+
+    }
+
+
+    /* Gallery phone layout */
+
+    .gallery-grid{
+
+        grid-template-columns:1fr;
+
+    }
+
+}

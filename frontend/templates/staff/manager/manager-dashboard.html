@@ -1,0 +1,1467 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Salon Manager | Levelz Cuts</title>
+
+    <link rel="stylesheet"
+          href="{% static 'css/salon-manager-dashboard.css' %}">
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@500;600;700&display=swap"
+          rel="stylesheet">
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+</head>
+
+<body>
+
+<div class="dashboard">
+
+    <!-- =========================================================
+                            SIDEBAR
+    ========================================================== -->
+
+    <aside class="sidebar">
+
+        <div class="logo">
+
+            <i class="fa-solid fa-scissors"></i>
+
+            <div>
+
+                <h2>Levelz Cuts</h2>
+                <small>Salon Manager</small>
+
+            </div>
+
+        </div>
+
+        <nav id="sidebarNavigation">
+
+            <!-- Dashboard -->
+            <a href="#dashboard"
+               class="nav-link active"
+               data-page="dashboard">
+
+                <i class="fa-solid fa-chart-column"></i>
+                <span>Dashboard</span>
+
+            </a>
+
+            <!-- Bookings -->
+            <a href="#bookings"
+               class="nav-link"
+               data-page="bookings">
+
+                <i class="fa-solid fa-calendar-days"></i>
+                <span>Bookings</span>
+
+            </a>
+
+            <!-- Services -->
+            <div class="nav-group">
+
+                <button type="button"
+                        class="nav-group-toggle"
+                        data-group="services">
+
+                    <span>
+                        <i class="fa-solid fa-scissors"></i>
+                        Services
+                    </span>
+
+                    <i class="fa-solid fa-angle-down"></i>
+
+                </button>
+
+                <div class="nav-submenu collapsed">
+
+                    <a href="#services"
+                       class="nav-link"
+                       data-page="services">
+
+                        <i class="fa-solid fa-list"></i>
+                        Services
+
+                    </a>
+
+                    <a href="#services/hairstyle"
+                       class="nav-link"
+                       data-page="hairstyles">
+
+                        <i class="fa-solid fa-user"></i>
+                        Hairstyles
+
+                    </a>
+
+                    <a href="#services/color"
+                       class="nav-link"
+                       data-page="colors">
+
+                        <i class="fa-solid fa-palette"></i>
+                        Colors
+
+                    </a>
+
+                </div>
+
+            </div>
+
+            <!-- Staff -->
+            <a href="#staff"
+               class="nav-link"
+               data-page="staff">
+
+                <i class="fa-solid fa-users"></i>
+                <span>Staff</span>
+
+            </a>
+
+            <!-- Breaks -->
+            <a href="#breaks"
+               class="nav-link"
+               data-page="breaks">
+
+                <i class="fa-solid fa-mug-hot"></i>
+                <span>Breaks</span>
+
+            </a>
+
+            <!-- Reports -->
+            <a href="#reports"
+               class="nav-link"
+               data-page="reports">
+
+                <i class="fa-solid fa-chart-line"></i>
+                <span>Reports</span>
+
+            </a>
+
+            <a href="#inventory"
+               class="nav-link"
+               data-page="inventory">
+
+                <i class="fa-solid fa-boxes-stacked"></i>
+                <span>Inventory</span>
+
+            </a>
+
+
+            <!-- Settings -->
+            <a href="#settings" class="nav-link" data-page="settings">
+
+                <i class="fa-solid fa-gear"></i>
+                <span>Settings</span>
+
+            </a>
+
+        </nav>
+
+        <div class="sidebar-footer">
+
+            <button type="button" id="logoutBtn">
+
+                <i class="fa-solid fa-right-from-bracket"></i>
+                Logout
+
+            </button>
+
+        </div>
+
+    </aside>
+
+
+    <!-- =========================================================
+                            MAIN CONTENT
+    ========================================================== -->
+
+    <main class="main-content">
+
+        <!-- =====================================================
+                                TOP BAR
+        ====================================================== -->
+
+        <header class="topbar">
+
+            <div>
+
+                <h1 id="pageTitle">Dashboard</h1>
+
+                <p>  Welcome back, <span id="userName">Loading...</span> </p>
+
+            </div>
+
+            <div class="topbar-right">
+
+                <div id="clock" class="clock"></div>
+
+                <div id="avatar" class="avatar">M</div>
+
+            </div>
+
+        </header>
+
+
+        <!-- =====================================================
+                            DASHBOARD PAGE
+        ====================================================== -->
+
+        <section id="dashboardPage" class="page-section">
+
+            <!-- Dashboard Statistics -->
+            <section class="stats">
+
+                <article class="stat-card">
+
+                    <div>
+
+                        <small>Today's Bookings</small>
+                        <h2 id="todayBookings">--</h2>
+
+                    </div>
+
+                    <i class="fa-solid fa-calendar-check"></i>
+
+                </article>
+
+                <article class="stat-card">
+
+                    <div>
+
+                        <small>Staff</small>
+                        <h2 id="staffCount">--</h2>
+
+                    </div>
+
+                    <i class="fa-solid fa-users"></i>
+
+                </article>
+
+                <article class="stat-card">
+
+                    <div>
+
+                        <small>Active Breaks</small>
+                        <h2 id="activeBreaks">--</h2>
+
+                    </div>
+
+                    <i class="fa-solid fa-mug-hot"></i>
+
+                </article>
+
+                <article class="stat-card">
+
+                    <div>
+
+                        <small>Completed Today</small>
+                        <h2 id="completedBookings">--</h2>
+
+                    </div>
+
+                    <i class="fa-solid fa-circle-check"></i>
+
+                </article>
+
+            </section>
+
+
+            <!-- Dashboard Quick Actions -->
+            <section class="quick-actions">
+
+                <button type="button" class="gold-btn" id="dashboardNewBookingBtn">
+
+                    <i class="fa-solid fa-calendar-plus"></i>
+                    New Booking
+
+                </button>
+
+                <button type="button" class="gold-btn" id="dashboardNewStaffBtn">
+
+                    <i class="fa-solid fa-user-plus"></i>
+                    New Staff
+
+                </button>
+
+                <button type="button" class="gold-btn" id="dashboardReportsBtn">
+
+                    <i class="fa-solid fa-file-lines"></i>
+                    Reports
+
+                </button>
+
+            </section>
+
+
+            <!-- Dashboard Content Grid -->
+            <section class="content-grid">
+
+                <!-- Today's Bookings -->
+                <section class="card large-card">
+
+                    <div class="card-header">
+
+                        <h2>Today's Bookings</h2>
+
+                        <button type="button"
+                                id="viewAllBookingsBtn">
+                            View All
+                        </button>
+
+                    </div>
+
+                    <div class="booking-table-container table-scroll">
+
+                        <table>
+
+                            <thead>
+
+                            <tr>
+
+                                <th>Time</th>
+                                <th>Customer</th>
+                                <th>Service</th>
+                                <th>Staff</th>
+                                <th>Status</th>
+
+                            </tr>
+
+                            </thead>
+
+                            <tbody id="bookingTable"></tbody>
+
+                        </table>
+
+                    </div>
+
+                </section>
+
+
+                <!-- Staff Working Today -->
+                <section class="card">
+
+                    <div class="card-header">
+
+                        <h2>Staff Working Today</h2>
+
+                    </div>
+
+                    <div class="card-scroll">
+
+                        <div id="staffContainer"></div>
+
+                    </div>
+
+                </section>
+
+
+                <!-- Active Breaks -->
+                <section class="card">
+
+                    <div class="card-header">
+
+                        <h2>Active Breaks</h2>
+
+                    </div>
+
+                    <div class="card-scroll">
+
+                        <div id="breakContainer"></div>
+
+                    </div>
+
+                </section>
+
+            </section>
+
+        </section>
+
+
+        <!-- =====================================================
+                            BOOKINGS PAGE
+        ====================================================== -->
+
+        <section id="bookingsPage" class="page-section" hidden>
+
+            <div class="card">
+
+                <div class="card-header">
+
+                    <h2>Booking Management</h2>
+
+                    <button type="button" class="gold-btn" id="newBookingBtn">
+
+                        <i class="fa-solid fa-calendar-plus"></i>
+                        New Booking
+
+                    </button>
+
+                </div>
+
+
+                <div class="booking-filter-area">
+
+                    <div class="filter-title">
+
+                        <i class="fa-solid fa-filter"></i>
+                        Filters
+
+                    </div>
+
+
+                    <div class="booking-filters">
+
+                        <div class="filter-group">
+
+                            <label>Start Date</label>
+
+                            <input type="date" id="bookingStartDate">
+
+                        </div>
+
+
+                        <div class="filter-group">
+
+                            <label>End Date</label>
+
+                            <input type="date"
+                                   id="bookingEndDate">
+
+                        </div>
+
+
+                        <div class="filter-group">
+
+                            <label>Status</label>
+
+                            <select id="bookingStatusFilter">
+
+                                <option value="">All Statuses</option>
+                                <option value="CONFIRMED">Confirmed</option>
+                                <option value="ARRIVED">Arrived</option>
+                                <option value="IN_PROGRESS">In Progress</option>
+                                <option value="COMPLETED">Completed</option>
+                                <option value="CANCELLED">Cancelled</option>
+                                <option value="NO_SHOW">No Show</option>
+                                <option value="PENDING">Pending</option>
+
+                            </select>
+
+                        </div>
+
+
+                        <div class="filter-buttons">
+
+                            <button type="button" class="gold-btn filter-search-btn" id="searchBookings">
+                                Search
+                            </button>
+
+                            <button type="button" class="gold-btn filter-clear-btn" id="clearBookingFilters">
+                                Clear
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="card booking-table-card">
+
+                <div class="booking-table-container table-scroll booking-table-scroll">
+
+                    <table>
+
+                        <thead>
+
+                        <tr>
+
+                            <th>Reference</th>
+                            <th>Customer</th>
+                            <th>Service</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Status</th>
+                            <th>Action</th>
+
+                        </tr>
+
+                        </thead>
+
+                        <tbody id="managerBookingTable"></tbody>
+
+                    </table>
+
+                </div>
+
+                <div class="booking-pagination">
+
+                    <div class="booking-pagination-info">
+
+                        <span id="bookingPaginationInfo">
+                            Showing 0–0 of 0
+                        </span>
+
+                    </div>
+
+
+                    <div class="booking-pagination-controls">
+
+                        <button type="button"
+                                id="prevBookingPage"
+                                class="pagination-btn">
+
+                            <i class="fa-solid fa-chevron-left"></i>
+                            Previous
+
+                        </button>
+
+
+                        <span id="bookingPageNumber"
+                              class="booking-page-number">
+                            Page 1
+                        </span>
+
+
+                        <button type="button"
+                                id="nextBookingPage"
+                                class="pagination-btn">
+
+                            Next
+                            <i class="fa-solid fa-chevron-right"></i>
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+                            SERVICES PAGE
+        ====================================================== -->
+
+        <section id="servicesPage" class="page-section" hidden>
+
+            <div class="card">
+
+                <div class="card-header">
+
+                    <h2>Service Management</h2>
+
+                    <button type="button"
+                            class="gold-btn"
+                            id="createServiceBtn">
+
+                        <i class="fa-solid fa-plus"></i>
+                        New Service
+
+                    </button>
+
+                </div>
+
+
+                <div class="filter-actions">
+
+                    <input type="text"
+                           id="serviceNameFilter"
+                           placeholder="Search name">
+
+                    <input type="number"
+                           id="servicePriceFilter"
+                           placeholder="Price">
+
+                    <input type="number"
+                           id="serviceDurationFilter"
+                           placeholder="Duration in minutes">
+
+                    <select id="serviceStatusFilter">
+
+                        <option value="">All Status</option>
+                        <option value="true">Active</option>
+                        <option value="false">Inactive</option>
+
+                    </select>
+
+
+                    <div class="filter-buttons">
+
+                        <button type="button"
+                                class="gold-btn"
+                                id="searchServicesBtn">
+                            Search
+                        </button>
+
+                        <button type="button"
+                                class="gold-btn"
+                                id="clearServiceFiltersBtn">
+                            Clear
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <div class="table-toolbar">
+
+                    <span id="editServiceBtn"
+                          class="toolbar-action">
+
+                        <i class="fa-solid fa-pen"></i>
+                        Edit Selected
+
+                    </span>
+
+                    <span id="deleteServiceBtn"
+                          class="toolbar-action">
+
+                        <i class="fa-solid fa-trash-can"></i>
+                        Delete Selected
+
+                    </span>
+
+                </div>
+
+
+                <div class="service-table-container table-scroll">
+
+                    <table>
+
+                        <thead>
+
+                        <tr>
+
+                            <th>
+                                <input type="checkbox"
+                                       id="selectAllServices">
+                            </th>
+
+                            <th>Service Name</th>
+                            <th>Price</th>
+                            <th>Duration</th>
+                            <th>Status</th>
+
+                        </tr>
+
+                        </thead>
+
+                        <tbody id="serviceTable"></tbody>
+
+                    </table>
+
+                </div>
+
+
+                <div class="service-pagination">
+
+                    <div class="service-pagination-info"
+                         id="servicePaginationInfo">
+                        Showing 0–0 of 0
+                    </div>
+
+                    <div class="service-pagination-controls">
+
+                        <button type="button"
+                                class="pagination-btn"
+                                id="prevServicePage">
+
+                            <i class="fa-solid fa-chevron-left"></i>
+                            Previous
+
+                        </button>
+
+                        <span class="service-page-number"
+                              id="servicePageNumber">
+                            Page 1 of 1
+                        </span>
+
+                        <button type="button"
+                                class="pagination-btn"
+                                id="nextServicePage">
+
+                            Next
+                            <i class="fa-solid fa-chevron-right"></i>
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <div id="serviceFormContainer"
+                     class="card hidden"></div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+                            HAIRSTYLES PAGE
+        ====================================================== -->
+
+        <section id="hairstylesPage" class="page-section" hidden>
+
+            <div class="card">
+
+                <div class="card-header">
+
+                    <h2>Hairstyle Management</h2>
+
+                    <!-- Fixed duplicate type attribute -->
+                    <button type="button"
+                            class="gold-btn"
+                            id="createHairstyleBtn">
+
+                        <i class="fa-solid fa-plus"></i>
+                        New Hairstyle
+
+                    </button>
+
+                </div>
+
+
+                <div class="filter-actions">
+
+                    <input type="text"
+                           id="hairstyleNameFilter"
+                           placeholder="Search hairstyle...">
+
+                    <select id="hairstyleServiceFilter">
+
+                        <option value="">All Services</option>
+
+                    </select>
+
+                    <input type="number"
+                           id="hairstylePriceFilter"
+                           min="0"
+                           step="0.01"
+                           placeholder="Price">
+
+                    <input type="number"
+                           id="hairstyleDurationFilter"
+                           min="0"
+                           step="1"
+                           placeholder="Duration">
+
+                    <select id="hairstyleStatusFilter">
+
+                        <option value="">All Status</option>
+                        <option value="true">Active</option>
+                        <option value="false">Inactive</option>
+
+                    </select>
+
+
+                    <div class="filter-buttons">
+
+                        <button type="button"
+                                class="gold-btn"
+                                id="searchHairstylesBtn">
+                            Search
+                        </button>
+
+                        <button type="button"
+                                class="gold-btn"
+                                id="clearHairstyleFiltersBtn">
+                            Clear
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <div class="table-toolbar">
+
+                    <span id="editHairstyleBtn"
+                          class="toolbar-action">
+
+                        <i class="fa-solid fa-pen"></i>
+                        Edit Selected
+
+                    </span>
+
+                    <span id="deleteHairstyleBtn"
+                          class="toolbar-action">
+
+                        <i class="fa-solid fa-trash-can"></i>
+                        Delete Selected
+
+                    </span>
+
+                </div>
+
+
+                <div class="hairstyle-table-container table-scroll">
+
+                    <table>
+
+                        <thead>
+
+                        <tr>
+
+                            <th>
+                                <input type="checkbox"
+                                       id="selectAllHairstyles">
+                            </th>
+
+                            <th>Hairstyle Name</th>
+                            <th>Image</th>
+                            <th>Service Name</th>
+                            <th>Price</th>
+                            <th>Duration</th>
+                            <th>Status</th>
+
+                        </tr>
+
+                        </thead>
+
+                        <tbody id="hairstyleTable"></tbody>
+
+                    </table>
+
+                </div>
+
+                <div class="hairstyle-pagination">
+
+                    <div class="hairstyle-pagination-info">
+
+                        <span id="hairstylePaginationInfo">
+                            Showing 0–0 of 0
+                        </span>
+
+                    </div>
+
+
+                    <div class="hairstyle-pagination-controls">
+
+                        <button type="button"
+                                id="prevHairstylePage"
+                                class="pagination-btn">
+
+                            <i class="fa-solid fa-chevron-left"></i>
+                            Previous
+
+                        </button>
+
+                        <span id="hairstylePageNumber"
+                              class="hairstyle-page-number">
+                            Page 1
+                        </span>
+
+                        <button type="button"
+                                id="nextHairstylePage"
+                                class="pagination-btn">
+
+                            Next
+                            <i class="fa-solid fa-chevron-right"></i>
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+                <div id="hairstyleFormContainer"
+                     class="card hidden"></div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+                            COLORS PAGE
+        ====================================================== -->
+
+        <section id="colorsPage" class="page-section" hidden>
+
+            <div class="card">
+
+                <div class="card-header">
+
+                    <h2>Color Management</h2>
+
+                    <button type="button"
+                            class="gold-btn"
+                            id="createColorBtn">
+
+                        <i class="fa-solid fa-plus"></i>
+                        New Color
+
+                    </button>
+
+                </div>
+
+
+                <div class="filter-actions">
+
+                    <input type="text"
+                           id="colorNameFilter"
+                           placeholder="Search color...">
+
+                    <select id="colorServiceFilter">
+
+                        <option value="">All Services</option>
+
+                    </select>
+
+                    <input type="number"
+                           id="colorPriceFilter"
+                           min="0"
+                           step="0.01"
+                           placeholder="Price">
+
+                    <input type="number"
+                           id="colorDurationFilter"
+                           min="0"
+                           step="1"
+                           placeholder="Duration">
+
+                    <select id="colorStatusFilter">
+
+                        <option value="">All Status</option>
+                        <option value="true">Active</option>
+                        <option value="false">Inactive</option>
+
+                    </select>
+
+
+                    <div class="filter-buttons">
+
+                        <button type="button"
+                                class="gold-btn"
+                                id="searchColorsBtn">
+                            Search
+                        </button>
+
+                        <button type="button"
+                                class="gold-btn"
+                                id="clearColorFiltersBtn">
+                            Clear
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <div class="table-toolbar">
+
+                    <span id="editColorBtn"
+                          class="toolbar-action">
+
+                        <i class="fa-solid fa-pen"></i>
+                        Edit Selected
+
+                    </span>
+
+                    <span id="deleteColorBtn"
+                          class="toolbar-action">
+
+                        <i class="fa-solid fa-trash-can"></i>
+                        Delete Selected
+
+                    </span>
+
+                </div>
+
+
+                <div class="color-table-container table-scroll">
+
+                    <table>
+
+                        <thead>
+
+                        <tr>
+
+                            <th>
+                                <input type="checkbox"
+                                       id="selectAllColors">
+                            </th>
+
+                            <th>Color Name</th>
+                            <th>Service Name</th>
+                            <th>Price</th>
+                            <th>Duration</th>
+                            <th>Status</th>
+
+                        </tr>
+
+                        </thead>
+
+                        <tbody id="colorTable"></tbody>
+
+                    </table>
+
+                </div>
+
+                <div class="color-pagination">
+
+                    <div class="color-pagination-info">
+
+                        <span id="colorPaginationInfo">
+                            Showing 0–0 of 0
+                        </span>
+
+                    </div>
+
+
+                    <div class="color-pagination-controls">
+
+                        <button type="button"
+                                id="prevColorPage"
+                                class="pagination-btn"
+                                disabled>
+
+                            <i class="fa-solid fa-chevron-left"></i>
+                            Previous
+
+                        </button>
+
+                        <span id="colorPageNumber"
+                              class="color-page-number">
+                            Page 1
+                        </span>
+
+                        <button type="button"
+                                id="nextColorPage"
+                                class="pagination-btn"
+                                disabled>
+
+                            Next
+                            <i class="fa-solid fa-chevron-right"></i>
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+                <div id="colorFormContainer"
+                     class="card hidden"></div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+                            STAFF PAGE
+        ====================================================== -->
+
+        <section id="staffPage" class="page-section" hidden>
+
+            <div class="card">
+
+                <div class="card-header">
+
+                    <h2>Staff Management</h2>
+
+                    <button type="button"
+                            class="gold-btn"
+                            id="createStaffBtn">
+
+                        <i class="fa-solid fa-user-plus"></i>
+                        New Staff
+
+                    </button>
+
+                </div>
+
+
+                <div class="filter-actions">
+
+                    <input type="text"
+                           id="staffNameFilter"
+                           placeholder="Search by name...">
+
+                    <select id="staffDepartmentFilter">
+
+                        <option value="">All Departments</option>
+
+                    </select>
+
+                    <input type="text"
+                           id="staffPhoneNumberFilter"
+                           placeholder="phone number...">
+
+                    <select id="staffStatusFilter">
+
+                        <option value="">All Statuses</option>
+
+                    </select>
+
+
+                    <div class="filter-buttons">
+
+                        <button type="button"
+                                class="gold-btn"
+                                id="searchStaffBtn">
+                            Search
+                        </button>
+
+                        <button type="button"
+                                class="gold-btn"
+                                id="clearStaffFilterBtn">
+                            Clear
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <div class="table-toolbar">
+
+                    <span id="editStaffBtn"
+                          class="toolbar-action">
+
+                        <i class="fa-solid fa-pen"></i>
+                        Edit Selected
+
+                    </span>
+
+                    <span id="deleteStaffBtn"
+                          class="toolbar-action">
+
+                        <i class="fa-solid fa-trash-can"></i>
+                        Delete Selected
+
+                    </span>
+
+                </div>
+
+
+                <div class="staff-table-container table-scroll">
+
+                    <table>
+
+                        <thead>
+
+                        <tr>
+
+                            <th>
+                                <input type="checkbox"
+                                       id="selectAllStaffs">
+                            </th>
+
+                            <th>Full Name</th>
+                            <th>Department</th>
+                            <th>UserName</th>
+                            <th>PhoneNumber</th>
+                            <th>Status</th>
+
+                        </tr>
+
+                        </thead>
+
+                        <tbody id="staffTable"></tbody>
+
+                    </table>
+
+                </div>
+
+                <div class="staff-pagination">
+
+                    <div class="staff-pagination-info">
+
+                        <span id="staffPaginationInfo">
+                            Showing 0–0 of 0
+                        </span>
+
+                    </div>
+
+
+                    <div class="staff-pagination-controls">
+
+                        <button type="button"
+                                id="prevStaffPage"
+                                class="pagination-btn">
+
+                            <i class="fa-solid fa-chevron-left"></i>
+                            Previous
+
+                        </button>
+
+
+                        <span id="staffPageNumber"
+                              class="staff-page-number">
+                            Page 1
+                        </span>
+
+
+                        <button type="button"
+                                id="nextStaffPage"
+                                class="pagination-btn">
+
+                            Next
+                            <i class="fa-solid fa-chevron-right"></i>
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+                <div id="staffFormContainer"
+                     class="card hidden"></div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+                            BREAKS PAGE
+        ====================================================== -->
+
+        <section id="breaksPage" class="page-section" hidden>
+
+            <div class="card">
+
+                <div class="card-header">
+                    <h2>Break Management</h2>
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <div class="break-table-container table-scroll break-table-scroll">
+
+                    <table>
+
+                        <thead>
+
+                        <tr>
+
+                            <th>Staff</th>
+                            <th>Status</th>
+                            <th>Start Time</th>
+                            <th>End Time</th>
+                            <th>Action</th>
+
+                        </tr>
+
+                        </thead>
+
+                        <tbody id="breakTable"></tbody>
+
+                    </table>
+
+                </div>
+
+
+                <div class="break-pagination">
+
+                    <div class="break-pagination-info">
+
+                        <span id="breakPaginationInfo">
+                            Showing 0–0 of 0
+                        </span>
+
+                    </div>
+
+
+                    <div class="break-pagination-controls">
+
+                        <button type="button" id="prevBreakPage" class="pagination-btn">
+
+                            <i class="fa-solid fa-chevron-left"></i>
+                            Previous
+
+                        </button>
+
+                        <span id="breakPageNumber" class="break-page-number"> Page 1
+                        </span>
+
+                        <button type="button" id="nextBreakPage" class="pagination-btn">
+
+                            Next
+                            <i class="fa-solid fa-chevron-right"></i>
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+                    REPORTS PAGE
+        ====================================================== -->
+
+        <section id="reportsPage" class="page-section" hidden>
+
+            <div id="reportsContainer">
+
+                <!-- Reports content is rendered by JavaScript -->
+
+                <div class="card reports-loading-card">
+
+                    <div class="reports-loading">
+
+                        <i class="fa-solid fa-chart-line"></i>
+
+                        <p>Loading reports...</p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+                    INVENTORY PAGE
+        ====================================================== -->
+
+        <section id="inventoryPage" class="page-section" hidden>
+
+            <div class="card">
+
+                <div class="card-header">
+
+                    <h2>Inventory Management</h2>
+
+                    <button type="button" class="gold-btn" id="createInventoryBtn">
+
+                        <i class="fa-solid fa-plus"></i>
+                        New Inventory Item
+
+                    </button>
+
+                </div>
+
+                <div id="inventoryContainer"></div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+                            SETTINGS PAGE
+        ====================================================== -->
+
+        <section id="settingsPage" class="page-section" hidden>
+
+            <div class="card">
+
+                <h2>Settings</h2>
+
+                <div id="settingsContainer"></div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- =========================================================
+                        BOOKING DETAILS MODAL
+    ========================================================== -->
+
+    <div id="bookingModal" class="modal hidden">
+
+        <div class="modal-content booking-modal">
+
+            <div class="modal-header">
+
+                <div>
+
+                    <h2>Booking Details</h2>
+
+                    <p id="bookingRefSubtitle"></p>
+
+                </div>
+
+                <button type="button"
+                        id="closeBookingModal">
+
+                    <i class="fa-solid fa-xmark"></i>
+
+                </button>
+
+            </div>
+
+            <div id="bookingDetails"></div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+                    JAVASCRIPT LOAD ORDER
+========================================================== -->
+
+<!-- Core API helper FIRST -->
+<script src="{% static 'js/api.js' %}"></script>
+
+<!-- Manager page modules -->
+<script src="{% static 'js/salon-manager-dashboard.js' %}"></script>
+<script src="{% static 'js/dashboard-logout.js' %}"></script>
+<script src="{% static 'js/salon-manager-bookings.js' %}"></script>
+<script src="{% static 'js/salon-manager-services.js' %}"></script>
+<script src="{% static 'js/salon-manager-hairstyles.js' %}"></script>
+<script src="{% static 'js/salon-manager-colors.js' %}"></script>
+<script src="{% static 'js/salon-manager-staff.js' %}"></script>
+<script src="{% static 'js/salon-manager-breaks.js' %}"></script>
+<script src="{% static 'js/salon-manager-reports.js' %}"></script>
+<script src="{% static 'js/salon-manager-inventory.js' %}"></script>
+
+<script src="{% static 'js/salon-manager-settings.js' %}"></script>
+
+<!-- Router LAST -->
+<script src="{% static 'js/salon-manager-dashboard-router.js' %}"></script>
+
+</body>
+</html>

@@ -1,0 +1,226 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Reception Dashboard</title>
+
+    <link rel="stylesheet"
+          href="{% static 'css/staff-manager.css' %}">
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+</head>
+
+<body>
+
+<div class="dashboard">
+
+    <!-- SIDEBAR -->
+
+    <aside class="sidebar">
+
+        <div class="logo">
+
+            <i class="fa-solid fa-scissors"></i>
+
+            <div>
+
+                <h2>Levelz Cuts</h2>
+
+                <small>Reception</small>
+
+            </div>
+
+        </div>
+
+        <nav>
+
+            <a class="active">
+
+                <i class="fa-solid fa-calendar-day"></i>
+
+                <span>Today's Bookings</span>
+
+            </a>
+
+            <a href="/staff/bookings/new/">
+
+                <i class="fa-solid fa-calendar-plus"></i>
+
+                <span>New Booking</span>
+
+            </a>
+
+        </nav>
+
+        <div class="sidebar-footer">
+
+            <button id="logoutBtn"> Logout </button>
+
+        </div>
+
+    </aside>
+
+
+
+    <!-- MAIN -->
+
+    <main class="main-content">
+
+        <div class="topbar">
+
+            <div>
+
+                <h1> Reception Dashboard </h1>
+
+                <p> Welcome, <span id="userName"></span> </p>
+
+            </div>
+
+            <div class="topbar-right">
+
+                <div id="clock" class="clock"> </div>
+
+                <div id="avatar" class="avatar"> </div>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- STATS -->
+
+        <section class="stats">
+
+            <div class="stat-card">
+
+                <div>
+
+                    <small> Today's Bookings </small> <h2 id="todayBookings"> 0 </h2>
+
+                </div>
+
+                <i class="fa-solid fa-calendar-check"></i>
+
+            </div>
+
+            <div class="stat-card">
+
+                <div>
+
+                    <small> Arrived </small>
+
+                    <h2 id="arrivedBookings"> 0 </h2>
+
+                </div>
+
+                <i class="fa-solid fa-user-check"></i>
+
+            </div>
+
+            <div class="stat-card">
+
+                <div>
+
+                    <small> Waiting </small>
+
+                    <h2 id="waitingBookings"> 0 </h2>
+
+                </div>
+
+                <i class="fa-solid fa-clock"></i>
+
+            </div>
+
+            <div class="stat-card">
+
+                <div>
+
+                    <small> Completed </small>
+
+                    <h2 id="completedBookings"> 0 </h2>
+
+                </div>
+
+                <i class="fa-solid fa-circle-check"></i>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- QUICK ACTIONS -->
+
+        <section class="quick-actions">
+
+            <button class="gold-btn" onclick="location.href='/staff/bookings/new/'">
+
+                <i class="fa-solid fa-plus"></i> Walk-in Booking
+
+            </button>
+
+        </section>
+
+
+
+        <!-- BOOKINGS -->
+
+        <div class="card">
+
+            <div class="card-header">
+
+                <h2> Today's Bookings </h2>
+
+            </div>
+
+            <table>
+
+                <thead>
+
+                <tr>
+
+                    <th>Time</th>
+
+                    <th>Customer</th>
+
+                    <th>Service</th>
+
+                    <th>Staff</th>
+
+                    <th>Status</th>
+
+                    <th></th>
+
+                </tr>
+
+                </thead>
+
+                <tbody id="bookingTable">
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </main>
+
+</div>
+
+<script src="{% static 'js/api.js' %}"></script>
+<script src="{% static 'js/reception-dashboard.js' %}"></script>
+
+</body>
+
+</html>

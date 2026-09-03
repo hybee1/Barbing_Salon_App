@@ -1,0 +1,135 @@
+
+
+# =========================================================
+# Python Python-generated files
+# =========================================================
+
+__pycache__/
+*.py[cod]
+*.py[oc]
+*$py.class
+
+# Distribution / packaging
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+wheels/
+
+
+# Python test / coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+
+# Type checking / linting caches
+.mypy_cache/
+.pyre/
+.ruff_cache/
+
+
+# =========================================================
+# Virtual environments
+# =========================================================
+
+.venv/
+venv/
+env/
+ENV/
+
+# =========================================================
+# IDE / Editors
+# =========================================================
+
+.vscode/
+.idea/
+
+# VS Code settings (uncomment if you want to track
+# selected workspace settings)
+# .vscode/settings.json
+
+# Vim
+*.swp
+*.swo
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+
+# =========================================================
+# Logs
+# =========================================================
+
+*.log
+logs/
+
+
+# =========================================================
+# Local development
+# =========================================================
+
+.python-version
+
+
+# =========================================================
+# Environment-specific local files
+# =========================================================
+
+*.local
+
+
+# =========================================================
+# Environment / Secrets
+# =========================================================
+
+.env
+.env-dev
+.env-prod
+.env.local
+.env.*.local
+
+# =========================================================
+# Django
+# =========================================================
+
+# SQLite database
+db.sqlite3
+db.sqlite3-journal
+
+# Collected static files
+staticfiles/
+
+# User-uploaded media
+media/
+
+
+# =========================================================
+# Django  settings for dev
+
+
+settings_dev.py
+settings_prod.py
+settings_original.py
+
+# ========================================================================
+# Files/folders with "old", "working", "copy", or "original" in the name
+# ========================================================================
+*old*
+*working*
+*copy*
+*original*
+
+# =====================================================
+# Optional: ignore common backup-style extensions
+# =====================================================
+*.bak
+*.backup

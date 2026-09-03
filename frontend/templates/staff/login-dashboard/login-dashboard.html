@@ -1,0 +1,85 @@
+
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Staff Login | Levelz Cuts</title>
+
+    <link rel="stylesheet" href="{% static 'css/staff-login.css' %}">
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+</head>
+
+
+<body>
+
+
+<div class="login-wrapper">
+
+
+    <div class="login-card">
+
+
+        <div class="brand">
+
+            <i class="fa-solid fa-scissors"></i>
+
+            <h1> Levelz Cuts </h1>
+
+            <p> Staff Portal </p>
+
+        </div>
+
+
+        <form id="staffLoginForm">
+
+
+            <div class="input-group">
+
+                <i class="fa-solid fa-phone"></i>
+
+                <input type="text" id="username_or_phone_number"
+                       placeholder="Username or Phone number" required >
+
+            </div>
+
+
+            <div class="input-group">
+
+                <i class="fa-solid fa-lock"></i>
+
+                <input
+                    type="password" id="password" placeholder="Password" required >
+
+            </div>
+
+
+            <button type="submit" class="login-btn"> Login </button>
+
+
+            <p id="loginMessage"></p>
+
+
+        </form>
+
+
+    </div>
+
+
+</div>
+
+<script src="{% static 'js/api.js' %}"></script>
+<script src="{% static 'js/staff-login.js' %}"></script>
+
+
+</body>
+</html>
