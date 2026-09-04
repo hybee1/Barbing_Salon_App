@@ -10,13 +10,13 @@ from rest_framework.views import APIView
 from backend.accounts.models import User, StaffProfile
 from backend.accounts.serializers import StaffProfileSerializer, StaffProfileUserDetailsSerializer, \
     StaffsWorkingTodaySerializer, StaffProfileSerializer_2,  StaffWriteSerializer, \
-    BarberSelfUpdateSerializer
+    AllStaff_Self_UpdateSerializer
 from backend.accounts.services import delete_staff
 from backend.breakperiods.models import BreakTimeAndOffDays
 
 from rest_framework_simplejwt.views import TokenRefreshView
 
-from backend.custom_permissions.permissions import Is_Authenticated_Staff_User
+from backend.custom_permissions.permissions import Is_Authenticated_Staff_User, Is_SalonManager
 from backend.pagination.pagination import StandardResultsSetPagination
 
 
@@ -76,7 +76,7 @@ class Barbers_Web_View(APIView):
 
 
 class Barbers_Api_View(APIView):
-    # this class is method is for update of staffs not only barber
+
     permission_classes = [ Is_Authenticated_Staff_User, ]
 
     parser_classes = [ MultiPartParser, FormParser, JSONParser, ]
@@ -106,6 +106,8 @@ class Barbers_Api_View(APIView):
                     },
                     status=status.HTTP_404_NOT_FOUND,
                 )
+            if barber.pk!=pk:
+                return Response( { "detail": "Access denied." }, status=status.HTTP_403_FORBIDDEN, )
 
             serializer = StaffProfileSerializer( barber )
 
@@ -163,7 +165,7 @@ class Barbers_Api_View(APIView):
         # Validate/update User
         # -----------------------------------------
 
-        serializer = BarberSelfUpdateSerializer( user, data=request.data, partial=True, )
+        serializer = AllStaff_Self_UpdateSerializer(user, data=request.data, partial=True, )
 
         serializer.is_valid( raise_exception=True )
 
@@ -211,7 +213,7 @@ class Barbers_Api_View(APIView):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
-        serializer = BarberSelfUpdateSerializer( user, data=request.data, partial=False, )
+        serializer = AllStaff_Self_UpdateSerializer(user, data=request.data, partial=False, )
 
         serializer.is_valid( raise_exception=True )
 
@@ -225,7 +227,8 @@ class Barbers_Api_View(APIView):
 
 
 class AllStaffs_Api_View(APIView):
-    permission_classes = [Is_Authenticated_Staff_User]
+    #  this view give salon-manager group access to administrate over staffs
+    permission_classes = [Is_SalonManager]
 
     def get(self, request, pk=None):
 
@@ -396,6 +399,8 @@ class AllStaffs_Api_View(APIView):
 
 class StaffUserDetails_Api_View(APIView):
 
+    # this method should only allow the authenticated user get it own details
+
     permission_classes = [Is_Authenticated_Staff_User]  # user must be authenticated
 
 
@@ -516,33 +521,10 @@ class AllStaff_Self_Account_Update_Api_View(APIView):
 
     parser_classes = [ MultiPartParser, FormParser, JSONParser, ]
 
-    # def get(self, request):
-    #
-    #     user = request.user
-    #
-    #     if (
-    #         user.role != User.Role.STAFF
-    #         or not hasattr(user, "staffprofile")
-    #         or user.staffprofile.department
-    #         != StaffProfile.Department.BARBER
-    #     ):
-    #         return Response(
-    #             { "detail": "Only authenticated barbers can access this endpoint." },
-    #             status=status.HTTP_403_FORBIDDEN,
-    #         )
-    #
-    #     staff = ( StaffProfile.objects .select_related("user") .get(user=user) )
-    #
-    #     serializer = StaffProfileSerializer( staff )
-    #
-    #     return Response( serializer.data, status=status.HTTP_200_OK, )
 
     def patch(self, request):
 
         user = request.user
-
-        # if ( user.role != User.Role.STAFF or not hasattr(user, "staffprofile") or
-        #         user.staffprofile.department != StaffProfile.Department.BARBER ):
 
         if (user.role != User.Role.STAFF or not hasattr(user, "staffprofile") ):
             return Response(
@@ -550,7 +532,7 @@ class AllStaff_Self_Account_Update_Api_View(APIView):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
-        serializer = BarberSelfUpdateSerializer( user, data=request.data, partial=True, )
+        serializer = AllStaff_Self_UpdateSerializer(user, data=request.data, partial=True, )
 
         serializer.is_valid(  raise_exception=True )
 
@@ -577,7 +559,7 @@ class AllStaff_Self_Account_Update_Api_View(APIView):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
-        serializer = BarberSelfUpdateSerializer( user, data=request.data, partial=False, )
+        serializer = AllStaff_Self_UpdateSerializer(user, data=request.data, partial=False, )
 
         serializer.is_valid( raise_exception=True )
 

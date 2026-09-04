@@ -6,7 +6,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from backend.custom_permissions.permissions import Is_Authenticated_Staff_User
+from backend.custom_permissions.permissions import Is_Authenticated_Staff_User, Is_SalonManager
 from backend.pagination.pagination import StandardResultsSetPagination
 from backend.services.models import Service, Hairstyle, Color
 
@@ -33,7 +33,7 @@ class ServicesView(APIView):
             permission_classes = [AllowAny]
         else:
             permission_classes = [
-                Is_Authenticated_Staff_User,
+                Is_SalonManager,
                 # OtherPermission,
                 # AnotherPermission,
             ]
@@ -188,7 +188,7 @@ class HairstylesView(APIView):
             permission_classes = [AllowAny]
         else:
             permission_classes = [
-                Is_Authenticated_Staff_User,
+                Is_SalonManager,
                 # OtherPermission,
                 # AnotherPermission,
             ]
@@ -363,7 +363,7 @@ class ColorsView(APIView):
             permission_classes = [AllowAny]
         else:
             permission_classes = [
-                Is_Authenticated_Staff_User,
+                Is_SalonManager,
                 # OtherPermission,
                 # AnotherPermission,
             ]
@@ -535,7 +535,7 @@ class ColorsView(APIView):
 
 class ServicesWithHairstylesButOnlyServiceView(APIView):
 
-    permission_classes = [Is_Authenticated_Staff_User]
+    permission_classes = [Is_SalonManager]
 
     def get(self, request ):
         services = Service.objects.filter(hairstyles__isnull=False).distinct()
@@ -554,7 +554,7 @@ class ServiceAndItsHairstylesView(APIView):
             permission_classes = [AllowAny]
         else:
             permission_classes = [
-                Is_Authenticated_Staff_User,
+                Is_SalonManager,
                 # OtherPermission,
                 # AnotherPermission,
             ]
@@ -579,7 +579,7 @@ class ServiceAndItsHairstylesView(APIView):
 
 class ServicesWithColorsButOnlyServiceView(APIView):
 
-    permission_classes = [Is_Authenticated_Staff_User]
+    permission_classes = [Is_SalonManager]
 
     def get(self, request ):
         services = Service.objects.filter(colors__isnull=False).distinct()
@@ -597,7 +597,7 @@ class ServiceAndItsColorsView(APIView):
             permission_classes = [AllowAny]
         else:
             permission_classes = [
-                Is_Authenticated_Staff_User,
+                Is_SalonManager,
                 # OtherPermission,
                 # AnotherPermission,
             ]

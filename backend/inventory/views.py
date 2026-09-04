@@ -29,7 +29,7 @@ from .serializers import (
     InventoryTransactionSerializer,
     EquipmentProfileSerializer,
 )
-from ..custom_permissions.permissions import Is_Authenticated_Staff_User
+from ..custom_permissions.permissions import Is_Authenticated_Staff_User, Is_SalonManager
 
 
 # ----------------------------------------------------------
@@ -46,7 +46,7 @@ from ..custom_permissions.permissions import Is_Authenticated_Staff_User
 
 class InventoryItemListCreateAPIView(APIView):
 
-    permission_classes = [Is_Authenticated_Staff_User]
+    permission_classes = [Is_SalonManager]
 
     def get(self, request):
 
@@ -88,7 +88,7 @@ class InventoryItemListCreateAPIView(APIView):
 
 class InventoryItemDetailAPIView(APIView):
 
-    permission_classes = [Is_Authenticated_Staff_User]
+    permission_classes = [Is_SalonManager]
 
     def get_object(self, pk):
 
@@ -203,7 +203,7 @@ class InventoryItemDetailAPIView(APIView):
 
 class InventoryItemSummaryAPIView(APIView):
 
-    permission_classes = [Is_Authenticated_Staff_User]
+    permission_classes = [Is_SalonManager]
 
     def get(self, request):
 
@@ -255,7 +255,7 @@ class InventoryItemSummaryAPIView(APIView):
 
 class InventoryStockInAPIView(APIView):
 
-    permission_classes = [Is_Authenticated_Staff_User]
+    permission_classes = [Is_SalonManager]
 
     @transaction.atomic
     def post(self, request, pk):
@@ -436,7 +436,7 @@ class InventoryStockInAPIView(APIView):
 
 class InventoryStockOutAPIView(APIView):
 
-    permission_classes = [Is_Authenticated_Staff_User]
+    permission_classes = [Is_SalonManager]
 
     @transaction.atomic
     def post(self, request, pk):

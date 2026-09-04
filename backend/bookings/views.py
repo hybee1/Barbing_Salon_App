@@ -13,7 +13,8 @@ from backend.bookings.serializers import (BookingSerializer, BarberAvailableTime
                                           BookingReadSerializer, BarberBookingStatsSerializer,
                                           BarberBookingsTodaySerializer)
 from backend.breakperiods.models import BreakTimeAndOffDays
-from backend.custom_permissions.permissions import Is_Authenticated_Staff_User
+from backend.custom_permissions.permissions import Is_Authenticated_Staff_User, Is_SalonManager, Is_Barber, Is_Stylist, \
+    Is_Barber_Stylist
 from backend.exceptions.exceptions import BookingDateException
 from backend.services.models import Service, Hairstyle, Color
 from backend.utils.services import BarberScheduler
@@ -209,7 +210,7 @@ class CreateBookingView(APIView):
 
 class TodayBooking_Api_View(APIView):
 
-    permission_classes = [Is_Authenticated_Staff_User]
+    permission_classes = [Is_SalonManager]
 
     def get(self, request):
 
@@ -225,7 +226,7 @@ class TodayBooking_Api_View(APIView):
 
 class BookingForLast7Days_Api_View(APIView):
 
-    permission_classes = [Is_Authenticated_Staff_User]
+    permission_classes = [Is_SalonManager, Is_Barber, Is_Stylist, Is_Barber_Stylist]
 
     def get(self, request):
 
@@ -243,7 +244,7 @@ class BookingForLast7Days_Api_View(APIView):
 
 class BarberBookingAvailability_Api_View(APIView):
 
-    # permission_classes = [IsAuthenticated]
+    #  for customers to see available barbers
 
     def get(self, request):
 
@@ -360,7 +361,7 @@ class BarberBookingStatsView(APIView):
 
 class BarberBookingsToday(APIView):
 
-    permission_classes = [Is_Authenticated_Staff_User]
+    permission_classes = [Is_SalonManager, Is_Barber, Is_Stylist, Is_Barber_Stylist]
 
     def get(self, request):
 
@@ -387,7 +388,7 @@ class BarberBookingsToday(APIView):
 
 class BarberUpcomingBookingsToday(APIView):
 
-    permission_classes = [Is_Authenticated_Staff_User]
+    permission_classes = [Is_SalonManager, Is_Barber, Is_Stylist, Is_Barber_Stylist]
 
     def get(self, request):
 

@@ -1,6 +1,6 @@
 
 from rest_framework.permissions import BasePermission
-from backend.accounts.models import User
+from backend.accounts.models import User, StaffProfile
 
 
 class Is_Authenticated_Staff_User(BasePermission):
@@ -10,16 +10,31 @@ class Is_Authenticated_Staff_User(BasePermission):
         return (
             request.user.is_authenticated and request.user.role == User.Role.STAFF)
 
-class IsAdmin(BasePermission):
+
+class Is_SalonManager(BasePermission):
     def has_permission(self, request, view):
-        return request.user.is_authenticated and request.user.role == "ADMIN"
+        return Is_Authenticated_Staff_User and request.user.groups.filter(name__iexact="manager").exists()
 
 
-class IsReceptionist(BasePermission):
+class Is_Receptionist(BasePermission):
     def has_permission(self, request, view):
-        return request.user.is_authenticated and request.user.role in ["RECEPTIONIST", "ADMIN"]
+        return (Is_Authenticated_Staff_User and
+                request.user.Staffprofile.department == StaffProfile.Department.RECEPTION.value)
 
 
-class IsBarber(BasePermission):
+class Is_Barber(BasePermission):
     def has_permission(self, request, view):
-        return request.user.is_authenticated and request.user.role == "BARBER"
+        return (Is_Authenticated_Staff_User and
+                    request.user.Staffprofile == StaffProfile.Department.BARBER.value)
+
+
+class Is_Barber_Stylist(BasePermission):
+    def has_permission(self, request, view):
+        return (Is_Authenticated_Staff_User and
+                    request.user.Staffprofile == StaffProfile.Department.BARBER_STYLIST.value)
+
+
+class Is_Stylist(BasePermission):
+    def has_permission(self, request, view):
+        return (Is_Authenticated_Staff_User and
+                    request.user.Staffprofile == StaffProfile.Department.STYLIST.value)

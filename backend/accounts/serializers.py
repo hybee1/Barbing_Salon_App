@@ -445,12 +445,12 @@ class StaffWriteSerializer(serializers.Serializer):
     def to_representation(self, instance):
         return StaffProfileSerializer_2(instance).data
 
-
-class BarberSelfUpdateSerializer(serializers.ModelSerializer):
+# former class BarberSelfUpdateSerializer(serializers.ModelSerializer):
+class AllStaff_Self_UpdateSerializer(serializers.ModelSerializer):
     """
     Serializer for the currently authenticated barber.
 
-    A barber can update their own:
+    A staff can update their own:
         - first_name
         - last_name
         - username

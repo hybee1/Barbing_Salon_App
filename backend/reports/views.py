@@ -19,7 +19,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 
 from backend.bookings.models import Booking
-from backend.custom_permissions.permissions import Is_Authenticated_Staff_User
+from backend.custom_permissions.permissions import Is_Authenticated_Staff_User, Is_SalonManager
 from backend.inventory.models import InventoryItem
 
 
@@ -439,7 +439,7 @@ def build_report_trend( bookings, start_date,  end_date, grouping ):
 
 class ManagerReportView(APIView):
 
-    permission_classes = [ Is_Authenticated_Staff_User  ]
+    permission_classes = [ Is_SalonManager  ]
 
     def get( self, request, *args, **kwargs ):
 
@@ -493,7 +493,7 @@ class ManagerReportView(APIView):
 
 class ManagerDateRangeReportView(APIView):
 
-    permission_classes = [ Is_Authenticated_Staff_User ]
+    permission_classes = [ Is_SalonManager ]
 
 
     def get( self, request, *args, **kwargs ):

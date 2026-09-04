@@ -12,11 +12,7 @@ from .views import (
 
 urlpatterns = [
 
-    path(
-        "",
-        ManagerReportView.as_view(),
-        name="manager-report"
-    ),
+    path( "", ManagerReportView.as_view(), name="manager-report" ),
 
     path(
         "range/",

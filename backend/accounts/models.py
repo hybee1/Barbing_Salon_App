@@ -9,7 +9,7 @@ from phonenumbers import NumberParseException
 
 
 
-from core_config import settings
+from core_config import settings_base
 
 
 def get_photo_upload_path(obj, filename):
@@ -28,13 +28,9 @@ def get_photo_upload_path(obj, filename):
 class User(AbstractUser):
 
     class Role(models.TextChoices):
-        # ADMIN = "admin", "Admin"
-        # BARBER = "barber", "Barber"
         CUSTOMER = "customer", "Customer"
-        # RECEPTIONIST = "receptionist", "Receptionist"
         STAFF = "staff", "Staff"
         STAFF_ADMIN = "staff_admin", "Staff Admin"
-
 
         @classmethod
         def is_obj_of_role(cls, name_role: str):
@@ -100,7 +96,7 @@ class User(AbstractUser):
 
 class CustomerProfile(models.Model):
 
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+    user = models.OneToOneField(settings_base.AUTH_USER_MODEL, on_delete=models.CASCADE,
                                 related_name="customer")
 
     def __str__(self):
@@ -160,7 +156,7 @@ class StaffProfile(models.Model):
             raise ValidationError(f"StaffStatus '{name_role}' not found.")
 
 
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+    user = models.OneToOneField(settings_base.AUTH_USER_MODEL, on_delete=models.CASCADE,
                                 related_name="staffprofile")
 
     department = models.CharField(max_length=35, choices=Department.choices,
