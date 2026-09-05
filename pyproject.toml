@@ -14,5 +14,13 @@ dependencies = [
     "pillow>=12.3.0",
     "psycopg>=3.3.5",
     "pycountry>=26.2.16",
+    "pytest>=9.1.1",
     "python-dotenv>=1.2.3",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "pytest-django>=4.9",
+    "pytest-cov>=5.0",
 ]

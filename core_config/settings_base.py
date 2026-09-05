@@ -68,19 +68,20 @@ INSTALLED_APPS = [
     'backend.salon_settings',
 
 ]
+# EACH PROFILE WILL TAKE CARE OF THE MIDDLEWARE VALUE
 
-MIDDLEWARE = [
-    "corsheaders.middleware.CorsMiddleware",
-
-    'django.middleware.security.SecurityMiddleware',
-
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
-]
+# MIDDLEWARE = [
+#     "corsheaders.middleware.CorsMiddleware",
+#
+#     'django.middleware.security.SecurityMiddleware',
+#
+#     'django.contrib.sessions.middleware.SessionMiddleware',
+#     'django.middleware.common.CommonMiddleware',
+#     'django.middleware.csrf.CsrfViewMiddleware',
+#     'django.contrib.auth.middleware.AuthenticationMiddleware',
+#     'django.contrib.messages.middleware.MessageMiddleware',
+#     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+# ]
 
 ROOT_URLCONF = 'core_config.urls'
 
@@ -157,7 +158,22 @@ REST_FRAMEWORK = {
         "backend.session_and_jwt_auth.session_and_jwt_auth.CookieJWTAuthentication",
     ),
 
+    "DEFAULT_PERMISSION_CLASSES": (
+        "rest_framework.permissions.IsAuthenticated",
+    ),
+
     "EXCEPTION_HANDLER": "backend.exceptions.custom_exception_handler.custom_exception_handler",
+
+    "DEFAULT_THROTTLE_CLASSES": (
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle",
+    ),
+
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": "100/hour",
+        "user": "1000/hour",
+    },
+
 }
 
 AUTH_USER_MODEL = "accounts.User"

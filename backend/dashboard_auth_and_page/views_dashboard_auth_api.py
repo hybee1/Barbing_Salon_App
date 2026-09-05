@@ -1,3 +1,4 @@
+import os
 
 from django.contrib.auth import authenticate, login, logout
 from django.db.models import Q
@@ -92,7 +93,8 @@ def staff_dashboard_login_api(request):
     login(request, user)
 
     # Absolute session lifetime: 2 hours
-    SESSION_LIFETIME = 60 * 60 * 2
+    # SESSION_LIFETIME = 60 * 60 * 2
+    SESSION_LIFETIME = os.getenv("SESSION_LIFETIME")
 
     request.session.set_expiry(SESSION_LIFETIME)
     request.session.save()
@@ -122,7 +124,8 @@ def staff_dashboard_login_api(request):
 
     # Normal access token lifetime is 15 minutes,
     # but it must not exceed the session lifetime.
-    access_lifetime = min( 60 * 15, remaining_seconds )
+    # access_lifetime = min( 60 * 15, remaining_seconds )
+    access_lifetime = min(60 * int(os.getenv("ACCESS_TOKEN_LIFETIME")), remaining_seconds)
 
     # Override the access token expiry
     access_token["exp"] = now_timestamp + access_lifetime

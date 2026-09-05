@@ -41,7 +41,7 @@ urlpatterns = [
     path("staff/logout/", logout_api, name="logout"),
 
     # AUTH API ENDPOINT
-    path("auth/staff-login/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
+    # path("auth/staff-login/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("auth/token/refresh/", CookieTokenRefreshView.as_view(), name="token_refresh"),
 
 

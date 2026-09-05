@@ -143,17 +143,7 @@ STATICFILES_DIRS = [
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
-# Django session to expire after 1 hour
-# SESSION_COOKIE_AGE = 60 * 60 * 1
 
-REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": (
-        # "rest_framework_simplejwt.authentication.JWTAuthentication",
-        "backend.session_and_jwt_auth.session_and_jwt_auth.CookieJWTAuthentication",
-    ),
-
-    "EXCEPTION_HANDLER": "backend.exceptions.custom_exception_handler.custom_exception_handler",
-}
 
 AUTH_USER_MODEL = "accounts.User"
 
