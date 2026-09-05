@@ -27,9 +27,8 @@ if not SECRET_KEY:
     raise ValueError("SECRET_KEY_DEV not found")
 
 
-ALLOWED_HOSTS = ["*"]
-CORS_ALLOWED_ORIGINS = [ "http://127.0.0.1:8000", "http://localhost:8000",
-                         "https://untyped-hippopotamic-rosa.ngrok-free.dev"]
+ALLOWED_HOSTS = []
+CORS_ALLOWED_ORIGINS = [ ]
 # CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
@@ -121,7 +120,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'Africa/Lagos'
+TIME_ZONE = ''
 
 USE_I18N = True
 
@@ -162,8 +161,8 @@ AUTH_USER_MODEL = "accounts.User"
 
 SIMPLE_JWT = {
     # Token lifetimes
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=int(os.environ["SIMPLE_JWT_ACCESS_TOKEN_LIFETIME"])),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=int(os.environ["SIMPLE_JWT_REFRESH_TOKEN_LIFETIME"])),
+    "ACCESS_TOKEN_LIFETIME": '',
+    "REFRESH_TOKEN_LIFETIME": '',
 
     # Refresh behavior
     "ROTATE_REFRESH_TOKENS": True,
