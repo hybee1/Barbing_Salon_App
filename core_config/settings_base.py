@@ -74,7 +74,7 @@ INSTALLED_APPS = [
 #     "corsheaders.middleware.CorsMiddleware",
 #
 #     'django.middleware.security.SecurityMiddleware',
-#
+#     'logging.ip._logging.RequestSecurityLoggingMiddleware',
 #     'django.contrib.sessions.middleware.SessionMiddleware',
 #     'django.middleware.common.CommonMiddleware',
 #     'django.middleware.csrf.CsrfViewMiddleware',

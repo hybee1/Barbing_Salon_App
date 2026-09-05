@@ -1,5 +1,6 @@
 from logging import raiseExceptions
 
+from django.db import transaction
 from django.shortcuts import get_object_or_404
 
 from backend.bookings.models import Booking
@@ -376,10 +377,10 @@ class BarberScheduler:
         if barber.department.lower() != "barber":
             raise UserException('Not a Barber')
 
-
-        overlap = (Booking.objects.filter( barber=barber, booking_date=booking_date,
-                                          start_time__lt=new_end, end_time__gt=new_start
-                                            ).exists())
+        with transaction.atomic():
+            overlap = (Booking.objects.filter( barber=barber, booking_date=booking_date,
+                                            start_time__lt=new_end, end_time__gt=new_start
+                                                ).exists())
 
 
         if overlap:

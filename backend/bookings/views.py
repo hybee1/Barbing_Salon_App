@@ -79,7 +79,7 @@ class CreateBookingView(APIView):
     def post(self, request):
 
 
-        service_id = (request.data.get("service") or {}).get("id", None)
+        service_id: dict | None  = (request.data.get("service") or {}).get("id", None)
 
         service = None
         service_price = 0
@@ -91,7 +91,7 @@ class CreateBookingView(APIView):
             service_price = service.price
             service_duration_minutes = service.duration_minutes
 
-        hairstyle_id = (request.data.get("hairstyle") or {}).get("id", None)
+        hairstyle_id: dict | None = (request.data.get("hairstyle") or {}).get("id", None)
 
         hairstyle = None
         hairstyle_price = 0
@@ -105,7 +105,8 @@ class CreateBookingView(APIView):
 
         barber_id = (request.data.get("barber") or {}).get("id", None)
 
-        color_id = (request.data.get("color") or {}).get("id", None)
+        color_id: dict | None = (request.data.get("color") or {}).get("id", None)
+
         color = None
         color_price = 0
         color_duration_minutes = 0

@@ -5,14 +5,13 @@ from django.db.models import Q
 from django.http import JsonResponse
 from django.utils import timezone
 from rest_framework import status
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, throttle_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.conf import settings
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from backend.accounts.models import User
-
-
+from backend.rate_limit_or_throttling.login_rate_throttle import LoginRateThrottle
 
 
 @api_view(["POST"])
@@ -53,6 +52,8 @@ def logout_api(request):
 
 
 @api_view(["POST"])
+@permission_classes([AllowAny])
+@throttle_classes([LoginRateThrottle])
 def staff_dashboard_login_api(request):
 
     username_or_phone = request.data.get("username")

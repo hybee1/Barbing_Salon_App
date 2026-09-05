@@ -1,3 +1,6 @@
+from pathlib import Path
+from uuid import uuid4
+
 import phonenumbers
 
 from django.utils import timezone
@@ -13,16 +16,19 @@ from core_config import settings_base
 
 
 def get_photo_upload_path(obj, filename):
+    extension = Path(filename).suffix.lower()
+    filename = f"{uuid4().hex}{extension}"
 
-    if obj.role in ( User.Role.STAFF, ):
+    if obj.role == User.Role.STAFF:
+        folder = "staff"
 
-        return f"all_staffs_images/{filename}"
+    elif obj.role == User.Role.STAFF_ADMIN:
+        folder = "staff_admins"
 
-    elif obj.role in ( User.Role.STAFF_ADMIN,  ):
+    else:
+        folder = "customers"
 
-        return f"all_staff_admins_images/{filename}"
-
-    return f"all_customers_images/{filename}"
+    return f"{folder}/{filename}"
 
 
 class User(AbstractUser):
