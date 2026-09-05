@@ -15,6 +15,6 @@ urlpatterns = [
     path("barber/today/", BarberBookingsToday.as_view(), name="barber-booking-stats"),
 
     path("barber/upcoming/today/", BarberUpcomingBookingsToday.as_view(),
-         name="barber-upcoming-booking-today"),
+                        name="barber-upcoming-booking-today"),
 
 ]

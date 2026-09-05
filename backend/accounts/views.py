@@ -551,8 +551,6 @@ class AllStaff_Self_Account_Update_Api_View(APIView):
         if (
             user.role != User.Role.STAFF
             or not hasattr(user, "staffprofile")
-            or user.staffprofile.department
-            != StaffProfile.Department.BARBER
         ):
             return Response(
                 { "detail": "Only authenticated barbers can update this account." },

@@ -14,7 +14,7 @@ from backend.bookings.serializers import (BookingSerializer, BarberAvailableTime
                                           BarberBookingsTodaySerializer)
 from backend.breakperiods.models import BreakTimeAndOffDays
 from backend.custom_permissions.permissions import Is_Authenticated_Staff_User, Is_SalonManager, Is_Barber, Is_Stylist, \
-    Is_Barber_Stylist
+    Is_Barber_Stylist, Is_Receptionist
 from backend.exceptions.exceptions import BookingDateException
 from backend.services.models import Service, Hairstyle, Color
 from backend.utils.services import BarberScheduler
@@ -22,7 +22,7 @@ from backend.utils.services import BarberScheduler
 
 class BookingView(APIView):
 
-    permission_classes = [Is_Authenticated_Staff_User]
+    permission_classes = [Is_SalonManager, Is_Barber, Is_Receptionist, Is_Stylist, Is_Barber_Stylist]
 
     def get(self, request):
 
@@ -361,7 +361,7 @@ class BarberBookingStatsView(APIView):
 
 class BarberBookingsToday(APIView):
 
-    permission_classes = [Is_SalonManager, Is_Barber, Is_Stylist, Is_Barber_Stylist]
+    permission_classes = [Is_SalonManager, Is_Barber, Is_Receptionist, Is_Stylist, Is_Barber_Stylist]
 
     def get(self, request):
 
