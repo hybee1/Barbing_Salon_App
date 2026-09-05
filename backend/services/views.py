@@ -48,16 +48,12 @@ class ServicesView(APIView):
             return Response(serializer.data)
 
         service_name = request.query_params.get("service_name") or None
-        print("service_name", service_name)
 
         service_price = request.query_params.get("service_price") or None
-        print("service_price", service_price)
 
         service_duration_minutes = request.query_params.get("service_duration_minutes") or None
-        print("service_duration_minutes", service_duration_minutes)
 
         service_is_active = request.query_params.get("service_is_active") or None
-        print("service_is_active", service_is_active)
 
         services = Service.objects.all()
 
@@ -67,7 +63,6 @@ class ServicesView(APIView):
 
         # service_price
         if service_price is not None:
-            print("service_price instance", type(service_price))
 
             if (not isinstance(service_price, str) and not isinstance(service_price, int) and
                     not isinstance(service_price, float) and
@@ -84,7 +79,6 @@ class ServicesView(APIView):
 
         # service_duration_minutes
         if service_duration_minutes is not None:
-            print("service_duration_minutes instance", type(service_duration_minutes))
 
             if (not isinstance(service_duration_minutes, str) and
                              not isinstance(service_duration_minutes, int)):
@@ -101,8 +95,6 @@ class ServicesView(APIView):
         # service_is_active
         if service_is_active is not None:
 
-            print("service_is_active instance", type(service_is_active))
-
             if not isinstance(service_is_active, str) and not isinstance(service_is_active, bool):
                 raise serializers.ValidationError()
 
@@ -118,7 +110,6 @@ class ServicesView(APIView):
 
             services = services.filter(is_active=is_active)
 
-            print("is_active = ", is_active)
             services = services.filter( is_active=is_active)
 
         paginator = StandardResultsSetPagination()
@@ -172,8 +163,6 @@ class ServicesView(APIView):
 
         deleted_count, _ = Service.objects.filter( id__in=ids ).delete()
 
-        print("Deleted", deleted_count, "services")
-
         return Response( status=status.HTTP_204_NO_CONTENT )
 
 
@@ -203,19 +192,14 @@ class HairstylesView(APIView):
             return Response(serializer.data)
 
         hairstyle_name = request.query_params.get("hairstyle_name") or None
-        print("hairstyle_name", hairstyle_name)
 
         service_id = request.query_params.get("service_id") or None
-        print("service_id", service_id)
 
         hairstyle_price = request.query_params.get("hairstyle_price") or None
-        print("hairstyle_price", hairstyle_price)
 
         hairstyle_duration_minutes = request.query_params.get("hairstyle_duration_minutes") or None
-        print("hairstyle_duration_minutes", hairstyle_duration_minutes)
 
         hairstyle_is_active = request.query_params.get("hairstyle_is_active") or None
-        print("service_is_active", hairstyle_is_active)
 
         hairstyles = Hairstyle.objects.all()
 
@@ -225,7 +209,6 @@ class HairstylesView(APIView):
 
         # service_name
         if service_id is not None:
-            print("service_id instance", type(service_id))
 
             if (not isinstance(service_id, str) and not isinstance(service_id, int)):
                 raise serializers.ValidationError()
@@ -240,7 +223,6 @@ class HairstylesView(APIView):
 
         # hairstyle_price
         if hairstyle_price is not None:
-            print("service_price instance", type(hairstyle_price))
 
             if (not isinstance(hairstyle_price, str) and not isinstance(hairstyle_price, int) and
                     not isinstance(hairstyle_price, float) and
@@ -257,7 +239,6 @@ class HairstylesView(APIView):
 
         # hairstyle_duration_minutes
         if hairstyle_duration_minutes is not None:
-            print("service_duration_minutes instance", type(hairstyle_duration_minutes))
 
             if (not isinstance(hairstyle_duration_minutes, str) and
                     not isinstance(hairstyle_duration_minutes, int)):
@@ -274,8 +255,6 @@ class HairstylesView(APIView):
         # hairstyle_is_active
         if hairstyle_is_active is not None:
 
-            print("service_is_active instance", type(hairstyle_is_active))
-
             if not isinstance(hairstyle_is_active, str) and not isinstance(hairstyle_is_active, bool):
                 raise serializers.ValidationError()
 
@@ -289,15 +268,12 @@ class HairstylesView(APIView):
             if isinstance(hairstyle_is_active, bool):
                 is_active = hairstyle_is_active
 
-            print("is_active = ", is_active)
             hairstyles = hairstyles.filter(is_active=is_active)
 
         paginator = StandardResultsSetPagination()
         page = paginator.paginate_queryset(hairstyles, request)
 
         serializer = HairstyleReadSerializer(page, many=True)
-
-        print("HairstyleView", serializer.data)
 
         return paginator.get_paginated_response(serializer.data)
 
@@ -347,8 +323,6 @@ class HairstylesView(APIView):
 
         deleted_count, _ = Hairstyle.objects.filter( id__in=ids  ).delete()
 
-        print("Deleted", deleted_count, "hairstyles")
-
         return Response( status=status.HTTP_204_NO_CONTENT  )
 
 
@@ -379,19 +353,14 @@ class ColorsView(APIView):
 
 
         color_name = request.query_params.get("color_name") or None
-        print("color_name", color_name)
 
         service_id = request.query_params.get("service_id") or None
-        print("service_id", service_id)
 
         color_price = request.query_params.get("color_price") or None
-        print("color_price", color_price)
 
         color_duration_minutes = request.query_params.get("color_duration_minutes") or None
-        print("color_duration_minutes", color_duration_minutes)
 
         color_is_active = request.query_params.get("color_is_active") or None
-        print("color_is_active", color_is_active)
 
         colors = Color.objects.all()
 
@@ -401,7 +370,6 @@ class ColorsView(APIView):
 
         # service_id
         if service_id is not None:
-            print("service_id instance", type(service_id))
 
             if (not isinstance(service_id, str) and not isinstance(service_id, int)):
                 raise serializers.ValidationError()
@@ -416,7 +384,6 @@ class ColorsView(APIView):
 
         # color_price
         if color_price is not None:
-            print("color_price instance", type(color_price))
 
             if (not isinstance(color_price, str) and not isinstance(color_price, int) and
                     not isinstance(color_price, float) and
@@ -433,7 +400,6 @@ class ColorsView(APIView):
 
         # hairstyle_duration_minutes
         if color_duration_minutes is not None:
-            print("color_duration_minutes instance", type(color_duration_minutes))
 
             if (not isinstance(color_duration_minutes, str) and
                     not isinstance(color_duration_minutes, int)):
@@ -450,8 +416,6 @@ class ColorsView(APIView):
         # hairstyle_is_active
         if color_is_active is not None:
 
-            print("service_is_active instance", type(color_is_active))
-
             if not isinstance(color_is_active, str) and not isinstance(color_is_active, bool):
                 raise serializers.ValidationError()
 
@@ -465,7 +429,6 @@ class ColorsView(APIView):
             if isinstance(color_is_active, bool):
                 is_active = color_is_active
 
-            print("is_active = ", is_active)
             colors = colors.filter(is_active=is_active)
 
 
@@ -473,8 +436,6 @@ class ColorsView(APIView):
         page = paginator.paginate_queryset(colors, request)
 
         serializer = ColorReadSerializer(page, many=True)
-
-        print("ColorsView", serializer.data)
 
         return paginator.get_paginated_response(serializer.data)
 
@@ -523,8 +484,6 @@ class ColorsView(APIView):
             )
 
         deleted_count, _ = Color.objects.filter( id__in=ids ).delete()
-
-        print("Deleted", deleted_count, "colors")
 
         return Response( status=status.HTTP_204_NO_CONTENT )
 

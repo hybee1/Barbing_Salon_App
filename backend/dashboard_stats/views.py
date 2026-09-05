@@ -42,8 +42,6 @@ class SalonManagerDashboardStatsView(APIView):
         )
 
         active_staffs_count = active_staffs.count()
-        print("active_staffs_count = ", active_staffs_count)
-
 
         active_break_count = BreakTimeAndOffDays.objects.filter(
             staff__status=StaffProfile.StaffStatus.ACTIVE,
@@ -58,7 +56,5 @@ class SalonManagerDashboardStatsView(APIView):
             "active_staffs_count": active_staffs_count,
             "active_break_count": active_break_count
             }
-
-        print("data = ", data)
 
         return Response(data, status=status.HTTP_200_OK)

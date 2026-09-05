@@ -1,7 +1,7 @@
 from django.db import models
 from django.utils import timezone
 
-from core_config import settings
+from core_config import settings_base
 
 
 # ----------------------
@@ -149,10 +149,7 @@ class InventoryTransaction(models.Model):
         default=timezone.localtime
     )
 
-    performed_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.PROTECT
-    )
+    performed_by = models.ForeignKey( settings_base.AUTH_USER_MODEL, on_delete=models.PROTECT )
 
     notes = models.TextField(blank=True)
 
@@ -178,30 +175,15 @@ class EquipmentProfile(models.Model):
         blank=True
     )
 
-    purchase_price = models.DecimalField(
-        max_digits=12,
-        decimal_places=2,
-        null=True,
-        blank=True
-    )
+    purchase_price = models.DecimalField( max_digits=12, decimal_places=2, null=True, blank=True )
 
     warranty_information = models.TextField(
         blank=True
     )
 
-    assigned_staff = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL
-    )
+    assigned_staff = models.ForeignKey( settings_base.AUTH_USER_MODEL, null=True, blank=True,
+                                        on_delete=models.SET_NULL )
 
-    maintenance_status = models.CharField(
-        max_length=100,
-        blank=True
-    )
+    maintenance_status = models.CharField( max_length=100, blank=True )
 
-    next_maintenance_date = models.DateField(
-        null=True,
-        blank=True
-    )
+    next_maintenance_date = models.DateField( null=True,  blank=True )

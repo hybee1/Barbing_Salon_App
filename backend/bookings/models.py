@@ -138,7 +138,7 @@ class Booking(models.Model):
 
 
         except BookingConflictException as exc:
-            print("Booking ConflictException in bookings.models.py")
+
             # raise BookingConflictException( self.start_time, self.end_time)
             raise ValidationError({"start_time": str(exc)})
 

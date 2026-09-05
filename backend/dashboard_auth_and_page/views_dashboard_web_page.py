@@ -15,7 +15,6 @@ def staff_dashboard_login_page(request):
 
 def user_based_dashboard(user):
 
-    print("user_based_dashboard 1")
     '''
     # the reason for this method is, for you to access the staff/salon manager 
     # dashboard, you must have been authenticated, and the dashboard to show depends 
@@ -36,28 +35,19 @@ def user_based_dashboard(user):
 @login_required(login_url=reverse_lazy("staff_dashboard_login"))
 def permission_based_staff_dashboard_page(request):
 
-    print("permission_based_staff_dashboard_page 1")
-
     staff = request.user.staffprofile
     department = staff.department
     manager_group = request.user.groups.filter(name="Manager")
     user_in_manager_group = manager_group.exists()
 
-    print("USER:", request.user)
-    print("AUTH:", request.user.is_authenticated)
-    print("IS_MANAGER_GROUP:", user_in_manager_group)
 
-    print("permission_based_staff_dashboard_page 2")
 
     if (user_in_manager_group and staff.position==StaffProfile.Position.SENIOR):
-        print("barber_dashboard 2a")
 
         manager_group_name = "manager"
 
         return render(request, f"staff/{manager_group_name}/"
                                f"manager-dashboard.html")
-
-    print("permission_based_staff_dashboard_page 3")
 
     return render(request, f"staff/{department}/{department}-dashboard.html")
 

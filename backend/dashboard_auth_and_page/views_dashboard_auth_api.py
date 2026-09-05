@@ -18,47 +18,34 @@ from backend.accounts.models import User
 @permission_classes([AllowAny])
 def logout_api(request):
 
-    print("logout_view 1")
     refresh = request.COOKIES.get("refreshToken")
-    print("logout_view 2")
+
     if refresh:
         try:
-            print("logout_view 2a")
-            RefreshToken(refresh).blacklist()
-            print("logout_view 2b")
-        except Exception:
-            print("logout_view 2c")
-            pass
 
-    print("logout_view 3")
+            RefreshToken(refresh).blacklist()
+
+        except Exception:
+
+            pass
 
     # IMPORTANT: destroy Django's session too
     logout(request)
 
     response = Response( status=status.HTTP_204_NO_CONTENT )
 
-    print("logout_view response 1 =", response)
-
-    print("logout_view 4")
     response.delete_cookie(
         "accessToken",
         path="/",
         samesite="Lax",
     )
 
-    print("logout_view 5")
     response.delete_cookie(
         "refreshToken",
         path="/",
         samesite="Lax",
     )
 
-    print("logout_view 6")
-
-    print("logout_view response 1 =", response.cookies)
-    print("logout_view response 1 =", response.data)
-
-    print("logout_view 7")
 
     return response
     # return Response( status=status.HTTP_204_NO_CONTENT)
@@ -173,7 +160,6 @@ def staff_dashboard_login_api(request):
 
 def user_based_dashboard(user):
 
-    print("user_based_dashboard 1")
     '''
     # the reason for this method is, for you to access the staff/salon manager 
     # dashboard, you must have been authenticated, and the dashboard to show depends 
