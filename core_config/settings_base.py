@@ -18,24 +18,24 @@ from dotenv import load_dotenv
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
-ENV = os.getenv("DJANGO_ENV", "dev")
-
-if ENV == "prod":
-    load_dotenv(BASE_DIR / ".env-prod")
-
-    # SECRET_KEY = os.getenv("SECRET_KEY_PROD")
-    #
-    # if not SECRET_KEY:
-    #     raise ValueError("SECRET_KEY_PROD not found")
-
-else:
-    load_dotenv(BASE_DIR / ".env-dev")
-
-    # SECRET_KEY = os.getenv("SECRET_KEY_DEV")
-    #
-    # if not SECRET_KEY:
-    #     raise ValueError("SECRET_KEY_DEV not found")
+#
+# ENV = os.getenv("DJANGO_ENV", "dev")
+#
+# if ENV == "prod":
+#     load_dotenv(BASE_DIR / ".env-prod")
+#
+#     # SECRET_KEY = os.getenv("SECRET_KEY_PROD")
+#     #
+#     # if not SECRET_KEY:
+#     #     raise ValueError("SECRET_KEY_PROD not found")
+#
+# else:
+#     load_dotenv(BASE_DIR / ".env-dev")
+#
+#     # SECRET_KEY = os.getenv("SECRET_KEY_DEV")
+#     #
+#     # if not SECRET_KEY:
+#     #     raise ValueError("SECRET_KEY_DEV not found")
 
 
 # Quick-start development settings - unsuitable for production

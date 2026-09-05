@@ -17,7 +17,7 @@ from .settings_base import *
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-DEBUG = os.getenv("DEBUG", "False")
+DEBUG = os.getenv("DEBUG", "True")
 
 load_dotenv(BASE_DIR / ".env-dev")
 
