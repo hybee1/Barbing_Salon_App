@@ -11,7 +11,7 @@ from backend.breakperiods.models import BreakTimeAndOffDays
 from backend.breakperiods.serializers import (BarberBreakTimeAndOffDaySerializer,
                                               BreakTimeAndOffDaysSerializer,
                                                 ActiveBreakTimeSerializer)
-from backend.custom_permissions.permissions import Is_Authenticated_Staff_User
+from backend.custom_permissions.permissions import Is_Authenticated_Staff_User, Is_SalonManager
 
 
 class CreateBarberBreakTimeAndOffDayAPIView(APIView):
@@ -32,7 +32,7 @@ class CreateBarberBreakTimeAndOffDayAPIView(APIView):
 
 
 class Last7daysAnd3DaysAheadBarberBreakTimeAndOffDayAPIView(APIView):
-    permission_classes = [Is_Authenticated_Staff_User]  # user must be authenticated
+    permission_classes = [Is_SalonManager]  # only salon manager
 
     def get(self, request):
 

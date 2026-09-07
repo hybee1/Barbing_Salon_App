@@ -387,6 +387,38 @@ class StaffUserDetails_Api_View(APIView):
 
         return Response(serializer.data.get("user"), status=status.HTTP_200_OK)
 
+    def put(self, request):
+
+        if request.user.role != User.Role.STAFF:
+            return Response(
+                {"detail": "You are not authorized to access this resource."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        serializer = StaffWriteSerializer( request.user.staffprofile, data=request.data, )
+
+        serializer.is_valid( raise_exception=True )
+
+        staff = serializer.save()
+
+        return Response( StaffProfileSerializer_2(staff).data, status=status.HTTP_200_OK, )
+
+    def patch(self, request):
+
+        if request.user.role != User.Role.STAFF:
+            return Response(
+                {"detail": "You are not authorized to access this resource."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        serializer = StaffWriteSerializer( request.user.staffprofile, data=request.data, partial=True, )
+
+        serializer.is_valid( raise_exception=True )
+
+        staff = serializer.save()
+
+        return Response( StaffProfileSerializer_2(staff).data, status=status.HTTP_200_OK, )
+
 
 class StaffsWorkingToday_Api_View(APIView):
     permission_classes = [Is_Authenticated_Staff_User]

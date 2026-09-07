@@ -10,7 +10,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.conf import settings
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-from backend.accounts.models import User
+from backend.accounts.models import User, StaffProfile
 from backend.rate_limit_or_throttling.login_rate_throttle import LoginRateThrottle
 
 
@@ -87,6 +87,18 @@ def staff_dashboard_login_api(request):
             status=status.HTTP_401_UNAUTHORIZED,
         )
 
+    #  only staff members can access this login
+    if (
+            user.role != User.Role.STAFF
+            or not user.is_active
+            or not hasattr(user, "staffprofile")
+            or user.staffprofile.status != StaffProfile.StaffStatus.ACTIVE
+    ):
+        return Response(
+            {"message": "Invalid login credentials."},
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
+
     # ---------------------------------------------------------
     # 1. Create Django session
     # ---------------------------------------------------------
@@ -95,7 +107,7 @@ def staff_dashboard_login_api(request):
 
     # Absolute session lifetime: 2 hours
     # SESSION_LIFETIME = 60 * 60 * 2
-    SESSION_LIFETIME = os.getenv("SESSION_LIFETIME")
+    SESSION_LIFETIME = int(os.getenv("SESSION_LIFETIME"))
 
     request.session.set_expiry(SESSION_LIFETIME)
     request.session.save()

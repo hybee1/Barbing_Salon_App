@@ -9,9 +9,37 @@ import logging
 logger = logging.getLogger(__name__)
 
 def custom_exception_handler(exc, context):
+
     logger.exception(exc)
 
     response = exception_handler(exc, context)
+
+    if isinstance(exc, (NotAuthenticated, AuthenticationFailed)):
+        if response is not None:
+            return Response(
+                {
+                    "detail": response.data.get(
+                        "detail",
+                        "Authentication credentials are invalid "
+                        "or have expired.",
+                    ),
+                    "code": "authentication_required",
+                    "logout_required": True,
+                },
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        return Response(
+            {
+                "detail": (
+                    "Authentication credentials are invalid "
+                    "or have expired."
+                ),
+                "code": "authentication_required",
+                "logout_required": True,
+            },
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
 
     if response is not None:
         return Response(
@@ -22,22 +50,13 @@ def custom_exception_handler(exc, context):
             status=response.status_code,
         )
 
-    if isinstance(exc, (NotAuthenticated, AuthenticationFailed,)):
-        response.status_code = 401
-        response.data = {
-            "detail": response.data.get("detail", "Authentication credentials are "
-                                                  "invalid or have expired."),
-            "code": "authentication_required",
-            "logout_required": True,
-        }
-        return response
-
     return Response(
         {
             "success": False,
-            "error": getattr(exc, "detail", str(exc))
+            "error": "Internal server error.",
         },
         status=status.HTTP_500_INTERNAL_SERVER_ERROR,
     )
+
 
 

@@ -3,11 +3,7 @@ from typing import Any
 from django.core.exceptions import ValidationError
 from django.db import transaction
 
-from backend.accounts.models import (
-    User,
-    CustomerProfile,
-    StaffProfile,
-)
+from backend.accounts.models import ( User, CustomerProfile, StaffProfile, )
 
 
 # ============================================================
@@ -45,14 +41,10 @@ def create_user(*, user_data, role):
         })
 
     if not password2:
-        raise ValidationError({
-            "password2": "Password confirmation is required."
-        })
+        raise ValidationError({ "password2": "Password confirmation is required." })
 
     if password != password2:
-        raise ValidationError({
-            "password2": "Passwords don't match."
-        })
+        raise ValidationError({ "password2": "Passwords don't match." })
 
     # --------------------------------------------------------
     # Do not allow the caller to secretly change the role
@@ -64,11 +56,10 @@ def create_user(*, user_data, role):
     # --------------------------------------------------------
     # Validate role.
     # --------------------------------------------------------
-
-    if role not in User.Role:
-        raise ValidationError({
-            "role": "Invalid user role."
-        })
+    try:
+        role = User.Role(role)
+    except ValueError:
+        raise ValidationError({ "role": "Invalid user role." })
 
     # --------------------------------------------------------
     # Create User.
@@ -216,9 +207,21 @@ def update_user( *, user, user_data, ):
     # --------------------------------------------------------
     # Update normal User fields.
     # --------------------------------------------------------
+    ADMIN_USER_UPDATE_FIELDS  = { "first_name", "last_name", "username", "email",
+                            "phone_number", "image", "is_active",
+                          }
 
+    '''
+    reason for above, so that bad intended user will not be able to send this kind of request
+    {
+        "is_superuser": True,
+        "is_staff": True,
+        "is_active": False
+    }
+    '''
     for attr, value in user_data.items():
-        setattr(user, attr, value)
+        if attr in ADMIN_USER_UPDATE_FIELDS:
+            setattr(user, attr, value)
 
     # --------------------------------------------------------
     # Validate and save.
@@ -309,8 +312,23 @@ def update_my_account(*, user, user_data, current_password=None, ):
     # Normal account fields.
     # --------------------------------------------------------
 
+    SELF_USER_UPDATE_FIELDS = {
+                                "first_name", "last_name", "username",
+                                "email", "phone_number", "image",
+                            }
+
+    '''
+        reason for above, so that bad intended user will not be able to send this kind of request
+        {
+            "is_superuser": True,
+            "is_staff": True,
+            "is_active": False
+        }
+    '''
+
     for attr, value in user_data.items():
-        setattr(user, attr, value)
+        if attr in SELF_USER_UPDATE_FIELDS:
+            setattr(user, attr, value)
 
     # --------------------------------------------------------
     # Validate and save.

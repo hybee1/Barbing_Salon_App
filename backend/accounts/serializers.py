@@ -398,27 +398,17 @@ class StaffWriteSerializer(serializers.Serializer):
 
         # Separate User fields from StaffProfile fields.
         staff_data = {
-            "department": validated_data.pop(
-                "department",
-                StaffProfile.Department.BARBER,
-            ),
-            "position": validated_data.pop(
-                "position",
-                StaffProfile.Position.LEVEL_ONE,
-            ),
-            "employment_date": validated_data.pop(
-                "employment_date",
-            ),
-            "status": validated_data.pop(
-                "status",
-                StaffProfile.StaffStatus.ACTIVE,
-            ),
+
+            "department": validated_data.pop( "department", StaffProfile.Department.BARBER, ),
+
+            "position": validated_data.pop( "position", StaffProfile.Position.LEVEL_ONE, ),
+
+            "employment_date": validated_data.pop( "employment_date", ),
+
+            "status": validated_data.pop( "status", StaffProfile.StaffStatus.ACTIVE, ),
         }
 
-        user, staff = create_staff(
-            user_data=validated_data,
-            staff_data=staff_data,
-        )
+        user, staff = create_staff( user_data=validated_data, staff_data=staff_data, )
 
         return staff
 
@@ -426,22 +416,13 @@ class StaffWriteSerializer(serializers.Serializer):
 
         staff_data = {}
 
-        for field in (
-            "department",
-            "position",
-            "employment_date",
-            "status",
-        ):
+        for field in ( "department", "position", "employment_date", "status", ):
             if field in validated_data:
                 staff_data[field] = validated_data.pop(field)
 
         user_data = validated_data
 
-        user, staff = update_staff(
-            staff=instance,
-            user_data=user_data,
-            staff_data=staff_data,
-        )
+        user, staff = update_staff( staff=instance, user_data=user_data, staff_data=staff_data, )
 
         return staff
 

@@ -8,6 +8,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from backend.accounts.models import StaffProfile
 from backend.bookings.models import Booking
 from backend.bookings.serializers import (BookingSerializer, BarberAvailableTimeQuerySerializer,
                                           BookingReadSerializer, BarberBookingStatsSerializer,
@@ -22,7 +23,7 @@ from backend.utils.services import BarberScheduler
 
 class BookingView(APIView):
 
-    permission_classes = [Is_SalonManager, Is_Barber, Is_Receptionist, Is_Stylist, Is_Barber_Stylist]
+    permission_classes = [Is_Authenticated_Staff_User]
 
     def get(self, request):
 
@@ -88,6 +89,12 @@ class CreateBookingView(APIView):
             service = get_object_or_404(
                 Service.objects.only("price", "duration_minutes"), id=service_id,
             )
+            #  validate if hairstyle is active
+            if service.is_active:
+                raise ValidationError({
+                    "service": "This Service is temporarily unavailable, please select another Service."
+                })
+
             service_price = service.price
             service_duration_minutes = service.duration_minutes
 
@@ -100,6 +107,19 @@ class CreateBookingView(APIView):
             hairstyle = get_object_or_404(
                 Hairstyle.objects.only("price", "duration_minutes"), id=hairstyle_id,
             )
+
+            #  validate if hairstyle belongs to that service
+            if hairstyle and hairstyle.service_id != service.id:
+                raise ValidationError({
+                    "hairstyle": "Hairstyle does not belong to the selected service."
+                })
+
+            #  validate if hairstyle is active
+            if hairstyle.is_active:
+                raise ValidationError({
+                    "hairstyle": "This Hairstyle is temporarily unavailable, please select another Hairstyle."
+                })
+
             hairstyle_price = hairstyle.price
             hairstyle_duration_minutes = hairstyle.duration_minutes
 
@@ -114,6 +134,19 @@ class CreateBookingView(APIView):
             color = get_object_or_404(
                 Color.objects.only("price", "duration_minutes"), id=color_id,
             )
+
+            #  validate if color belongs to that service
+            if color and color.service_id != service.id:
+                raise ValidationError({
+                    "color": "Color does not belong to the selected service."
+                })
+
+            #  validate if color is active
+            if color.is_active:
+                raise ValidationError({
+                    "color": "This Color is temporarily unavailable, please select another Color."
+                })
+
             color_price = color.price
             color_duration_minutes = color.duration_minutes
 
@@ -165,13 +198,19 @@ class CreateBookingView(APIView):
 
         barber_scheduler = BarberScheduler()
 
-        barber_scheduler.is_overlap(
-                                   serializer.validated_data['barber'],
-                                   serializer.validated_data['booking_date'],
-                                   serializer.validated_data['start_time'],
-                                   serializer.validated_data['end_time'])
-
         with transaction.atomic():
+            barber = (
+                StaffProfile.objects
+                .select_for_update()
+                .get(pk=serializer.validated_data["barber"].pk)
+            )
+
+            barber_scheduler.is_overlap(
+                barber,
+                serializer.validated_data['booking_date'],
+                serializer.validated_data['start_time'],
+                serializer.validated_data['end_time'])
+
             confirmed_booking = serializer.save()
 
         return Response({

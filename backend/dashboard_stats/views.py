@@ -6,12 +6,12 @@ from rest_framework.views import APIView
 from backend.accounts.models import StaffProfile
 from backend.bookings.models import Booking
 from backend.breakperiods.models import BreakTimeAndOffDays
-from backend.custom_permissions.permissions import Is_Authenticated_Staff_User
+from backend.custom_permissions.permissions import Is_Authenticated_Staff_User, Is_SalonManager
 
 
 class SalonManagerDashboardStatsView(APIView):
 
-    permission_classes = [Is_Authenticated_Staff_User]
+    permission_classes = [Is_SalonManager]
 
     def get(self, request):
 

@@ -62,7 +62,11 @@ class BarberScheduler:
         # If customer is booking today...
         if date == now.date():
 
-            start = max(opening, (now + timedelta(minutes=15)))
+            _, booking_config = self.get_salon_config()
+
+            interval = int(booking_config["booking_slot_interval"])
+
+            start = max(opening, (now + timedelta(minutes=interval)))
 
         else: # if date > now.date():
 
@@ -296,7 +300,7 @@ class BarberScheduler:
 
                 slots.append(slot.time())
 
-                slot += timedelta(minutes=15)
+                slot += timedelta(minutes=interval)
 
         return slots
 
