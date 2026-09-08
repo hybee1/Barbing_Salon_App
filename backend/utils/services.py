@@ -31,6 +31,7 @@ class BarberScheduler:
                 and staff.department in {
                     StaffProfile.Department.BARBER,
                     StaffProfile.Department.BARBER_STYLIST,
+                    StaffProfile.Department.STYLIST,
                 }
         )
 

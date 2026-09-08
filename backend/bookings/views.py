@@ -95,7 +95,7 @@ class CreateBookingView(APIView):
             service = get_object_or_404(
                 Service.objects.only("price", "duration_minutes"), id=service_id,
             )
-            #  validate if hairstyle is active
+            #  validate if service is active
             if not service.is_active:
                 raise ValidationError({
                     "service": "This Service is temporarily unavailable, please select another Service."

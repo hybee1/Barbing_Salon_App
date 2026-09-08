@@ -65,10 +65,7 @@ def staff_dashboard_login_api(request):
             status=status.HTTP_400_BAD_REQUEST,
         )
 
-    user = User.objects.filter(
-        Q(username=username_or_phone) |
-        Q(phone_number=username_or_phone)
-    ).first()
+    user = User.objects.filter( Q(username=username_or_phone) | Q(phone_number=username_or_phone) ).first()
 
     if user is None:
         return Response(
@@ -76,10 +73,7 @@ def staff_dashboard_login_api(request):
             status=status.HTTP_401_UNAUTHORIZED,
         )
 
-    user = authenticate(
-        username=user.username,
-        password=password
-    )
+    user = authenticate( username=user.username, password=password  )
 
     if user is None:
         return Response(
@@ -89,8 +83,7 @@ def staff_dashboard_login_api(request):
 
     #  only staff members can access this login
     if (
-            user.role != User.Role.STAFF
-            or not user.is_active
+            user.role != User.Role.STAFF or not user.is_active
             or not hasattr(user, "staffprofile")
             or user.staffprofile.status != StaffProfile.StaffStatus.ACTIVE
     ):
