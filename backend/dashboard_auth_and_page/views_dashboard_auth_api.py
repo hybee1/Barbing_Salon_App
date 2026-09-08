@@ -150,7 +150,7 @@ def staff_dashboard_login_api(request):
         "accessToken",
         str(access_token),
         httponly=env_bool("SESSION_COOKIE_HTTPONLY"),
-        secure=os.env_bool("SESSION_COOKIE_SECURE"),
+        secure=env_bool("SESSION_COOKIE_SECURE"),
         samesite=os.environ["SESSION_COOKIE_SAMESITE"],
         max_age=access_lifetime,
     )
@@ -159,8 +159,8 @@ def staff_dashboard_login_api(request):
     response.set_cookie(
         "refreshToken",
         str(refresh),
-        httponly=os.environ["SESSION_COOKIE_HTTPONLY"],
-        secure=os.environ["SESSION_COOKIE_SECURE"],
+        httponly=env_bool["SESSION_COOKIE_HTTPONLY"],
+        secure=env_bool["SESSION_COOKIE_SECURE"],
         samesite=os.environ["SESSION_COOKIE_SAMESITE"],
         max_age=remaining_seconds,
     )

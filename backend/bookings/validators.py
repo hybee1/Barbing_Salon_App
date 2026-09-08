@@ -24,7 +24,7 @@ class BookingValidator:
         if start_time is None:
             raise ValueError("Start time required")
 
-        if booking_date < timezone.now().date():
+        if booking_date < timezone.localtime().date():
             raise ValueError("Cannot book past dates")
 
     @staticmethod

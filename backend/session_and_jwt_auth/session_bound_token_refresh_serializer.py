@@ -26,7 +26,7 @@ class SessionBoundTokenRefreshSerializer(TokenRefreshSerializer):
                 "Invalid refresh token."
             )
 
-        now = int(timezone.now().timestamp())
+        now = int(timezone.localtime().timestamp())
 
         if now >= session_exp:
             raise serializers.ValidationError(

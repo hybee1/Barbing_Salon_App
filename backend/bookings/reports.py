@@ -11,7 +11,7 @@ class ReportService:
 
     @staticmethod
     def today_summary():
-        today = timezone.now().date()
+        today = timezone.localtime().date()
 
         bookings = Booking.objects.filter(
             booking_date=today
@@ -30,7 +30,7 @@ class ReportService:
     # Only COMPLETED bookings count
     @staticmethod
     def today_revenue():
-        today = timezone.now().date()
+        today = timezone.localtime().date()
 
         revenue = Booking.objects.filter(
             booking_date=today,
