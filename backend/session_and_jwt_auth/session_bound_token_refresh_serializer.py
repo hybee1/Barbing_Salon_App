@@ -1,4 +1,3 @@
-
 from django.utils import timezone
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
@@ -6,14 +5,11 @@ from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 
 class SessionBoundTokenRefreshSerializer(TokenRefreshSerializer):
     """
-    Refresh serializer that prevents refresh-token rotation from
-    extending the user's original authenticated session indefinitely.
-
-    The refresh token must contain an absolute `session_exp` timestamp.
+    Prevents refresh-token rotation from extending the
+    original authenticated session indefinitely.
     """
 
     def validate(self, attrs):
-        # Validate/decode the submitted refresh token first.
         refresh = self.token_class(attrs["refresh"])
 
         session_exp = refresh.get("session_exp")
@@ -30,27 +26,30 @@ class SessionBoundTokenRefreshSerializer(TokenRefreshSerializer):
                 "Invalid refresh token."
             )
 
-        # Enforce the original absolute session deadline.
-        now = int(timezone.localtime().timestamp())
+        now = int(timezone.now().timestamp())
 
         if now >= session_exp:
             raise serializers.ValidationError(
                 "Session expired. Please log in again."
             )
 
-        # Let SimpleJWT perform its normal refresh/rotation/blacklisting.
+        # Let SimpleJWT perform its normal refresh,
+        # rotation and blacklisting.
         data = super().validate(attrs)
 
-        # ROTATE_REFRESH_TOKENS=True causes SimpleJWT to return
-        # a newly-created refresh token.
-        #
-        # That new token gets a new normal `exp`, but it must retain
-        # the ORIGINAL absolute session deadline.
+        # Preserve the ORIGINAL absolute session deadline
+        # on the rotated refresh token.
         new_refresh_token = data.get("refresh")
 
         if new_refresh_token:
             new_refresh = self.token_class(new_refresh_token)
+
             new_refresh["session_exp"] = session_exp
+
             data["refresh"] = str(new_refresh)
+
+        # Make the original deadline available to the view
+        # so it can calculate cookie max_age.
+        data["session_exp"] = session_exp
 
         return data

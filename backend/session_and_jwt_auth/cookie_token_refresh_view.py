@@ -1,5 +1,5 @@
-
-
+from django.conf import settings
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenRefreshView
@@ -27,26 +27,69 @@ class CookieTokenRefreshView(TokenRefreshView):
 
         access_token = serializer.validated_data["access"]
 
-        # Present when ROTATE_REFRESH_TOKENS=True.
+        # Only present when ROTATE_REFRESH_TOKENS=True
         new_refresh_token = serializer.validated_data.get("refresh")
+
+        # ---------------------------------------------------------
+        # Calculate cookie lifetime from the absolute session expiry
+        # ---------------------------------------------------------
+
+        session_exp = serializer.validated_data.get("session_exp")
+
+        if session_exp is None:
+            return Response(
+                {"detail": "Invalid refresh token."},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        now_timestamp = int(timezone.localtime().timestamp())
+
+        remaining_seconds = max(
+            0,
+            int(session_exp) - now_timestamp,
+        )
+
+        # ---------------------------------------------------------
+        # Access-token cookie lifetime
+        # ---------------------------------------------------------
+
+        access_lifetime = int(
+            settings.SIMPLE_JWT[ "ACCESS_TOKEN_LIFETIME" ].total_seconds()
+        )
+
+
+        access_cookie_max_age = min(
+            access_lifetime,
+            remaining_seconds,
+        )
 
         response = Response(
             {"detail": "Token refreshed."},
             status=status.HTTP_200_OK,
         )
 
+        # ---------------------------------------------------------
+        # Access token cookie
+        # ---------------------------------------------------------
+
         response.set_cookie(
             key="accessToken",
             value=access_token,
+            max_age=access_cookie_max_age,
             httponly=True,
             secure=True,
             samesite="Lax",
         )
 
+        # ---------------------------------------------------------
+        # Rotated refresh token cookie
+        # ---------------------------------------------------------
+
         if new_refresh_token:
             response.set_cookie(
                 key="refreshToken",
                 value=new_refresh_token,
+                max_age=remaining_seconds,
                 httponly=True,
                 secure=True,
                 samesite="Lax",
