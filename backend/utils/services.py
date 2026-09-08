@@ -23,7 +23,7 @@ class BarberScheduler:
         return salon_config, booking_config
 
     @staticmethod
-    def can_receive_bookings(staff):
+    def can_receive_bookings(staff: StaffProfile):
         return (
                 staff.user.role == User.Role.STAFF
                 and staff.user.is_active
@@ -40,7 +40,6 @@ class BarberScheduler:
     def get_this_barber_bookings_for_this_date(self, barber: StaffProfile,
                                                date: date) -> list[Booking]:
 
-
         if not self.can_receive_bookings(barber):
 
             raise UserException('Not a barber or stylist')
@@ -56,13 +55,11 @@ class BarberScheduler:
 
         salon_config, booking_config = self.get_salon_config()
 
-        opening_time = time.fromisoformat( salon_config["open_time"] )
+        opening = timezone.make_aware(datetime.combine(date, salon_config["open_time"]))
 
         salon_timezone = ZoneInfo(salon_config["time_zone"])
 
-        opening = datetime.combine( date, opening_time, tzinfo=salon_timezone, )
-
-        now = timezone.now().astimezone(salon_timezone)
+        now = timezone.localtime()
 
         if date < now.date():
 
@@ -95,11 +92,7 @@ class BarberScheduler:
 
         salon_config, _ = self.get_salon_config()
 
-        salon_timezone = ZoneInfo( salon_config["time_zone"] )
-
-        closing_time = time.fromisoformat( salon_config["close_time"] )
-
-        closing = datetime.combine( date, closing_time, tzinfo=salon_timezone, )
+        closing = timezone.make_aware(datetime.combine(date, salon_config["close_time"] ))
 
         return closing
 
@@ -167,13 +160,11 @@ class BarberScheduler:
 
         salon_config, _ = self.get_salon_config()
         salon_timezone = ZoneInfo(salon_config["time_zone"])
-        try:
 
+        try:
             start: datetime = self.determine_start(date1)
             closing: datetime = self.determine_close(date1)
         except BookingDateException as b_exc:
-
-
             raise b_exc
 
         # barber = User.objects.filter(id=barber_id)
@@ -206,12 +197,14 @@ class BarberScheduler:
         for booking in bookings_for_the_barber:
 
             # converted_booking_start_time is datetime
-            converted_booking_start_time = datetime.combine(
-                            start.date(), booking.start_time, tzinfo=salon_timezone,)
+            converted_booking_start_time = timezone.make_aware(
+                datetime.combine(start.date(), booking.start_time)
+            )
 
             # converted_booking_end_time is datetime
-            converted_booking_end_time = datetime.combine(
-                start.date(), booking.end_time, tzinfo=salon_timezone,)
+            converted_booking_end_time = timezone.make_aware(
+                datetime.combine(start.date(), booking.end_time)
+            )
 
             # if booking.start_time > pointer:
             # if booking.start_time > pointer.time():
@@ -395,10 +388,9 @@ class BarberScheduler:
         if barber.department not in BOOKING_STAFF_DEPARTMENTS:
             raise UserException('Selected user not in the right department')
 
-        with transaction.atomic():
-            overlap = (Booking.objects.filter( barber=barber, booking_date=booking_date,
-                                            start_time__lt=new_end, end_time__gt=new_start
-                                                ).exists())
+        overlap = (Booking.objects.filter( barber=barber, booking_date=booking_date,
+                                        start_time__lt=new_end, end_time__gt=new_start
+                                            ).exists())
 
 
         if overlap:

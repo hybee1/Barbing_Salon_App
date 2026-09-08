@@ -286,7 +286,7 @@ class PublicBarberSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = StaffProfile
-        fields = [ "id", "first_name", "last_name", "image", "department", "position", "email",]
+        fields = [ "id", "first_name", "last_name", "image", "department", "position",]
 
 
 class StaffProfileUserDetailsSerializer(serializers.ModelSerializer):

@@ -17,7 +17,8 @@ from backend.bookings.serializers import (BookingSerializer, BarberAvailableTime
 from backend.breakperiods.models import BreakTimeAndOffDays
 from backend.custom_permissions.permissions import Is_Authenticated_Staff_User, Is_SalonManager, Is_Barber, Is_Stylist, \
     Is_Barber_Stylist, Is_Receptionist, SalonManager_Or_Barber_Or_Stylist_Or_Is_Barber_Stylist, \
-    SalonManager_Or_Barber_Or_Stylist_Or_Is_Barber_Stylist_Or_Receptionist
+    SalonManager_Or_Barber_Or_Stylist_Or_Is_Barber_Stylist_Or_Receptionist, SalonManager_Or_Receptionist, \
+    Barber_Or_Stylist_Or_Is_Barber_Stylist
 from backend.exceptions.exceptions import BookingDateException
 from backend.rate_limit_or_throttling.booking_create_throttle import BookingCreateThrottle
 from backend.services.models import Service, Hairstyle, Color
@@ -84,7 +85,6 @@ class CreateBookingView(APIView):
     throttle_classes = [BookingCreateThrottle]
 
     def post(self, request):
-
 
         service_id: dict | None  = (request.data.get("service") or {}).get("id", None)
 
@@ -239,9 +239,33 @@ class TodayBooking_Api_View(APIView):
         return Response(serializer.data)
 
 
+class OneBarberBookingForLast7Days_Api_View(APIView):
+
+    permission_classes = [Is_Authenticated_Staff_User]
+
+    def get(self, request):
+
+        today_date = timezone.localdate()
+        last_7_days = today_date - timedelta(days=7)
+
+        if not BarberScheduler().can_receive_bookings(request.user.staffprofile):
+            return Response(
+                {"detail": "Access Denied."}, status=status.HTTP_403_FORBIDDEN,
+            )
+
+        booking_obj = (Booking.objects.filter(
+            barber=request.user.staffprofile,
+            booking_date__range=(last_7_days, today_date)
+        ).order_by("booking_date", "-start_time"))
+
+        serializer = BookingReadSerializer(booking_obj, many=True)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 class BookingForLast7Days_Api_View(APIView):
 
-    permission_classes = [SalonManager_Or_Barber_Or_Stylist_Or_Is_Barber_Stylist]
+    permission_classes = [SalonManager_Or_Receptionist]
 
     def get(self, request):
 
@@ -344,9 +368,9 @@ class BarberBookingStatsView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class BarberBookingsToday(APIView):
+class OneBarberBookingsToday(APIView):
 
-    permission_classes = [SalonManager_Or_Barber_Or_Stylist_Or_Is_Barber_Stylist]
+    permission_classes = [Is_Authenticated_Staff_User]
 
     def get(self, request):
 
@@ -354,8 +378,40 @@ class BarberBookingsToday(APIView):
 
         date_today = timezone.localdate()
 
+        if not BarberScheduler().can_receive_bookings(request.user.staffprofile):
+            return Response(
+                {"detail": "Access Denied."}, status=status.HTTP_403_FORBIDDEN,
+            )
+
         barber_bookings_stats_for_today = Booking.objects.filter(
                             booking_date=date_today, barber=barber,
+                            status=Booking.STATUS.CONFIRMED)
+
+        serializer = BarberBookingsTodaySerializer(barber_bookings_stats_for_today, many=True)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class OneBarberUpcomingBookingsToday(APIView):
+
+    permission_classes = [Is_Authenticated_Staff_User]
+
+    def get(self, request):
+
+        barber = request.user.staffprofile
+
+        date_and_time = timezone.localtime()
+        date_today = date_and_time.date()
+        current_time = date_and_time.time()
+
+        if not BarberScheduler().can_receive_bookings(request.user.staffprofile):
+            return Response(
+                {"detail": "Access Denied."}, status=status.HTTP_403_FORBIDDEN,
+            )
+
+        barber_bookings_stats_for_today = Booking.objects.filter(
+                            booking_date=date_today, barber=barber,
+                            start_time__gte=current_time,
                             status=Booking.STATUS.CONFIRMED)
 
         serializer = BarberBookingsTodaySerializer(barber_bookings_stats_for_today, many=True)
@@ -376,7 +432,7 @@ class BarberUpcomingBookingsToday(APIView):
         current_time = date_and_time.time()
 
         barber_bookings_stats_for_today = Booking.objects.filter(
-                            booking_date=date_today, barber=barber,
+                            booking_date=date_today,
                             start_time__gte=current_time,
                             status=Booking.STATUS.CONFIRMED)
 

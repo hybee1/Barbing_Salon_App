@@ -34,9 +34,10 @@ class Barbers_Web_View(APIView):
             barber = (
                 StaffProfile.objects.select_related("user")
                 .filter(
-                    pk=pk,
+                    pk=pk, user__is_active=True,
                     user__role=User.Role.STAFF,
-                    department=StaffProfile.Department.BARBER,
+                    department__in=[StaffProfile.Department.BARBER, StaffProfile.Department.BARBER_STYLIST,
+                                    StaffProfile.Department.STYLIST,]
                 )
                 .first()
             )
@@ -59,8 +60,10 @@ class Barbers_Web_View(APIView):
             StaffProfile.objects
             .select_related("user")
             .filter(
+                user__is_active=True,
                 user__role=User.Role.STAFF,
-                department=StaffProfile.Department.BARBER,
+                department__in=[StaffProfile.Department.BARBER, StaffProfile.Department.BARBER_STYLIST,
+                                StaffProfile.Department.STYLIST, ]
             )
         )
 
@@ -415,7 +418,7 @@ class StaffUserDetails_Api_View(APIView):
 
 
 class StaffsWorkingToday_Api_View(APIView):
-    permission_classes = [Is_Authenticated_Staff_User]
+    permission_classes = [Is_SalonManager]
 
     def get(self, request):
 

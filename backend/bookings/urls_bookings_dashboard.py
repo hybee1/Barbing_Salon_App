@@ -1,20 +1,31 @@
 
 from django.urls import path
 from backend.bookings.views import (BookingForLast7Days_Api_View, TodayBooking_Api_View,
-                                    BarberBookingsToday,
-                                    BarberUpcomingBookingsToday, BookingView)
+                                    BarberUpcomingBookingsToday, BookingView,
+                                    OneBarberBookingForLast7Days_Api_View, OneBarberBookingsToday)
+
 
 urlpatterns = [
 
     path("", BookingView.as_view(), name="bookings"),
 
-    path("last7days/", BookingForLast7Days_Api_View.as_view(), name="bookings_last_7_days"),
+    # ONLY THOSE WHO CAN RECEIVE BOOKING CAN VIEW THIS ENDPOINT
+    path("barber/last7days/", OneBarberBookingForLast7Days_Api_View.as_view(), name="one-barber-bookings-last-7-days"),
+
+    # ONLY SALON MANAGER AND RECEPTIONIST
+    path("last7days/", BookingForLast7Days_Api_View.as_view(), name="admin-view-bookings-last-7-days"),
 
     path("admin/today/", TodayBooking_Api_View.as_view(), name="today_bookings"),
 
-    path("barber/today/", BarberBookingsToday.as_view(), name="barber-booking-stats"),
+    # ONLY THOSE WHO CAN RECEIVE BOOKING CAN VIEW THIS ENDPOINT
+    path("barber/today/", OneBarberBookingsToday.as_view(), name="barber-booking-today"),
 
+    # ONLY THOSE WHO CAN RECEIVE BOOKING CAN VIEW THIS ENDPOINT
     path("barber/upcoming/today/", BarberUpcomingBookingsToday.as_view(),
-                        name="barber-upcoming-booking-today"),
+                        name="one-barber-upcoming-booking-today"),
+
+    # ONLY SALON MANAGER AND RECEPTIONIST
+    path("upcoming/today/", BarberUpcomingBookingsToday.as_view(),
+                        name="admin-view-barber-upcoming-booking-today"),
 
 ]

@@ -4,7 +4,7 @@ from backend.accounts.models import User, StaffProfile
 
 
 class AnyOf(BasePermission):
-    permissions = []
+    permission_classes = []
 
     def has_permission(self, request, view):
         return any(
@@ -40,6 +40,8 @@ class Is_SalonManager(BasePermission):
 
         return bool(
                         user and user.is_authenticated and user.is_active and
+                        user.role == User.Role.STAFF and hasattr(user, "staffprofile") and
+                        user.staffprofile.status == StaffProfile.StaffStatus.ACTIVE and
                         user.groups.filter(name__iexact="manager").exists()
         )
 
@@ -103,5 +105,11 @@ class Is_Stylist(BasePermission):
 class SalonManager_Or_Barber_Or_Stylist_Or_Is_Barber_Stylist(AnyOf):
     permission_classes = [Is_SalonManager, Is_Barber, Is_Stylist, Is_Barber_Stylist]
 
+class Barber_Or_Stylist_Or_Is_Barber_Stylist(AnyOf):
+    permission_classes = [Is_Barber, Is_Stylist, Is_Barber_Stylist]
+
 class SalonManager_Or_Barber_Or_Stylist_Or_Is_Barber_Stylist_Or_Receptionist(AnyOf):
     permission_classes = [Is_SalonManager, Is_Barber, Is_Stylist, Is_Barber_Stylist, Is_Receptionist]
+
+class SalonManager_Or_Receptionist(AnyOf):
+    permission_classes = [Is_SalonManager, Is_Receptionist]

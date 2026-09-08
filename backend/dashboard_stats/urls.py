@@ -1,7 +1,7 @@
 
 
 from django.urls import path
-from backend.bookings.views import BarberBookingStatsView, BarberBookingsToday
+from backend.bookings.views import BarberBookingStatsView
 from backend.dashboard_stats.views import SalonManagerDashboardStatsView
 
 
@@ -14,10 +14,6 @@ urlpatterns = [
 
     path("barber/stats/", BarberBookingStatsView.as_view(), name="barber-booking-stats"),
 
-
-
-    # path("dashboard/breaks/today/", AllBarberBreakTimeAndOffDayAPIView.as_view(),
-    #      name="barber-booking-stats"),
 
 
 ]

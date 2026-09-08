@@ -18,28 +18,29 @@ from dotenv import load_dotenv
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-#
-# ENV = os.getenv("DJANGO_ENV", "dev")
-#
-# if ENV == "prod":
-#     load_dotenv(BASE_DIR / ".env-prod")
-#
-#     # SECRET_KEY = os.getenv("SECRET_KEY_PROD")
-#     #
-#     # if not SECRET_KEY:
-#     #     raise ValueError("SECRET_KEY_PROD not found")
-#
-# else:
-#     load_dotenv(BASE_DIR / ".env-dev")
-#
-#     # SECRET_KEY = os.getenv("SECRET_KEY_DEV")
-#     #
-#     # if not SECRET_KEY:
-#     #     raise ValueError("SECRET_KEY_DEV not found")
+def env_bool(name, default=False):
+    value = os.getenv(name)
 
+    if value is None:
+        if default is not None:
+            return default
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
+        raise ValueError(
+            f"{name} is required"
+        )
+
+    value = value.strip().lower()
+
+    if value.lower() in {"1", "true", "yes", "on"}:
+        return True
+
+    if value.lower() in {"0", "false", "no", "off"}:
+        return False
+
+    raise ValueError(
+        f"{name} must be one of: "
+        "1,true,yes,on,0,false,no,off"
+    )
 
 
 LOGIN_URL = "staff_dashboard_login"
@@ -128,7 +129,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+# TIME_ZONE = 'UTC'
 
 USE_I18N = True
 
@@ -172,8 +173,8 @@ REST_FRAMEWORK = {
     "DEFAULT_THROTTLE_RATES": {
         "anon": "100/hour",
         "user": "1000/hour",
-        "booking_create": "10/hour",
-    },
+        "booking_create": "10/hour"
+    }
 
 }
 

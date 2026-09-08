@@ -96,7 +96,7 @@ class Booking(models.Model):
 
         from backend.utils.services import BarberScheduler
 
-        if self.barber and BarberScheduler().can_receive_bookings(self.barber):
+        if self.barber and not BarberScheduler().can_receive_bookings(self.barber):
             raise ValidationError(
                     {"barber": "Selected user does not handle barbing and or styling."}
                 )
