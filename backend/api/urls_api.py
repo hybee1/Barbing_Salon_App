@@ -1,12 +1,9 @@
 
 from django.urls import path, include
-from rest_framework_simplejwt.views import TokenObtainPairView
 
-from backend.accounts.views import  CookieTokenRefreshView
 from backend.dashboard_auth_and_page.views_dashboard_auth_api import (
                     staff_dashboard_login_api, logout_api)
-
-
+from backend.session_and_jwt_auth.cookie_token_refresh_view import CookieTokenRefreshView
 
 urlpatterns = [
 

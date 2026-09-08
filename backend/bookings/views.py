@@ -110,6 +110,12 @@ class CreateBookingView(APIView):
         hairstyle_price = 0
         hairstyle_duration_minutes = 0
         if hairstyle_id is not None:
+
+            if service is None:
+                raise ValidationError({
+                    "service": "Service is required when selecting a hairstyle."
+                })
+
             hairstyle = get_object_or_404(
                 Hairstyle.objects.only("price", "duration_minutes"), id=hairstyle_id,
             )
@@ -137,6 +143,12 @@ class CreateBookingView(APIView):
         color_price = 0
         color_duration_minutes = 0
         if color_id is not None:
+
+            if service is None:
+                raise ValidationError({
+                    "service": "Service is required when selecting a color."
+                })
+
             color = get_object_or_404(
                 Color.objects.only("price", "duration_minutes"), id=color_id,
             )

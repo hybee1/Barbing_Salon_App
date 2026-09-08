@@ -131,7 +131,7 @@ def staff_dashboard_login_api(request):
     # Normal access token lifetime is 15 minutes,
     # but it must not exceed the session lifetime.
     # access_lifetime = min( 60 * 15, remaining_seconds )
-    access_lifetime = min(60 * int(os.getenv("ACCESS_TOKEN_LIFETIME")), remaining_seconds)
+    access_lifetime = min(60 * int(os.getenv("SIMPLE_JWT_ACCESS_TOKEN_LIFETIME")), remaining_seconds)
 
     # Override the access token expiry
     access_token["exp"] = now_timestamp + access_lifetime
@@ -148,9 +148,9 @@ def staff_dashboard_login_api(request):
     response.set_cookie(
         "accessToken",
         str(access_token),
-        httponly=True,
-        secure=secure,
-        samesite="Lax",
+        httponly=os.environ["SESSION_COOKIE_HTTPONLY"],
+        secure=os.environ["SESSION_COOKIE_SECURE"],
+        samesite=os.environ["SESSION_COOKIE_SAMESITE"],
         max_age=access_lifetime,
     )
 
@@ -158,9 +158,9 @@ def staff_dashboard_login_api(request):
     response.set_cookie(
         "refreshToken",
         str(refresh),
-        httponly=True,
-        secure=secure,
-        samesite="Lax",
+        httponly=os.environ["SESSION_COOKIE_HTTPONLY"],
+        secure=os.environ["SESSION_COOKIE_SECURE"],
+        samesite=os.environ["SESSION_COOKIE_SAMESITE"],
         max_age=remaining_seconds,
     )
 
