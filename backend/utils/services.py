@@ -15,11 +15,24 @@ from backend.salon_settings import services_salon_config
 
 class BarberScheduler:
 
-    def get_salon_config(self):
+    @staticmethod
+    def get_salon_config():
         salon_config = services_salon_config.get_salon_info_config()
         booking_config = services_salon_config.get_salon_booking_config()
 
         return salon_config, booking_config
+
+    @staticmethod
+    def can_receive_bookings(staff):
+        return (
+                staff.user.role == User.Role.STAFF
+                and staff.user.is_active
+                and staff.status == StaffProfile.StaffStatus.ACTIVE
+                and staff.department in {
+                    StaffProfile.Department.BARBER,
+                    StaffProfile.Department.BARBER_STYLIST,
+                }
+        )
 
     # For a particular day:
 
@@ -28,11 +41,7 @@ class BarberScheduler:
                                                date: date) -> list[Booking]:
 
 
-
-        # barber.department will return the first part which is either value/name not label
-        # which is the second
-        if not barber.department.lower() in [StaffProfile.Department.BARBER.name.lower(),
-                                   StaffProfile.Department.BARBER_STYLIST.name.lower()]:
+        if not self.can_receive_bookings(barber):
 
             raise UserException('Not a barber or stylist')
 
@@ -377,9 +386,14 @@ class BarberScheduler:
         if barber.user.role != User.Role.STAFF:
             raise RoleException()
 
+        BOOKING_STAFF_DEPARTMENTS = {
+            StaffProfile.Department.BARBER,
+            StaffProfile.Department.BARBER_STYLIST,
+            StaffProfile.Department.STYLIST,
+        }
 
-        if barber.department.lower() != "barber":
-            raise UserException('Not a Barber')
+        if barber.department not in BOOKING_STAFF_DEPARTMENTS:
+            raise UserException('Selected user not in the right department')
 
         with transaction.atomic():
             overlap = (Booking.objects.filter( barber=barber, booking_date=booking_date,

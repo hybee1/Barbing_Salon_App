@@ -232,9 +232,7 @@ class CustomerProfileSerializer(serializers.ModelSerializer):
 
 class StaffProfileSerializer(serializers.ModelSerializer):
 
-    user = UserForOthersSerializer(
-        read_only=True,
-    )
+    user = UserForOthersSerializer( read_only=True, )
 
     class Meta:
         model = StaffProfile
@@ -250,9 +248,7 @@ class StaffProfileSerializer(serializers.ModelSerializer):
 
 class StaffProfileSerializer_2(serializers.ModelSerializer):
 
-    user = UserForOthersSerializer_2(
-        read_only=True,
-    )
+    user = UserForOthersSerializer_2( read_only=True, )
 
     class Meta:
         model = StaffProfile
@@ -282,6 +278,15 @@ class StaffProfileSerializer_3(serializers.ModelSerializer):
             profile=instance,
             profile_data=validated_data,
         )
+
+class PublicBarberSerializer(serializers.ModelSerializer):
+    first_name = serializers.CharField( source="user.first_name", read_only=True, )
+    last_name = serializers.CharField( source="user.last_name", read_only=True, )
+    image = serializers.CharField( source="user.image", read_only=True, )
+
+    class Meta:
+        model = StaffProfile
+        fields = [ "id", "first_name", "last_name", "image", "department", "position", "email",]
 
 
 class StaffProfileUserDetailsSerializer(serializers.ModelSerializer):
@@ -403,7 +408,7 @@ class StaffWriteSerializer(serializers.Serializer):
 
             "position": validated_data.pop( "position", StaffProfile.Position.LEVEL_ONE, ),
 
-            "employment_date": validated_data.pop( "employment_date", ),
+            "employment_date": validated_data.pop( "employment_date" ),
 
             "status": validated_data.pop( "status", StaffProfile.StaffStatus.ACTIVE, ),
         }

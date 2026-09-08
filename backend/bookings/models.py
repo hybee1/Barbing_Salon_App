@@ -8,9 +8,7 @@ from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
 from phonenumbers import NumberParseException
 
-
-
-
+from backend.accounts.models import StaffProfile
 
 
 class Booking(models.Model):
@@ -46,11 +44,11 @@ class Booking(models.Model):
 
     customer_name = models.CharField(max_length=100, null=True, blank=True,
                                      validators=[
-                                     RegexValidator(
-                                         regex=r"^[A-Za-z]+(?: [A-Za-z]+)*$",
-                                         message='full_name only support letters and space.'
-                                     )
-                                 ]
+                                             RegexValidator(
+                                                 regex=r"^[A-Za-z]+(?: [A-Za-z]+)*$",
+                                                 message='full_name only support letters and space.'
+                                             )
+                                         ]
                                      ) # this not a logged-in user so allow
     email = models.EmailField(null=True, blank=True,) # this not a logged-in user so allow
 
@@ -93,19 +91,19 @@ class Booking(models.Model):
 
         if self.barber and self.barber.user.role != User.Role.STAFF:
             raise ValidationError(
-                {"barber": "Selected user is not a barber."}
-            )
-
-        if self.barber and self.barber.department.lower() != 'barber':
-            raise ValidationError(
-                {"barber": "Selected user does not have te right department."}
+                {"barber": "Selected user is not a staff member."}
             )
 
         from backend.utils.services import BarberScheduler
 
+        if self.barber and BarberScheduler().can_receive_bookings(self.barber):
+            raise ValidationError(
+                    {"barber": "Selected user does not handle barbing and or styling."}
+                )
+
         # Validate phone against salon country
         if self.phone_number:
-            salon_config, _ = BarberScheduler.get_salon_config()
+            salon_config, _ = BarberScheduler().get_salon_config()
             country_code = salon_config["country"]
 
             try:

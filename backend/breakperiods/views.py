@@ -49,7 +49,7 @@ class Last7daysAnd3DaysAheadBarberBreakTimeAndOffDayAPIView(APIView):
 
 
 class ActiveBreakTimeAndOffDayAPIView(APIView):
-    permission_classes = [Is_Authenticated_Staff_User]  # user must be authenticated
+    permission_classes = [Is_SalonManager]  # only salon manager
 
     def get(self, request):
 

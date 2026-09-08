@@ -85,14 +85,11 @@ window.initBreakPage = function(){
 
 window.loadBreakManagement = async function(){
 
-    const table =
-        document.getElementById("breakTable");
-
+    const table = document.getElementById("breakTable");
 
     if(!table){
         return;
     }
-
 
     try{
 
@@ -104,28 +101,17 @@ window.loadBreakManagement = async function(){
            DRF paginated responses.
         */
 
-        breakAllData =
-            Array.isArray(breaks)
-                ? breaks
-                : (breaks.results || []);
-
+        breakAllData = Array.isArray(breaks) ? breaks : (breaks.results || []);
 
         breakCurrentPage = 1;
 
-
-        renderBreakManagement(
-            breakAllData
-        );
+        renderBreakManagement( breakAllData );
 
     }
 
     catch(error){
 
-        console.error(
-            "Unable to load breaks:",
-            error
-        );
-
+        console.error( "Unable to load breaks:", error );
 
         table.innerHTML = `
             <tr>
@@ -149,17 +135,13 @@ window.loadBreakManagement = async function(){
 
 function renderBreakManagement(breaks){
 
-    const table =
-        document.getElementById("breakTable");
-
+    const table = document.getElementById("breakTable");
 
     if(!table){
         return;
     }
 
-
     table.innerHTML = "";
-
 
     if(!breaks || breaks.length === 0){
 
@@ -183,38 +165,22 @@ function renderBreakManagement(breaks){
     }
 
 
-    breakTotalPages =
-        Math.ceil(
-            breaks.length / breakPageSize
-        );
+    breakTotalPages = Math.ceil( breaks.length / breakPageSize );
 
 
-    if(
-        breakCurrentPage >
-        breakTotalPages
-    ){
+    if( breakCurrentPage > breakTotalPages ){
 
-        breakCurrentPage =
-            breakTotalPages;
+        breakCurrentPage = breakTotalPages;
 
     }
 
 
-    const startIndex =
-        (breakCurrentPage - 1)
-        * breakPageSize;
+    const startIndex = (breakCurrentPage - 1) * breakPageSize;
 
 
-    const endIndex =
-        startIndex + breakPageSize;
+    const endIndex = startIndex + breakPageSize;
 
-
-    const pageItems =
-        breaks.slice(
-            startIndex,
-            endIndex
-        );
-
+    const pageItems = breaks.slice( startIndex, endIndex );
 
     pageItems.forEach(item => {
 
@@ -241,20 +207,13 @@ function renderBreakManagement(breaks){
                 <td>
 
                     ${
-                        item.end_time
-
-                        ?
-
-                        "-"
+                        item.end_time ? "-"
 
                         :
 
                         `
-                        <button
-                            type="button"
-                            class="gold-btn end-break-btn"
-                            onclick="endBreak(${item.id})"
-                        >
+                        <button type="button"
+                            class="gold-btn end-break-btn" onclick="endBreak(${item.id})" >
                             End Break
                         </button>
                         `
@@ -282,29 +241,14 @@ function renderBreakManagement(breaks){
 
 function updateBreakPagination(totalItems){
 
-    const paginationInfo =
-        document.getElementById(
-            "breakPaginationInfo"
-        );
+    const paginationInfo = document.getElementById( "breakPaginationInfo" );
 
 
-    const pageNumber =
-        document.getElementById(
-            "breakPageNumber"
-        );
+    const pageNumber = document.getElementById( "breakPageNumber" );
 
+    const previousButton = document.getElementById( "prevBreakPage" );
 
-    const previousButton =
-        document.getElementById(
-            "prevBreakPage"
-        );
-
-
-    const nextButton =
-        document.getElementById(
-            "nextBreakPage"
-        );
-
+    const nextButton = document.getElementById( "nextBreakPage" );
 
     if(totalItems === 0){
 
@@ -312,22 +256,17 @@ function updateBreakPagination(totalItems){
 
         breakCurrentPage = 1;
 
-
         if(paginationInfo){
 
-            paginationInfo.textContent =
-                "Showing 0–0 of 0";
+            paginationInfo.textContent = "Showing 0–0 of 0";
 
         }
-
 
         if(pageNumber){
 
-            pageNumber.textContent =
-                "Page 1";
+            pageNumber.textContent =  "Page 1";
 
         }
-
 
         if(previousButton){
 
@@ -335,65 +274,48 @@ function updateBreakPagination(totalItems){
 
         }
 
-
         if(nextButton){
 
             nextButton.disabled = true;
 
         }
 
-
         return;
 
     }
 
 
-    breakTotalPages =
-        Math.ceil(
-            totalItems / breakPageSize
-        );
+    breakTotalPages = Math.ceil( totalItems / breakPageSize  );
 
 
-    const startItem =
-        (breakCurrentPage - 1)
-        * breakPageSize + 1;
+    const startItem = (breakCurrentPage - 1) * breakPageSize + 1;
 
-
-    const endItem =
-        Math.min(
-            breakCurrentPage * breakPageSize,
-            totalItems
-        );
-
+    const endItem = Math.min( breakCurrentPage * breakPageSize, totalItems );
 
     if(paginationInfo){
 
-        paginationInfo.textContent =
-            `Showing ${startItem}–${endItem} of ${totalItems}`;
+        paginationInfo.textContent = `Showing ${startItem}–${endItem} of ${totalItems}`;
 
     }
 
 
     if(pageNumber){
 
-        pageNumber.textContent =
-            `Page ${breakCurrentPage} of ${breakTotalPages}`;
+        pageNumber.textContent = `Page ${breakCurrentPage} of ${breakTotalPages}`;
 
     }
 
 
     if(previousButton){
 
-        previousButton.disabled =
-            breakCurrentPage <= 1;
+        previousButton.disabled = breakCurrentPage <= 1;
 
     }
 
 
     if(nextButton){
 
-        nextButton.disabled =
-            breakCurrentPage >= breakTotalPages;
+        nextButton.disabled = breakCurrentPage >= breakTotalPages;
 
     }
 
@@ -414,9 +336,7 @@ function previousBreakPage(){
     breakCurrentPage--;
 
 
-    renderBreakManagement(
-        breakAllData
-    );
+    renderBreakManagement( breakAllData );
 
 }
 
@@ -427,10 +347,7 @@ function previousBreakPage(){
 
 function nextBreakPage(){
 
-    if(
-        breakCurrentPage >=
-        breakTotalPages
-    ){
+    if( breakCurrentPage >= breakTotalPages ){
 
         return;
 
@@ -440,9 +357,7 @@ function nextBreakPage(){
     breakCurrentPage++;
 
 
-    renderBreakManagement(
-        breakAllData
-    );
+    renderBreakManagement( breakAllData );
 
 }
 
@@ -460,11 +375,7 @@ window.endBreak = async function(id){
 
     try{
 
-        await apiRequest( `/break-periods/breaks/${id}/end/`,
-            {
-                method: "POST"
-            }
-        );
+        await apiRequest( `/break-periods/breaks/${id}/end/`, { method: "POST"  } );
 
         await loadBreakManagement();
 
@@ -472,10 +383,7 @@ window.endBreak = async function(id){
 
     catch(error){
 
-        console.error(
-            "Unable to end break:",
-            error
-        );
+        console.error( "Unable to end break:", error );
 
     }
 

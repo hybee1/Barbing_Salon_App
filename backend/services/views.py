@@ -32,11 +32,7 @@ class ServicesView(APIView):
         if self.request.method == "GET":
             permission_classes = [AllowAny]
         else:
-            permission_classes = [
-                Is_SalonManager,
-                # OtherPermission,
-                # AnotherPermission,
-            ]
+            permission_classes = [ Is_SalonManager, ]
 
         return [permission() for permission in permission_classes]
 
@@ -109,8 +105,6 @@ class ServicesView(APIView):
                 is_active = service_is_active
 
             services = services.filter(is_active=is_active)
-
-            services = services.filter( is_active=is_active)
 
         paginator = StandardResultsSetPagination()
         page = paginator.paginate_queryset(services, request)
@@ -378,7 +372,7 @@ class ColorsView(APIView):
                 try:
                     service_id = int(service_id)
                 except ValueError:
-                    raise serializers.ValidationError()
+                    raise serializers.ValidationError({"service": "Invalid service."})
 
             colors = colors.filter(service=service_id)
 
@@ -392,11 +386,11 @@ class ColorsView(APIView):
 
             if isinstance(color_price, str):
                 try:
-                    hairstyle_price = Decimal(color_price)
+                    color_price = Decimal(color_price)
                 except ValueError:
-                    raise serializers.ValidationError()
+                    raise serializers.ValidationError({"color_price": "Invalid price."})
 
-            colors = colors.filter(price=hairstyle_price)
+            colors = colors.filter(price=color_price)
 
         # hairstyle_duration_minutes
         if color_duration_minutes is not None:

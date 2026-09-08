@@ -3,14 +3,15 @@ from django.db.models import Q, OuterRef, Exists
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
+from rest_framework.permissions import AllowAny
 
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from backend.accounts.models import User, StaffProfile
 from backend.accounts.serializers import StaffProfileSerializer, StaffProfileUserDetailsSerializer, \
-    StaffsWorkingTodaySerializer, StaffProfileSerializer_2,  StaffWriteSerializer, \
-    AllStaff_Self_UpdateSerializer
+    StaffsWorkingTodaySerializer, StaffProfileSerializer_2, StaffWriteSerializer, \
+    AllStaff_Self_UpdateSerializer, PublicBarberSerializer
 from backend.accounts.services import delete_staff
 from backend.breakperiods.models import BreakTimeAndOffDays
 
@@ -21,7 +22,7 @@ from backend.pagination.pagination import StandardResultsSetPagination
 
 
 class Barbers_Web_View(APIView):
-
+    permission_classes = [AllowAny ]
     def get(self, request, pk=None):
 
         # -----------------------------------------
@@ -42,20 +43,13 @@ class Barbers_Web_View(APIView):
 
             if barber is None:
                 return Response(
-                    {
-                        "detail": "Barber not found."
-                    },
+                    { "detail": "Barber not found." },
                     status=status.HTTP_404_NOT_FOUND,
                 )
 
-            serializer = StaffProfileSerializer(
-                barber
-            )
+            serializer = PublicBarberSerializer( barber )
 
-            return Response(
-                serializer.data,
-                status=status.HTTP_200_OK,
-            )
+            return Response( serializer.data, status=status.HTTP_200_OK, )
 
         # -----------------------------------------
         # List barbers
@@ -70,7 +64,7 @@ class Barbers_Web_View(APIView):
             )
         )
 
-        serializer = StaffProfileSerializer( barbers, many=True, )
+        serializer = PublicBarberSerializer( barbers, many=True, )
 
         return Response( serializer.data, status=status.HTTP_200_OK, )
 
@@ -395,7 +389,7 @@ class StaffUserDetails_Api_View(APIView):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
-        serializer = StaffWriteSerializer( request.user.staffprofile, data=request.data, )
+        serializer = StaffProfileUserDetailsSerializer( request.user.staffprofile, data=request.data, )
 
         serializer.is_valid( raise_exception=True )
 
@@ -411,7 +405,7 @@ class StaffUserDetails_Api_View(APIView):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
-        serializer = StaffWriteSerializer( request.user.staffprofile, data=request.data, partial=True, )
+        serializer = StaffProfileUserDetailsSerializer( request.user.staffprofile, data=request.data, partial=True, )
 
         serializer.is_valid( raise_exception=True )
 

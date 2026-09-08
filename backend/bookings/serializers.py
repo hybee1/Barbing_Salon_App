@@ -36,7 +36,7 @@ class BookingSerializer(serializers.ModelSerializer):
                     "reason_for_cancellation",
                     "booking_source", "booked_by",
         ]
-        read_only_fields = ["booking_reference"]
+        read_only_fields = [ "booking_reference", "price", "status", "booking_source", "booked_by", ]
 
     def validate_customer_name(self, value):
         value = " ".join(value.split())
@@ -49,9 +49,23 @@ class BookingSerializer(serializers.ModelSerializer):
         return value
 
     def validate_barber(self, value):
+
         if value.user.role != User.Role.STAFF:
+            raise serializers.ValidationError("Selected user is not a staff member.")
+
+        if not value.user.is_active:
+            raise serializers.ValidationError("Selected barber/stylist is inactive.")
+
+        if value.status != StaffProfile.StaffStatus.ACTIVE:
+            raise serializers.ValidationError("Selected barber/stylist is not currently active.")
+
+        if value.department not in {
+            StaffProfile.Department.BARBER,
+            StaffProfile.Department.BARBER_STYLIST,
+            StaffProfile.Department.STYLIST,
+        }:
             raise serializers.ValidationError(
-                "Selected user is not a staff member."
+                "Selected staff member cannot receive bookings."
             )
 
         return value
@@ -95,6 +109,15 @@ class BarberAvailableTimeQuerySerializer(serializers.Serializer):
     barber_id = serializers.IntegerField()
     date = serializers.DateField()
     total_service_duration = serializers.IntegerField()
+
+    def validate_total_service_duration(self, value):
+        if value <= 0:
+            raise serializers.ValidationError( "Duration must be greater than zero." )
+
+        if value > 24 * 60:
+            raise serializers.ValidationError( "Duration is too large." )
+
+        return value
 
 
 class BarberBookingStatsSerializer(serializers.Serializer):

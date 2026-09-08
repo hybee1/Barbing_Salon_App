@@ -77,42 +77,24 @@ window.loadBarberUser = async function () {
 
     try {
 
-        const data =
-            await apiRequest("/staffs/staff/me/");
+        const data = await apiRequest("/staffs/staff/me/");
 
-
-        const userName =
-            document.getElementById("userName");
-
+        const userName = document.getElementById("userName");
 
         if (userName) {
 
-            userName.textContent =
-                data.name ||
-                data.full_name ||
-                data.username ||
-                "";
+            userName.textContent = data.name || data.full_name || data.username ||  "";
 
         }
 
-
-        const avatar =
-            document.getElementById("avatar");
+        const avatar = document.getElementById("avatar");
 
 
         if (avatar) {
 
-            const name =
-                data.name ||
-                data.full_name ||
-                data.username ||
-                "";
+            const name = data.name || data.full_name || data.username || "";
 
-
-            avatar.textContent =
-                name
-                    ? name.charAt(0).toUpperCase()
-                    : "";
+            avatar.textContent = name ? name.charAt(0).toUpperCase() : "";
 
         }
 
@@ -127,10 +109,7 @@ window.loadBarberUser = async function () {
 
     catch (error) {
 
-        console.error(
-            "Unable to load barber profile:",
-            error
-        );
+        console.error( "Unable to load barber profile:", error );
 
         return null;
 
@@ -356,26 +335,15 @@ async function loadDashboardBreaks() {
 
         const data = await apiRequest( "/break-periods/break/barber/" );
 
+        const breaks = Array.isArray(data) ? data  : data?.results || [];
 
-        const breaks =
-            Array.isArray(data)
-                ? data
-                : data?.results || [];
-
-
-        renderDashboardBreaks(
-            breaks,
-            table
-        );
+        renderDashboardBreaks( breaks, table );
 
     }
 
     catch (error) {
 
-        console.error(
-            "Unable to load dashboard breaks:",
-            error
-        );
+        console.error( "Unable to load dashboard breaks:", error );
 
     }
 

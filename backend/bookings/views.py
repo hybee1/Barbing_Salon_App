@@ -5,6 +5,7 @@ from django.shortcuts import get_object_or_404
 from django.utils.dateparse import parse_date
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -15,15 +16,18 @@ from backend.bookings.serializers import (BookingSerializer, BarberAvailableTime
                                           BarberBookingsTodaySerializer)
 from backend.breakperiods.models import BreakTimeAndOffDays
 from backend.custom_permissions.permissions import Is_Authenticated_Staff_User, Is_SalonManager, Is_Barber, Is_Stylist, \
-    Is_Barber_Stylist, Is_Receptionist
+    Is_Barber_Stylist, Is_Receptionist, SalonManager_Or_Barber_Or_Stylist_Or_Is_Barber_Stylist, \
+    SalonManager_Or_Barber_Or_Stylist_Or_Is_Barber_Stylist_Or_Receptionist
 from backend.exceptions.exceptions import BookingDateException
+from backend.rate_limit_or_throttling.booking_create_throttle import BookingCreateThrottle
 from backend.services.models import Service, Hairstyle, Color
 from backend.utils.services import BarberScheduler
 
 
 class BookingView(APIView):
 
-    permission_classes = [Is_Authenticated_Staff_User]
+    # permission_classes = [Is_Authenticated_Staff_User] ---- still on hold on this commented line
+    permission_classes = [Is_SalonManager]
 
     def get(self, request):
 
@@ -76,6 +80,8 @@ class BookingView(APIView):
 
 
 class CreateBookingView(APIView):
+    permission_classes = [AllowAny]
+    throttle_classes = [BookingCreateThrottle]
 
     def post(self, request):
 
@@ -90,7 +96,7 @@ class CreateBookingView(APIView):
                 Service.objects.only("price", "duration_minutes"), id=service_id,
             )
             #  validate if hairstyle is active
-            if service.is_active:
+            if not service.is_active:
                 raise ValidationError({
                     "service": "This Service is temporarily unavailable, please select another Service."
                 })
@@ -115,7 +121,7 @@ class CreateBookingView(APIView):
                 })
 
             #  validate if hairstyle is active
-            if hairstyle.is_active:
+            if not hairstyle.is_active:
                 raise ValidationError({
                     "hairstyle": "This Hairstyle is temporarily unavailable, please select another Hairstyle."
                 })
@@ -142,7 +148,7 @@ class CreateBookingView(APIView):
                 })
 
             #  validate if color is active
-            if color.is_active:
+            if not color.is_active:
                 raise ValidationError({
                     "color": "This Color is temporarily unavailable, please select another Color."
                 })
@@ -235,7 +241,7 @@ class TodayBooking_Api_View(APIView):
 
 class BookingForLast7Days_Api_View(APIView):
 
-    permission_classes = [Is_SalonManager, Is_Barber, Is_Stylist, Is_Barber_Stylist]
+    permission_classes = [SalonManager_Or_Barber_Or_Stylist_Or_Is_Barber_Stylist]
 
     def get(self, request):
 
@@ -321,8 +327,7 @@ class BarberBookingStatsView(APIView):
         if ( break_or_off_days.count() > 0):
             for break_stat in break_or_off_days:
 
-                if ( break_stat.start_time < time_now and
-                                            break_or_off_days.end_time > time_now ):
+                if ( break_stat.start_time < time_now and break_stat.end_time > time_now ):
 
                     break_status = break_stat.status.label
 
@@ -341,7 +346,7 @@ class BarberBookingStatsView(APIView):
 
 class BarberBookingsToday(APIView):
 
-    permission_classes = [Is_SalonManager, Is_Barber, Is_Receptionist, Is_Stylist, Is_Barber_Stylist]
+    permission_classes = [SalonManager_Or_Barber_Or_Stylist_Or_Is_Barber_Stylist]
 
     def get(self, request):
 
@@ -360,7 +365,7 @@ class BarberBookingsToday(APIView):
 
 class BarberUpcomingBookingsToday(APIView):
 
-    permission_classes = [Is_SalonManager, Is_Barber, Is_Stylist, Is_Barber_Stylist]
+    permission_classes = [SalonManager_Or_Barber_Or_Stylist_Or_Is_Barber_Stylist]
 
     def get(self, request):
 
