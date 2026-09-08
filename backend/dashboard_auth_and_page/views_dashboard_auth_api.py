@@ -6,14 +6,13 @@ from django.http import JsonResponse
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes, throttle_classes
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import AllowAny
 from django.conf import settings
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from backend.accounts.models import User, StaffProfile
 from backend.rate_limit_or_throttling.login_rate_throttle import LoginRateThrottle
-from core_config.settings_base import env_bool
-from core_config.settings_dev import AUTH_COOKIE_HTTPONLY, AUTH_COOKIE_SECURE, AUTH_COOKIE_SAMESITE
+
 
 
 @api_view(["POST"])
@@ -150,9 +149,9 @@ def staff_dashboard_login_api(request):
     response.set_cookie(
         "accessToken",
         str(access_token),
-        httponly=AUTH_COOKIE_HTTPONLY,
-        secure=AUTH_COOKIE_SECURE,
-        samesite=AUTH_COOKIE_SAMESITE,
+        httponly=settings.AUTH_COOKIE_HTTPONLY,
+        secure=settings.AUTH_COOKIE_SECURE,
+        samesite=settings.AUTH_COOKIE_SAMESITE,
         max_age=access_lifetime,
     )
 
@@ -160,9 +159,9 @@ def staff_dashboard_login_api(request):
     response.set_cookie(
         "refreshToken",
         str(refresh),
-        httponly=AUTH_COOKIE_HTTPONLY,
-        secure=AUTH_COOKIE_SECURE,
-        samesite=AUTH_COOKIE_SAMESITE,
+        httponly=settings.AUTH_COOKIE_HTTPONLY,
+        secure=settings.AUTH_COOKIE_SECURE,
+        samesite=settings.AUTH_COOKIE_SAMESITE,
         max_age=remaining_seconds,
     )
 

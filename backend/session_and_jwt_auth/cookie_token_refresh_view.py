@@ -3,9 +3,8 @@ from django.utils import timezone
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenRefreshView
-
 from backend.session_and_jwt_auth.session_bound_token_refresh_serializer import SessionBoundTokenRefreshSerializer
-from core_config.settings_dev import AUTH_COOKIE_HTTPONLY, AUTH_COOKIE_SECURE, AUTH_COOKIE_SAMESITE
+
 
 
 class CookieTokenRefreshView(TokenRefreshView):
@@ -77,9 +76,9 @@ class CookieTokenRefreshView(TokenRefreshView):
             key="accessToken",
             value=access_token,
             max_age=access_cookie_max_age,
-            httponly=AUTH_COOKIE_HTTPONLY,
-            secure=AUTH_COOKIE_SECURE,
-            samesite=AUTH_COOKIE_SAMESITE,
+            httponly=settings.AUTH_COOKIE_HTTPONLY,
+            secure=settings.AUTH_COOKIE_SECURE,
+            samesite=settings.AUTH_COOKIE_SAMESITE,
         )
 
         # ---------------------------------------------------------
@@ -91,9 +90,9 @@ class CookieTokenRefreshView(TokenRefreshView):
                 key="refreshToken",
                 value=new_refresh_token,
                 max_age=remaining_seconds,
-                httponly=AUTH_COOKIE_HTTPONLY,
-                secure=AUTH_COOKIE_SECURE,
-                samesite=AUTH_COOKIE_SAMESITE,
+                httponly=settings.AUTH_COOKIE_HTTPONLY,
+                secure=settings.AUTH_COOKIE_SECURE,
+                samesite=settings.AUTH_COOKIE_SAMESITE,
             )
 
         return response
