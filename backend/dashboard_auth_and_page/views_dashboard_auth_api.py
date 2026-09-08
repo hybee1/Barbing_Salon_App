@@ -13,6 +13,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from backend.accounts.models import User, StaffProfile
 from backend.rate_limit_or_throttling.login_rate_throttle import LoginRateThrottle
 from core_config.settings_base import env_bool
+from core_config.settings_dev import AUTH_COOKIE_HTTPONLY, AUTH_COOKIE_SECURE, AUTH_COOKIE_SAMESITE
 
 
 @api_view(["POST"])
@@ -149,9 +150,9 @@ def staff_dashboard_login_api(request):
     response.set_cookie(
         "accessToken",
         str(access_token),
-        httponly=env_bool("SESSION_COOKIE_HTTPONLY"),
-        secure=env_bool("SESSION_COOKIE_SECURE"),
-        samesite=os.environ["SESSION_COOKIE_SAMESITE"],
+        httponly=AUTH_COOKIE_HTTPONLY,
+        secure=AUTH_COOKIE_SECURE,
+        samesite=AUTH_COOKIE_SAMESITE,
         max_age=access_lifetime,
     )
 
@@ -159,9 +160,9 @@ def staff_dashboard_login_api(request):
     response.set_cookie(
         "refreshToken",
         str(refresh),
-        httponly=env_bool["SESSION_COOKIE_HTTPONLY"],
-        secure=env_bool["SESSION_COOKIE_SECURE"],
-        samesite=os.environ["SESSION_COOKIE_SAMESITE"],
+        httponly=AUTH_COOKIE_HTTPONLY,
+        secure=AUTH_COOKIE_SECURE,
+        samesite=AUTH_COOKIE_SAMESITE,
         max_age=remaining_seconds,
     )
 
