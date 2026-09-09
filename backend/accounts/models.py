@@ -1,3 +1,4 @@
+
 from pathlib import Path
 from uuid import uuid4
 
@@ -10,9 +11,8 @@ from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
 from phonenumbers import NumberParseException
 
-
-
 from core_config import settings_base
+
 
 
 def get_photo_upload_path(obj, filename):
@@ -74,7 +74,16 @@ class User(AbstractUser):
             country_code = salon_config["country"]
 
             try:
-                phone = phonenumbers.parse(str(self.phone_number), country_code, )
+                raw_phone = str(self.phone_number).strip()
+
+                # If it starts with the salon's country calling code but has no '+',
+                # add the '+' before parsing.
+                country_calling_code = phonenumbers.country_code_for_region(country_code)
+
+                if raw_phone.startswith(str(country_calling_code)):
+                    raw_phone = "+" + raw_phone
+
+                phone = phonenumbers.parse(raw_phone, country_code, )
 
                 if not phonenumbers.is_valid_number(phone):
                     raise InvalidPhoneNumberError(str(self.phone_number))
@@ -83,6 +92,12 @@ class User(AbstractUser):
 
                 if phone_country != country_code:
                     raise InvalidPhoneNumberError(str(self.phone_number))
+
+                # Normalize and save as E.164
+                self.phone_number = phonenumbers.format_number(
+                    phone,
+                    phonenumbers.PhoneNumberFormat.E164,
+                )
 
             except NumberParseException:
                 raise ValidationError({"phone_number": "Invalid phone number."})

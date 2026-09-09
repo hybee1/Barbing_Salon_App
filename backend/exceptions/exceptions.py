@@ -67,6 +67,14 @@ class InvalidPhoneNumberError(APIException):
                   f'the phone number does not conform with selected country.')
         super().__init__(detail)
 
+class InvalidTimezoneError(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = "Invalid time zone."
+
+    def __init__(self, time_zone):
+        detail = (f'"{time_zone}" is not a valid for the selected country. ')
+        super().__init__(detail)
+
 class RoleException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = "Invalid role"

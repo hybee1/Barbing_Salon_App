@@ -3,8 +3,7 @@ from rest_framework import serializers
 from timezone_field.rest_framework import TimeZoneSerializerField
 
 from .models import SalonInfo, SalonBookingSetting
-
-
+from ..exceptions.exceptions import InvalidTimezoneError
 
 
 class SalonInfoReadSerializer(serializers.ModelSerializer):
@@ -61,15 +60,35 @@ class SalonInfoWriteSerializer(serializers.ModelSerializer):
         ]
 
     def validate_country(self, value):
-        from .services_salon_config import normalize_country, normalize_phone_number, normalize_currency
+        from .services_salon_config import normalize_country
         return normalize_country(value)
 
     def validate_currency(self, value):
-        from .services_salon_config import normalize_country, normalize_phone_number, normalize_currency
+        from .services_salon_config import  normalize_currency
         return normalize_currency(value)
 
     def validate(self, attrs):
         country = attrs.get("salon_country")
+
+        if country is None and self.instance:
+            country = self.instance.salon_country
+
+        time_zone = attrs.get("salon_time_zone")
+
+        if time_zone is None and self.instance:
+            time_zone = self.instance.salon_time_zone
+
+        if country is not None and time_zone is not None:
+
+            from .services_salon_config import (
+                validate_timezone_for_country,
+            )
+
+            try:
+                attrs["salon_time_zone"] = (validate_timezone_for_country( country=country, timezone=time_zone, )  )
+
+            except InvalidTimezoneError as exc:
+                raise serializers.ValidationError({ "time_zone": str(exc) })
 
         if country is None and self.instance:
             country = self.instance.salon_country

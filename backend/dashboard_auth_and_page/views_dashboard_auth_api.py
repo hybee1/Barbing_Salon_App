@@ -38,13 +38,13 @@ def logout_api(request):
     response.delete_cookie(
         "accessToken",
         path="/",
-        samesite="Lax",
+        samesite=settings.AUTH_COOKIE_SAMESITE,
     )
 
     response.delete_cookie(
         "refreshToken",
         path="/",
-        samesite="Lax",
+        samesite=settings.AUTH_COOKIE_SAMESITE,
     )
 
 
@@ -101,7 +101,7 @@ def staff_dashboard_login_api(request):
 
     # Absolute session lifetime: 2 hours
     # SESSION_LIFETIME = 60 * 60 * 2
-    SESSION_LIFETIME = int(os.getenv("SESSION_LIFETIME"))
+    SESSION_LIFETIME = settings.SESSION_LIFETIME
 
     request.session.set_expiry(SESSION_LIFETIME)
     request.session.save()
@@ -132,7 +132,7 @@ def staff_dashboard_login_api(request):
     # Normal access token lifetime is 15 minutes,
     # but it must not exceed the session lifetime.
     # access_lifetime = min( 60 * 15, remaining_seconds )
-    access_lifetime = min(60 * int(os.getenv("SIMPLE_JWT_ACCESS_TOKEN_LIFETIME")), remaining_seconds)
+    access_lifetime = min(60 * int(settings.SIMPLE_JWT["ACCESS_TOKEN_LIFETIME"]), remaining_seconds)
 
     # Override the access token expiry
     access_token["exp"] = now_timestamp + access_lifetime
@@ -142,8 +142,6 @@ def staff_dashboard_login_api(request):
     # ---------------------------------------------------------
 
     response = JsonResponse({ "redirect_url": user_based_dashboard(user) })
-
-    secure = not settings.DEBUG
 
     # Access token cookie
     response.set_cookie(
