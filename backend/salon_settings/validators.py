@@ -35,7 +35,7 @@ def validate_currency_code(value):
         )
 
 
-def validate_timezone_for_country(*, timezone: str,country: str,v) -> str:
+def validate_timezone_for_country(*, timezone: str,country: str) -> str:
 
     country = normalize_country(country)
 
