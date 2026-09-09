@@ -71,9 +71,17 @@ class Booking(models.Model):
 
     booked_by = models.CharField(max_length=15)
 
+    class Meta:
+        indexes = [
+            models.Index(fields=["barber", "booking_date", "start_time"]),
+            models.Index(fields=["booking_date", "status"]),
+            models.Index(fields=["booking_date", "barber", "status"]),
+            models.Index(fields=["booking_reference"]),
+        ]
+
     def __str__(self):
         # return f"{self.booking_reference} - {self.customer.full_name}"
-        return f"{self.booking_reference} - {self.email}"
+        return f"{self.booking_reference} - {self.customer_name or self.phone_number}"
 
     def clean(self):
 

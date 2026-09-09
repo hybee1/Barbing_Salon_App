@@ -153,6 +153,11 @@ MEDIA_ROOT = BASE_DIR / "media"
 # Django session to expire after 1 hour
 # SESSION_COOKIE_AGE = 60 * 60 * 1
 
+AUTHENTICATION_BACKENDS = [
+    "backend.custom_authentication.custom_auth_backend.UsernameOrPhoneBackend",
+]
+
+
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         # "rest_framework_simplejwt.authentication.JWTAuthentication",

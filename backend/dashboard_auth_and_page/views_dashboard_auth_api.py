@@ -1,7 +1,6 @@
 import os
 
-from django.contrib.auth import authenticate, login, logout
-from django.db.models import Q
+from django.contrib.auth import login, logout
 from django.http import JsonResponse
 from django.utils import timezone
 from rest_framework import status
@@ -11,6 +10,7 @@ from django.conf import settings
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from backend.accounts.models import User, StaffProfile
+from backend.custom_authentication.custom_auth_backend import Auth_Using_UsernameOrPhone
 from backend.rate_limit_or_throttling.login_rate_throttle import LoginRateThrottle
 
 
@@ -60,21 +60,8 @@ def staff_dashboard_login_api(request):
     username_or_phone = request.data.get("username")
     password = request.data.get("password")
 
-    if not username_or_phone or not password:
-        return Response(
-            {"message": "Username and password are required."},
-            status=status.HTTP_400_BAD_REQUEST,
-        )
-
-    user = User.objects.filter( Q(username=username_or_phone) | Q(phone_number=username_or_phone) ).first()
-
-    if user is None:
-        return Response(
-            {"message": "Invalid login credentials."},
-            status=status.HTTP_401_UNAUTHORIZED,
-        )
-
-    user = authenticate( username=user.username, password=password  )
+    user = Auth_Using_UsernameOrPhone.authenticate(
+        request=request, username_or_phone=username_or_phone, password=password, )
 
     if user is None:
         return Response(

@@ -393,7 +393,6 @@ class BarberScheduler:
                                         start_time__lt=new_end, end_time__gt=new_start
                                             ).exists())
 
-
         if overlap:
 
             raise BookingConflictException(new_start, new_end)

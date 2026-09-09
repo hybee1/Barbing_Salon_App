@@ -10,6 +10,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from backend.accounts.models import StaffProfile
+from backend.bookings.booking_services import BookingService
 from backend.bookings.models import Booking
 from backend.bookings.serializers import (BookingSerializer, BarberAvailableTimeQuerySerializer,
                                           BookingReadSerializer, BarberBookingStatsSerializer,
@@ -86,150 +87,38 @@ class CreateBookingView(APIView):
 
     def post(self, request):
 
+        # means the customer walked-in and a staff (reception, barber..) help booked a barbing session
+        # for the customer or the staff his/her self booked a barbing session for their self
+
+
+        user = request.user
+
+        if user.is_authenticated and user.is_staff :
+            booking_source = Booking.BookingSource.WALK_IN
+            booked_by = user.username
+        else:
+            booking_source = Booking.BookingSource.ONLINE
+            booked_by = "Customer"
+
         service_id: dict | None  = (request.data.get("service") or {}).get("id", None)
 
-        service = None
-        service_price = 0
-        service_duration_minutes = 0
-        if service_id is not None:
-            service = get_object_or_404(
-                Service.objects.only("price", "duration_minutes"), id=service_id,
-            )
-            #  validate if service is active
-            if not service.is_active:
-                raise ValidationError({
-                    "service": "This Service is temporarily unavailable, please select another Service."
-                })
-
-            service_price = service.price
-            service_duration_minutes = service.duration_minutes
-
         hairstyle_id: dict | None = (request.data.get("hairstyle") or {}).get("id", None)
-
-        hairstyle = None
-        hairstyle_price = 0
-        hairstyle_duration_minutes = 0
-        if hairstyle_id is not None:
-
-            if service is None:
-                raise ValidationError({
-                    "service": "Service is required when selecting a hairstyle."
-                })
-
-            hairstyle = get_object_or_404(
-                Hairstyle.objects.only("price", "duration_minutes"), id=hairstyle_id,
-            )
-
-            #  validate if hairstyle belongs to that service
-            if hairstyle and hairstyle.service_id != service.id:
-                raise ValidationError({
-                    "hairstyle": "Hairstyle does not belong to the selected service."
-                })
-
-            #  validate if hairstyle is active
-            if not hairstyle.is_active:
-                raise ValidationError({
-                    "hairstyle": "This Hairstyle is temporarily unavailable, please select another Hairstyle."
-                })
-
-            hairstyle_price = hairstyle.price
-            hairstyle_duration_minutes = hairstyle.duration_minutes
 
         barber_id = (request.data.get("barber") or {}).get("id", None)
 
         color_id: dict | None = (request.data.get("color") or {}).get("id", None)
 
-        color = None
-        color_price = 0
-        color_duration_minutes = 0
-        if color_id is not None:
-
-            if service is None:
-                raise ValidationError({
-                    "service": "Service is required when selecting a color."
-                })
-
-            color = get_object_or_404(
-                Color.objects.only("price", "duration_minutes"), id=color_id,
-            )
-
-            #  validate if color belongs to that service
-            if color and color.service_id != service.id:
-                raise ValidationError({
-                    "color": "Color does not belong to the selected service."
-                })
-
-            #  validate if color is active
-            if not color.is_active:
-                raise ValidationError({
-                    "color": "This Color is temporarily unavailable, please select another Color."
-                })
-
-            color_price = color.price
-            color_duration_minutes = color.duration_minutes
-
         booking_date = request.data.get("date")
 
         start_time_str = request.data.get("time")
 
-        datetime_str = f"{booking_date} {start_time_str}"
+        customer_data = request.data.get("customer") or {}
 
-        for fmt in ("%Y-%m-%d %H:%M", "%Y-%m-%d %H:%M:%S"):
-            try:
-                start_datetime = datetime.strptime(datetime_str, fmt)
-                break
-            except ValueError:
-                pass
-        else:
-            raise ValidationError({ "time": "Invalid date/time format." })
-
-        total_duration = timedelta(
-            minutes=service_duration_minutes + hairstyle_duration_minutes + color_duration_minutes
+        confirmed_booking = BookingService().create_booking(
+            customer_data=customer_data, barber_id=barber_id, service_id=service_id,
+            hairstyle_id=hairstyle_id, color_id=color_id, booking_date=booking_date,
+            start_time_str=start_time_str, booking_source=booking_source, booked_by=booked_by
         )
-
-        end_datetime = start_datetime + total_duration
-
-        start_time = start_datetime.time()
-
-        end_time = end_datetime.time()
-
-        customer = request.data.get("customer") or {}
-
-        customer_name = customer.get("customer_name") or None
-
-        phone_number = customer.get("phone")
-
-        total_price = service_price + hairstyle_price + color_price
-
-        booked_by = request.data.get("booked_by") or "Customer"
-
-        serializer = BookingSerializer(data = {
-
-            "service": service_id, "hairstyle": hairstyle_id, "color": color_id,
-            "barber": barber_id, "booking_date": booking_date, "start_time": start_time,
-            "end_time": end_time, "customer_name": customer_name,
-            "phone_number": phone_number, "price": total_price, "booked_by": booked_by
-
-        })
-
-        serializer.is_valid(raise_exception=True)
-
-        barber_scheduler = BarberScheduler()
-
-        with transaction.atomic():
-            barber = (
-                StaffProfile.objects
-                .select_for_update()
-                .get(pk=serializer.validated_data["barber"].pk)
-            )
-
-            barber_scheduler.is_overlap(
-                barber,
-                serializer.validated_data['booking_date'],
-                serializer.validated_data['start_time'],
-                serializer.validated_data['end_time'])
-
-            confirmed_booking = serializer.save()
 
         return Response({
             "message": "Booking created successfully.",
@@ -294,6 +183,7 @@ class BookingForLast7Days_Api_View(APIView):
 
 
 class BarberBookingAvailability_Api_View(APIView):
+    throttle_classes = [BookingCreateThrottle]
 
     #  for customers to see available barbers
 
@@ -319,6 +209,7 @@ class BarberBookingAvailability_Api_View(APIView):
 class BarberBookingStatsView(APIView):
 
     permission_classes = [Is_Authenticated_Staff_User]
+
 
 
     def get(self, request):

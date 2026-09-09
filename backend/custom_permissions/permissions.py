@@ -9,13 +9,13 @@ class AnyOf(BasePermission):
     def has_permission(self, request, view):
         return any(
             permission().has_permission(request, view)
-            for permission in self.permissions
+            for permission in self.permission_classes
         )
 
     def has_object_permission(self, request, view, obj):
         return any(
             permission().has_object_permission(request, view, obj)
-            for permission in self.permissions
+            for permission in self.permission_classes
         )
 
 

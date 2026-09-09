@@ -4,7 +4,7 @@ import pytz
 
 from django.core.exceptions import ValidationError
 from backend.exceptions.exceptions import InvalidCountryError, InvalidTimezoneError
-from backend.salon_settings.services_salon_config import normalize_country
+
 
 
 def validate_country_code(value):
@@ -36,6 +36,8 @@ def validate_currency_code(value):
 
 
 def validate_timezone_for_country(*, timezone: str,country: str) -> str:
+
+    from backend.salon_settings.services_salon_config import normalize_country
 
     country = normalize_country(country)
 

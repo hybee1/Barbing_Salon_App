@@ -3,6 +3,7 @@ from rest_framework import serializers
 from backend.accounts.models import User, StaffProfile
 from backend.bookings.models import Booking
 from backend.services.models import Service, Hairstyle, Color
+from backend.utils.services import BarberScheduler
 
 
 class BookingSerializer(serializers.ModelSerializer):
@@ -36,7 +37,7 @@ class BookingSerializer(serializers.ModelSerializer):
                     "reason_for_cancellation",
                     "booking_source", "booked_by",
         ]
-        read_only_fields = [ "booking_reference", "price", "status", "booking_source", "booked_by", ]
+        read_only_fields = [ "booking_reference", "status",  ]
 
     def validate_customer_name(self, value):
         value = " ".join(value.split())
@@ -59,11 +60,7 @@ class BookingSerializer(serializers.ModelSerializer):
         if value.status != StaffProfile.StaffStatus.ACTIVE:
             raise serializers.ValidationError("Selected barber/stylist is not currently active.")
 
-        if value.department not in {
-            StaffProfile.Department.BARBER,
-            StaffProfile.Department.BARBER_STYLIST,
-            StaffProfile.Department.STYLIST,
-        }:
+        if not BarberScheduler().can_receive_bookings(value):
             raise serializers.ValidationError(
                 "Selected staff member cannot receive bookings."
             )
@@ -83,6 +80,13 @@ class BookingSerializer(serializers.ModelSerializer):
             )
 
         return attrs
+
+
+class BookingSuccessFullyCreatedReadSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Booking
+        fields = [ "booking_reference", "price", "status", "booking_source", "booked_by", ]
 
 
 class BookingReadSerializer(serializers.ModelSerializer):
