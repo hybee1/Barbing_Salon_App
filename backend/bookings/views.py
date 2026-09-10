@@ -1,7 +1,8 @@
-from datetime import datetime, timedelta
+
+from datetime import timedelta, datetime
+
+from django.db.models import Count, Q
 from django.utils import timezone
-from django.db import transaction
-from django.shortcuts import get_object_or_404
 from django.utils.dateparse import parse_date
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
@@ -9,31 +10,51 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from backend.accounts.models import StaffProfile
-from backend.bookings.booking_services import BookingService
 from backend.bookings.models import Booking
-from backend.bookings.serializers import (BookingSerializer, BarberAvailableTimeQuerySerializer,
+from backend.bookings.serializers import (BarberAvailableTimeQuerySerializer,
                                           BookingReadSerializer, BarberBookingStatsSerializer,
-                                          BarberBookingsTodaySerializer)
+                                          BarberBookingsTodaySerializer, BookingSerializer, CreateBookingSerializer,
+                                          UpdateBookingSerializer)
 from backend.breakperiods.models import BreakTimeAndOffDays
-from backend.custom_permissions.permissions import Is_Authenticated_Staff_User, Is_SalonManager, Is_Barber, Is_Stylist, \
-    Is_Barber_Stylist, Is_Receptionist, SalonManager_Or_Barber_Or_Stylist_Or_Is_Barber_Stylist, \
-    SalonManager_Or_Barber_Or_Stylist_Or_Is_Barber_Stylist_Or_Receptionist, SalonManager_Or_Receptionist, \
-    Barber_Or_Stylist_Or_Is_Barber_Stylist
+from backend.custom_permissions.permissions import (Is_Authenticated_Staff_User, Is_SalonManager,
+                                                    SalonManager_Or_Barber_Or_Stylist_Or_Is_Barber_Stylist,
+                                                    SalonManager_Or_Receptionist,
+                                                    SalonManager_Or_Barber_Or_Stylist_Or_Is_Barber_Stylist_Or_Receptionist)
 from backend.exceptions.exceptions import BookingDateException
 from backend.rate_limit_or_throttling.booking_create_throttle import BookingCreateThrottle
-from backend.services.models import Service, Hairstyle, Color
 from backend.utils.services import BarberScheduler
 
 
-class BookingView(APIView):
+class ManageBooking_Api_View(APIView):
 
-    # permission_classes = [Is_Authenticated_Staff_User] ---- still on hold on this commented line
-    permission_classes = [Is_SalonManager]
+    def get_throttles(self):
+        if self.request.method == "POST":
+            throttle_classes = [BookingCreateThrottle]
+
+        else:
+            throttle_classes = []
+
+        return [throttle() for throttle in throttle_classes]
+
+    def get_permissions(self):
+        if self.request.method == "GET":
+            permission_classes = [Is_SalonManager]
+
+        elif self.request.method == "POST":
+            permission_classes = [ AllowAny, ]
+
+        elif self.request.method == "DELETE":
+            permission_classes = [Is_SalonManager, ]
+
+        else:
+            permission_classes = [ SalonManager_Or_Barber_Or_Stylist_Or_Is_Barber_Stylist_Or_Receptionist, ]
+
+        return [permission() for permission in permission_classes]
 
     def get(self, request):
 
-        bookings = Booking.objects.all()
+        bookings = ( Booking.objects.select_related( "barber__user", "service", "hairstyle", "color", )
+                   )
 
         booking_id = request.query_params.get("booking_id")
 
@@ -80,6 +101,23 @@ class BookingView(APIView):
 
         return Response(serializer.data)
 
+    def patch(self, request, booking_reference):
+
+        try:
+            booking = Booking.objects.get( booking_reference=booking_reference )
+
+        except Booking.DoesNotExist:
+            return Response(
+                { "detail": "Booking not found." }, status=status.HTTP_404_NOT_FOUND )
+
+        serializer = UpdateBookingSerializer( booking, data=request.data, partial=True )
+
+        serializer.is_valid( raise_exception=True )
+
+        booking = serializer.save()
+
+        return Response( BookingReadSerializer(booking).data, status=status.HTTP_200_OK )
+
 
 class CreateBookingView(APIView):
     permission_classes = [AllowAny]
@@ -89,8 +127,6 @@ class CreateBookingView(APIView):
 
         # means the customer walked-in and a staff (reception, barber..) help booked a barbing session
         # for the customer or the staff his/her self booked a barbing session for their self
-
-
         user = request.user
 
         if user.is_authenticated and user.is_staff :
@@ -112,13 +148,43 @@ class CreateBookingView(APIView):
 
         start_time_str = request.data.get("time")
 
+        datetime_str = f"{booking_date} {start_time_str}"
+
+        for fmt in ("%Y-%m-%d %H:%M", "%Y-%m-%d %H:%M:%S"):
+            try:
+                start_datetime = datetime.strptime(datetime_str, fmt)
+                break
+            except ValueError:
+                pass
+        else:
+            raise ValidationError({"time": "Invalid date/time format."})
+
+        start_time = start_datetime.time()
+
         customer_data = request.data.get("customer") or {}
 
-        confirmed_booking = BookingService().create_booking(
-            customer_data=customer_data, barber_id=barber_id, service_id=service_id,
-            hairstyle_id=hairstyle_id, color_id=color_id, booking_date=booking_date,
-            start_time_str=start_time_str, booking_source=booking_source, booked_by=booked_by
-        )
+        customer_name = customer_data.get("customer_name") or None
+
+        phone_number = customer_data.get("phone")
+
+        serializer = CreateBookingSerializer(data={
+
+            "service": service_id, "hairstyle": hairstyle_id, "color": color_id,
+            "barber": barber_id, "booking_date": booking_date, "start_time": start_time,
+             "customer_name": customer_name, "booking_source": booking_source,
+            "phone_number": phone_number, "booked_by": booked_by
+
+        })
+
+        serializer.is_valid(raise_exception=True)
+
+        confirmed_booking = serializer.save()
+
+        # confirmed_booking = BookingService().create_booking(
+        #     customer_data=customer_data, barber_id=barber_id, service_id=service_id,
+        #     hairstyle_id=hairstyle_id, color_id=color_id, booking_date=booking_date,
+        #     start_time_str=start_time_str, booking_source=booking_source, booked_by=booked_by
+        # )
 
         return Response({
             "message": "Booking created successfully.",
@@ -133,7 +199,10 @@ class TodayBooking_Api_View(APIView):
     def get(self, request):
 
         today_date = timezone.localdate()
-        bookings_for_today = Booking.objects.filter(booking_date=today_date)
+        bookings_for_today = (
+            Booking.objects.select_related( "barber__user", "service","hairstyle", "color",
+                        ).filter( booking_date=today_date )
+        )
 
         serializer = BookingReadSerializer( bookings_for_today, many=True )
 
@@ -154,10 +223,14 @@ class OneBarberBookingForLast7Days_Api_View(APIView):
                 {"detail": "Access Denied."}, status=status.HTTP_403_FORBIDDEN,
             )
 
-        booking_obj = (Booking.objects.filter(
-            barber=request.user.staffprofile,
-            booking_date__range=(last_7_days, today_date)
-        ).order_by("booking_date", "-start_time"))
+        booking_obj = (
+                        Booking.objects.select_related(
+                            "barber__user", "service", "hairstyle", "color",
+                        ).filter(
+                                barber=request.user.staffprofile,
+                                booking_date__range=(last_7_days, today_date),
+                        ).order_by("booking_date", "-start_time")
+        )
 
         serializer = BookingReadSerializer(booking_obj, many=True)
 
@@ -173,9 +246,16 @@ class BookingForLast7Days_Api_View(APIView):
         today_date = timezone.localdate()
         last_7_days = today_date - timedelta(days=7)
 
-        booking_obj = (Booking.objects.filter(
-            booking_date__range=(last_7_days, today_date)
-        ).order_by("booking_date", "-start_time"))
+        booking_obj = ( Booking.objects .select_related(
+                        "barber__user",
+                        "service",
+                        "hairstyle",
+                        "color",
+                    ).filter(
+                        booking_date__range=(last_7_days, today_date),
+                    )
+                    .order_by("booking_date", "-start_time")
+        )
 
         serializer = BookingReadSerializer(booking_obj, many=True)
 
@@ -208,63 +288,45 @@ class BarberBookingAvailability_Api_View(APIView):
 
 class BarberBookingStatsView(APIView):
 
-    permission_classes = [Is_Authenticated_Staff_User]
-
-
+    permission_classes = [Is_Authenticated_Staff_User,]
 
     def get(self, request):
 
         barber = request.user.staffprofile
 
+        date_time_today = timezone.localtime()
+        date_today = date_time_today.date()
+        time_now = date_time_today.time()
 
+        barber_bookings_stats_for_today = Booking.objects.filter(booking_date=date_today, barber=barber)
 
-        date_today = timezone.localdate()
+        stats = barber_bookings_stats_for_today.aggregate(
+            today_count=Count("id"),
+            completed_count=Count( "id",  filter=Q(status=Booking.STATUS.COMPLETED), ),
+            upcoming_count=Count(
+                                "id",
+                                filter=Q(
+                                    start_time__gte=time_now,
+                                    status__in=[ Booking.STATUS.ARRIVED, Booking.STATUS.CONFIRMED, ], ),
+                                ),
+        )
 
-        barber_bookings_stats_for_today = Booking.objects.filter(
-                                                    booking_date=date_today, barber=barber)
+        break_or_off_days = list( BreakTimeAndOffDays.objects.filter( staff=barber, date=date_today,)[:7] )
 
-        barber_total_bookings_for_today = barber_bookings_stats_for_today.count()
+        if not break_or_off_days:
+            break_status = ( BreakTimeAndOffDays.BlockStatus.AVAILABLE.label )
+        else:
+            break_status = ( BreakTimeAndOffDays.BlockStatus.AVAILABLE.label )
 
-        completed = 0
-        upcoming = 0
-        for stat in barber_bookings_stats_for_today:
-
-            if (Booking.STATUS(stat.status) == Booking.STATUS.COMPLETED):
-
-                completed += 1
-
-            if (stat.start_time >= timezone.localtime().time() and
-                    Booking.STATUS(stat.status) in [Booking.STATUS.ARRIVED,
-                                                    Booking.STATUS.CONFIRMED]):
-
-                upcoming += 1
-
-        date_now = timezone.localdate()
-
-        break_or_off_days = (BreakTimeAndOffDays.objects.filter(
-            staff=barber, date=date_now)[0:7])
-
-
-        time_now = timezone.localtime().time()
-
-        if (break_or_off_days.count() == 0):
-
-            break_status = BreakTimeAndOffDays.BlockStatus.AVAILABLE.label
-
-        if ( break_or_off_days.count() > 0):
             for break_stat in break_or_off_days:
-
                 if ( break_stat.start_time < time_now and break_stat.end_time > time_now ):
-
                     break_status = break_stat.status.label
-
-                else:
-                    break_status = BreakTimeAndOffDays.BlockStatus.AVAILABLE.label
+                    break
 
         serializer = BarberBookingStatsSerializer({
-                                        "today_count": barber_total_bookings_for_today,
-                                        "completed_count": completed,
-                                        "upcoming_count": upcoming,
+                                        "today_count": stats.today_count,
+                                        "completed_count": stats.completed_count,
+                                        "upcoming_count": stats.upcoming_count,
                                         "break_status": break_status
                                     })
 
@@ -312,10 +374,12 @@ class OneBarberUpcomingBookingsToday(APIView):
                 {"detail": "Access Denied."}, status=status.HTTP_403_FORBIDDEN,
             )
 
-        barber_bookings_stats_for_today = Booking.objects.filter(
-                            booking_date=date_today, barber=barber,
-                            start_time__gte=current_time,
-                            status=Booking.STATUS.CONFIRMED)
+        barber_bookings_stats_for_today = ( Booking.objects
+                                                        .select_related( "service", "hairstyle", )
+                                                        .filter( booking_date=date_today, barber=barber,
+                                                                status=Booking.STATUS.CONFIRMED,
+                                                         )
+                                           )
 
         serializer = BarberBookingsTodaySerializer(barber_bookings_stats_for_today, many=True)
 
@@ -334,10 +398,16 @@ class BarberUpcomingBookingsToday(APIView):
         date_today = date_and_time.date()
         current_time = date_and_time.time()
 
-        barber_bookings_stats_for_today = Booking.objects.filter(
-                            booking_date=date_today,
-                            start_time__gte=current_time,
-                            status=Booking.STATUS.CONFIRMED)
+        barber_bookings_stats_for_today = (
+                                            Booking.objects.select_related(
+                                                        "barber__user", "service", "hairstyle",
+                                                    )
+                                                    .filter(
+                                                        booking_date=date_today,
+                                                        start_time__gte=current_time,
+                                                        status=Booking.STATUS.CONFIRMED,
+                                                    )
+                                            )
 
         serializer = BarberBookingsTodaySerializer(barber_bookings_stats_for_today, many=True)
 

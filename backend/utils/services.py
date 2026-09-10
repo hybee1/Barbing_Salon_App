@@ -371,8 +371,8 @@ class BarberScheduler:
     # Prevent Double Booking
     # Even if two customers click 10:15 simultaneously, you must validate again before saving.
 
-    def is_overlap(self, barber: StaffProfile, booking_date: date,
-        new_start: time, new_end: time) -> bool:
+    def validate_no_overlap(self, barber: StaffProfile, booking_date: date,
+                            new_start: time, new_end: time) -> bool:
 
         # if barber.user.role != User.Role.BARBER:
         #     raise RoleException()

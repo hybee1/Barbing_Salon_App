@@ -154,7 +154,7 @@ MEDIA_ROOT = BASE_DIR / "media"
 # SESSION_COOKIE_AGE = 60 * 60 * 1
 
 AUTHENTICATION_BACKENDS = [
-    "backend.custom_authentication.custom_auth_backend.UsernameOrPhoneBackend",
+    "backend.custom_authentication.custom_auth_backend.Auth_Using_UsernameOrPhone",
 ]
 
 

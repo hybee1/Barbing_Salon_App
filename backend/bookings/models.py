@@ -5,6 +5,7 @@ import phonenumbers
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.db import models
+from django.utils import timezone
 from phonenumber_field.modelfields import PhoneNumberField
 from phonenumbers import NumberParseException
 
@@ -79,6 +80,18 @@ class Booking(models.Model):
             models.Index(fields=["booking_reference"]),
         ]
 
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(start_time__lt=models.F("end_time")),
+                name="event_start_before_end",
+            ),
+            models.CheckConstraint(
+                condition=models.Q(booking_date__gte=timezone.localdate()),
+                name="event_booking_date_today_or_later",
+            ),
+
+        ]
+
     def __str__(self):
         # return f"{self.booking_reference} - {self.customer.full_name}"
         return f"{self.booking_reference} - {self.customer_name or self.phone_number}"
@@ -139,8 +152,8 @@ class Booking(models.Model):
             barber_scheduler = BarberScheduler()
 
             # barber_scheduler.is_overlap( self.barber.user.staff, self.start_time, self.end_time)
-            barber_scheduler.is_overlap(self.barber, self.booking_date,
-                                        self.start_time, self.end_time)
+            barber_scheduler.validate_no_overlap(self.barber, self.booking_date,
+                                                 self.start_time, self.end_time)
 
 
         except BookingConflictException as exc:

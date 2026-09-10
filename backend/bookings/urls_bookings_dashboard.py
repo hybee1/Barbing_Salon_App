@@ -1,13 +1,15 @@
 
 from django.urls import path
 from backend.bookings.views import (BookingForLast7Days_Api_View, TodayBooking_Api_View,
-                                    BarberUpcomingBookingsToday, BookingView,
+                                    BarberUpcomingBookingsToday, ManageBooking_Api_View,
                                     OneBarberBookingForLast7Days_Api_View, OneBarberBookingsToday)
 
 
 urlpatterns = [
 
-    path("", BookingView.as_view(), name="bookings"),
+    path("", ManageBooking_Api_View.as_view(), name="manage-booking"),
+
+    path( "<str:booking_reference>/", ManageBooking_Api_View.as_view(), name="update-booking", ),
 
     # ONLY THOSE WHO CAN RECEIVE BOOKING CAN VIEW THIS ENDPOINT
     path("barber/last7days/", OneBarberBookingForLast7Days_Api_View.as_view(), name="one-barber-bookings-last-7-days"),
