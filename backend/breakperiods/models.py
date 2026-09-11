@@ -1,4 +1,5 @@
 from datetime import timedelta
+from zoneinfo import ZoneInfo
 
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -46,6 +47,13 @@ class BreakTimeAndOffDays(TimeStampedModel):
         verbose_name_plural = "BreakTimeAndOffDays"
         ordering = ["-date", "start_time"]
 
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(start_time__lt=models.F("end_time")),
+                name="break_start_time_should_before_end",
+            ),
+
+        ]
 
     def clean(self):
 
@@ -66,8 +74,12 @@ class BreakTimeAndOffDays(TimeStampedModel):
         start_time = self.start_time
         end_time = self.end_time
 
+        salon_config, booking_config = self.get_salon_config()
+
+        SALON_TIMEZONE = ZoneInfo(salon_config["time_zone"])
+
         # Date validation
-        today_date_and_time = timezone.localtime()
+        today_date_and_time = timezone.localtime(SALON_TIMEZONE)
         today_date = today_date_and_time.date()
         current_time = today_date_and_time.time()
 
@@ -122,13 +134,10 @@ class BreakTimeAndOffDays(TimeStampedModel):
             overlap = overlap.exclude(pk=self.pk)
 
         if overlap.exists():
-            raise ValidationError(
-                "This availability block overlaps with an existing one."
-            )
+            raise ValidationError( {
+                "details": "This availability block overlaps with an existing one." })
 
     def save(self, *args, **kwargs):
-
-        # is_new = self.pk is None
 
         self.full_clean()
         super().save(*args, **kwargs)

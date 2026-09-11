@@ -27,7 +27,7 @@ class Booking(models.Model):
         ONLINE = "ONLINE", "Online",
         WALK_IN = "WALK_IN", "Walk In"
 
-    booking_reference = models.CharField( max_length=30, unique=True, blank=True )
+    booking_reference = models.CharField( max_length=30, unique=True )
 
     barber = models.ForeignKey("accounts.StaffProfile", on_delete=models.CASCADE,
                                related_name="bookings")
@@ -41,7 +41,7 @@ class Booking(models.Model):
     color = models.ForeignKey("services.Color", null=True, blank=True,
                                   on_delete=models.SET_NULL, related_name="bookings")
 
-    price = models.DecimalField(max_digits = 10, decimal_places = 2, blank=True, null=True )
+    price = models.DecimalField(max_digits = 10, decimal_places = 2, default=True, )
 
     customer_name = models.CharField(max_length=100, null=True, blank=True,
                                      validators=[
@@ -83,13 +83,8 @@ class Booking(models.Model):
         constraints = [
             models.CheckConstraint(
                 condition=models.Q(start_time__lt=models.F("end_time")),
-                name="event_start_before_end",
+                name="booking_start_time_should_before_end",
             ),
-            models.CheckConstraint(
-                condition=models.Q(booking_date__gte=timezone.localdate()),
-                name="event_booking_date_today_or_later",
-            ),
-
         ]
 
     def __str__(self):

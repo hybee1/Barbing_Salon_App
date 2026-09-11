@@ -84,21 +84,23 @@ class BookingSerializer(serializers.ModelSerializer):
 class CreateBookingSerializer(serializers.ModelSerializer):
 
     barber = serializers.PrimaryKeyRelatedField(
-        queryset=StaffProfile.objects.all()
+        queryset=StaffProfile.objects.filter(
+            user__is_active=True,
+            status=StaffProfile.StaffStatus.ACTIVE, )
     )
 
     service = serializers.PrimaryKeyRelatedField(
-        queryset=Service.objects.all()
+        queryset=Service.objects.filter(is_active=True),
     )
 
     hairstyle = serializers.PrimaryKeyRelatedField(
-        queryset=Hairstyle.objects.all(),
+        queryset=Hairstyle.objects.filter(is_active=True),
         required=False,
         allow_null=True,
     )
 
     color = serializers.PrimaryKeyRelatedField(
-        queryset=Color.objects.all(),
+        queryset=Color.objects.filter(is_active=True),
         required=False,
         allow_null=True,
     )
@@ -141,11 +143,6 @@ class CreateBookingSerializer(serializers.ModelSerializer):
         return value
 
     def validate(self, attrs):
-        if ( attrs.get("status") == Booking.STATUS.CANCELLED and not attrs.get("reason_for_cancellation")  ):
-            raise serializers.ValidationError(
-                { "reason_for_cancellation": "A cancellation reason is required." }
-            )
-
 
         salon_config, _ = BarberScheduler().get_salon_config()
         open_time = salon_config["open_time"]
@@ -153,18 +150,19 @@ class CreateBookingSerializer(serializers.ModelSerializer):
         booking_date = attrs.get("booking_date")
         start_time = attrs.get("start_time")
 
+        barber= attrs.get("barber")
         service = attrs.get("service")
         hairstyle = attrs.get("hairstyle")
         color = attrs.get("color")
 
-        # validate service is active
-        if not service.is_active:
-            raise serializers.ValidationError({
-                "service": "This Service is temporarily unavailable, please select another Service."
-            })
-
         service_price = service.price
         service_duration_minutes = service.duration_minutes
+
+        #  validate if barber can receive bookings
+        if not BarberScheduler().can_receive_bookings(barber):
+            raise serializers.ValidationError({
+                "details": "selected staff member can not receive bookings."
+            })
 
         #  validate if hairstyle belongs to that service
         if hairstyle and hairstyle.service_id != service.id:
@@ -172,14 +170,8 @@ class CreateBookingSerializer(serializers.ModelSerializer):
                 "hairstyle": "Hairstyle does not belong to the selected service."
             })
 
-        #  validate if hairstyle is active
-        if not hairstyle.is_active:
-            raise serializers.ValidationError({
-                "hairstyle": "This Hairstyle is temporarily unavailable, please select another Hairstyle."
-            })
-
-        hairstyle_price = hairstyle.price
-        hairstyle_duration_minutes = hairstyle.duration_minutes
+        hairstyle_price = hairstyle.price if hairstyle else 0
+        hairstyle_duration_minutes = ( hairstyle.duration_minutes if hairstyle else 0 )
 
         #  validate if color belongs to that service
         if color and color.service_id != service.id:
@@ -187,17 +179,11 @@ class CreateBookingSerializer(serializers.ModelSerializer):
                 "color": "Color does not belong to the selected service."
             })
 
-        #  validate if color is active
-        if not color.is_active:
-            raise serializers.ValidationError({
-                "color": "This Color is temporarily unavailable, please select another Color."
-            })
-
-        color_price = color.price
-        color_duration_minutes = color.duration_minutes
+        color_price = color.price if color else 0
+        color_duration_minutes = ( color.duration_minutes if color else 0 )
 
         if booking_date < timezone.localdate():
-            raise serializers.ValidationError()
+            raise serializers.ValidationError({ "booking_date": "Booking date cannot be in the past."})
 
         total_duration = timedelta(
             minutes=service_duration_minutes + hairstyle_duration_minutes + color_duration_minutes
@@ -225,21 +211,19 @@ class CreateBookingSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
 
-        # Separate User fields from StaffProfile fields.
-        staff_data = {
-
-            "department": validated_data.pop( "department", StaffProfile.Department.BARBER, ),
-
-            "position": validated_data.pop( "position", StaffProfile.Position.LEVEL_ONE, ),
-
-            "employment_date": validated_data.pop( "employment_date" ),
-
-            "status": validated_data.pop( "status", StaffProfile.StaffStatus.ACTIVE, ),
-        }
-
-        return create_booking( barber_id=validated_data["barber"], service_id=validated_data["service"],
-                               hairstyle_id=validated_data["hairstyle"],
-                               color_id=validated_data["color"], total_price=validated_data["price"],
+        return create_booking( barber_id=validated_data["barber"].pk,
+                               service_id=validated_data["service"].pk,
+                               hairstyle_id=(
+                                                validated_data["hairstyle"].pk
+                                                if validated_data.get("hairstyle")
+                                                else None
+                                            ),
+                               color_id=(
+                                            validated_data["color"].pk
+                                            if validated_data.get("color")
+                                            else None
+                                        ),
+                               total_price=validated_data["price"],
                                booking_date=validated_data["booking_date"],
                                start_time=validated_data["start_time"],
                                end_time=validated_data["end_time"],

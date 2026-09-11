@@ -89,7 +89,7 @@ class ManageBooking_Api_View(APIView):
 
         # Staff filter
         if staff:
-            bookings = bookings.filter( staff_id=staff )
+            bookings = bookings.filter( barber_id=staff )
 
         # Status filter
         if status and status.upper() != "ALL STATUS":
@@ -179,12 +179,6 @@ class CreateBookingView(APIView):
         serializer.is_valid(raise_exception=True)
 
         confirmed_booking = serializer.save()
-
-        # confirmed_booking = BookingService().create_booking(
-        #     customer_data=customer_data, barber_id=barber_id, service_id=service_id,
-        #     hairstyle_id=hairstyle_id, color_id=color_id, booking_date=booking_date,
-        #     start_time_str=start_time_str, booking_source=booking_source, booked_by=booked_by
-        # )
 
         return Response({
             "message": "Booking created successfully.",
@@ -376,8 +370,11 @@ class OneBarberUpcomingBookingsToday(APIView):
 
         barber_bookings_stats_for_today = ( Booking.objects
                                                         .select_related( "service", "hairstyle", )
-                                                        .filter( booking_date=date_today, barber=barber,
-                                                                status=Booking.STATUS.CONFIRMED,
+                                                        .filter(
+                                                                barber=barber,
+                                                                booking_date=date_today,
+                                                                 start_time__gte=current_time,
+                                                                 status=Booking.STATUS.CONFIRMED,
                                                          )
                                            )
 

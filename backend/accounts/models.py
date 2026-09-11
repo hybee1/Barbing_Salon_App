@@ -180,16 +180,14 @@ class StaffProfile(models.Model):
     user = models.OneToOneField(settings_base.AUTH_USER_MODEL, on_delete=models.CASCADE,
                                 related_name="staffprofile")
 
-    department = models.CharField(max_length=35, choices=Department.choices,
-                                  default=Department.BARBER, )
+    department = models.CharField(max_length=35, choices=Department.choices,)
 
-    position = models.CharField(max_length=35, choices=Position.choices,
-                                            default=Position.LEVEL_ONE,)
+    position = models.CharField(max_length=35, choices=Position.choices, default=Position.LEVEL_ONE,)
 
-    employment_date = models.DateField( default=timezone.localdate,)
+    employment_date = models.DateField()
 
-    status = models.CharField(max_length=35, choices=StaffStatus.choices,
-                                            default=StaffStatus.ACTIVE,)
+    status = models.CharField(max_length=35, choices=StaffStatus.choices,)
+
 
     def __str__(self):
         return self.user.get_full_name() or self.user.username
