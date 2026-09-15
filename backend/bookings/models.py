@@ -11,9 +11,9 @@ from phonenumber_field.modelfields import PhoneNumberField
 from phonenumbers import NumberParseException
 
 
-class TsRange(Func):
-    function = "TSRANGE"
-    output_field = DateTimeRangeField()
+# class TsRange(Func):
+#     function = "TSRANGE"
+#     output_field = DateTimeRangeField()
 
 class Booking(models.Model):
 
@@ -163,8 +163,8 @@ class Booking(models.Model):
             # raise BookingConflictException( self.start_time, self.end_time)
             raise ValidationError({"start_time": str(exc)})
 
-    # def save(self, *args, **kwargs):
-    #
-    #     self.full_clean()
-    #     return super().save(*args, **kwargs)
+    def save(self, *args, **kwargs):
+
+        self.full_clean()
+        return super().save(*args, **kwargs)
 

@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from django.core.exceptions import ValidationError
 from django.db import transaction
@@ -20,8 +20,8 @@ def create_booking( *, barber_id, service_id, hairstyle_id, color_id, total_pric
     client_session_end_date_and_time = (
                     datetime.combine(booking_date, end_time, ).replace(tzinfo=salon_timezone) )
 
-    start_time_utc = client_session_start_date_and_time.time()
-    end_time_utc = client_session_end_date_and_time.time()
+    start_time_utc = client_session_start_date_and_time.astimezone(timezone.utc).time()
+    end_time_utc = client_session_end_date_and_time.astimezone(timezone.utc).time()
 
     # Lock this barber for the duration of the transaction.
     # Any other booking attempt for this same barber must wait.
@@ -88,11 +88,11 @@ def booking_data_with_timezone(*, data: dict | list[dict]) -> dict |list[dict]:
     salon_info = get_salon_info_config()
     salon_timezone = salon_info.timezone
 
-    if (isinstance(data, dict) and isinstance(data, list)):
+    if not isinstance(data, (dict, list)):
         raise ValidationError({"details": "invalid booking data. booking data "
                                           "is either a dict or a list of dict"})
 
-    if ( isinstance(data, dict) ):
+    if isinstance(data, dict):
         if "booking_date" not in data:
             raise ValidationError({"details": "A booking 'date' is required."})
         booking_date_str = data['booking_date']
@@ -101,7 +101,7 @@ def booking_data_with_timezone(*, data: dict | list[dict]) -> dict |list[dict]:
             raise ValidationError({"details": "A booking 'start_time' is required."})
         start_time_str = data['start_time']
 
-        if "start_time" not in data:
+        if "end_time" not in data:
             raise ValidationError({"details": "A booking 'end_time' is required."})
         end_time_str = data['end_time']
 
@@ -111,15 +111,15 @@ def booking_data_with_timezone(*, data: dict | list[dict]) -> dict |list[dict]:
         booking_date_start_time = datetime.strptime(booking_date_start_time_str, "%Y-%m-%d %H:%M")
         booking_date_end_time = datetime.strptime(booking_date_end_time_str, "%Y-%m-%d %H:%M")
 
-        booking_date_start_time = booking_date_start_time.astimezone(salon_timezone)
-        booking_date_end_time = booking_date_end_time.astimezone(salon_timezone)
+        booking_date_start_time = booking_date_start_time.replace(tzinfo=timezone.utc).astimezone(salon_timezone)
+        booking_date_end_time = booking_date_end_time.replace(tzinfo=timezone.utc).astimezone(salon_timezone)
 
         data['start_time'] = booking_date_start_time.time()
         data['end_time'] = booking_date_end_time.time()
 
         return data
 
-    if (isinstance(data, list)):
+    elif isinstance(data, list):
 
         res_list: list[dict] = []
         for item in data:
@@ -131,7 +131,7 @@ def booking_data_with_timezone(*, data: dict | list[dict]) -> dict |list[dict]:
                 raise ValidationError({"details": "A booking 'start_time' is required."})
             start_time_str = item['start_time']
 
-            if "start_time" not in item:
+            if "end_time" not in item:
                 raise ValidationError({"details": "A booking 'end_time' is required."})
             end_time_str = item['end_time']
 
@@ -150,5 +150,4 @@ def booking_data_with_timezone(*, data: dict | list[dict]) -> dict |list[dict]:
             res_list.append(item)
 
         return res_list
-
 
