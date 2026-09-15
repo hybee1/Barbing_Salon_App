@@ -10,6 +10,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from backend.bookings.booking_services import booking_data_with_timezone
 from backend.bookings.models import Booking
 from backend.bookings.serializers import (BarberAvailableTimeQuerySerializer,
                                           BookingReadSerializer, BarberBookingStatsSerializer,
@@ -99,7 +100,9 @@ class ManageBooking_Api_View(APIView):
 
         serializer = BookingReadSerializer( bookings, many=True )
 
-        return Response(serializer.data)
+        res = booking_data_with_timezone(data=serializer.data)
+
+        return Response(res, status=status.HTTP_200_OK)
 
     def patch(self, request, booking_reference):
 
@@ -116,7 +119,11 @@ class ManageBooking_Api_View(APIView):
 
         booking = serializer.save()
 
-        return Response( BookingReadSerializer(booking).data, status=status.HTTP_200_OK )
+        serializer2 = BookingReadSerializer(booking)
+
+        res = booking_data_with_timezone(data=serializer2.data)
+
+        return Response(res, status=status.HTTP_200_OK)
 
 
 class CreateBookingView(APIView):
@@ -200,7 +207,9 @@ class TodayBooking_Api_View(APIView):
 
         serializer = BookingReadSerializer( bookings_for_today, many=True )
 
-        return Response(serializer.data)
+        res = booking_data_with_timezone(data=serializer.data)
+
+        return Response(res, status=status.HTTP_200_OK)
 
 
 class OneBarberBookingForLast7Days_Api_View(APIView):
@@ -228,7 +237,9 @@ class OneBarberBookingForLast7Days_Api_View(APIView):
 
         serializer = BookingReadSerializer(booking_obj, many=True)
 
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        res = booking_data_with_timezone(data=serializer.data)
+
+        return Response(res, status=status.HTTP_200_OK)
 
 
 class BookingForLast7Days_Api_View(APIView):
@@ -253,7 +264,9 @@ class BookingForLast7Days_Api_View(APIView):
 
         serializer = BookingReadSerializer(booking_obj, many=True)
 
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        res = booking_data_with_timezone(data=serializer.data)
+
+        return Response(res, status=status.HTTP_200_OK)
 
 
 class BarberBookingAvailability_Api_View(APIView):
@@ -348,7 +361,9 @@ class OneBarberBookingsToday(APIView):
 
         serializer = BarberBookingsTodaySerializer(barber_bookings_stats_for_today, many=True)
 
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        res = booking_data_with_timezone(data=serializer.data)
+
+        return Response(res, status=status.HTTP_200_OK)
 
 
 class OneBarberUpcomingBookingsToday(APIView):
@@ -380,7 +395,9 @@ class OneBarberUpcomingBookingsToday(APIView):
 
         serializer = BarberBookingsTodaySerializer(barber_bookings_stats_for_today, many=True)
 
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        res = booking_data_with_timezone(data=serializer.data)
+
+        return Response(res, status=status.HTTP_200_OK)
 
 
 class BarberUpcomingBookingsToday(APIView):
@@ -408,6 +425,8 @@ class BarberUpcomingBookingsToday(APIView):
 
         serializer = BarberBookingsTodaySerializer(barber_bookings_stats_for_today, many=True)
 
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        res = booking_data_with_timezone(serializer.data)
+
+        return Response(res, status=status.HTTP_200_OK)
 
 

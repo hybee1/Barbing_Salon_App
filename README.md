@@ -77,5 +77,4 @@ Barbing_Salon_App/
 ├── pyproject.toml
 ├── uv.lock
 ├── .env-dev
-├── .env-prod
 └── README.md

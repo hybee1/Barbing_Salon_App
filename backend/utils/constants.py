@@ -1,8 +1,6 @@
 
 
 
-
-
 class SalonBusinessHour:
 
     @staticmethod

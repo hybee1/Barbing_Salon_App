@@ -18,11 +18,7 @@ class RequestSecurityLoggingMiddleware:
 
         ip = request.META.get("REMOTE_ADDR", "unknown")
 
-        user_id = getattr(
-            getattr(request, "user", None),
-            "pk",
-            None,
-        )
+        user_id = getattr( getattr(request, "user", None), "pk", None, )
 
         logger.info(
             "request method=%s path=%s status=%s "

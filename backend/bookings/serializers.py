@@ -1,12 +1,13 @@
-from datetime import timedelta
+from datetime import timedelta, datetime
+from zoneinfo import ZoneInfo
 
 from django.utils import timezone
 from rest_framework import serializers
-from rest_framework.exceptions import ValidationError
 
 from backend.accounts.models import User, StaffProfile
 from backend.bookings.booking_services import create_booking, update_booking
 from backend.bookings.models import Booking
+from backend.salon_settings.services_salon_config import get_salon_info_config
 from backend.services.models import Service, Hairstyle, Color
 from backend.utils.services import BarberScheduler
 
@@ -39,10 +40,8 @@ class BookingSerializer(serializers.ModelSerializer):
                     "id", "booking_reference", "barber", "service", "hairstyle", "color",
                     "price", "customer_name", "email", "phone_number", "booking_date",
                     "arrival_time", "start_time", "end_time", "status",
-                    "reason_for_cancellation",
-                    "booking_source", "booked_by",
+                    "reason_for_cancellation", "booking_source", "booked_by",
         ]
-        read_only_fields = [ "booking_reference", "status",  ]
 
     def validate_customer_name(self, value):
         value = " ".join(value.split())
@@ -65,10 +64,14 @@ class BookingSerializer(serializers.ModelSerializer):
         if value.status != StaffProfile.StaffStatus.ACTIVE:
             raise serializers.ValidationError("Selected barber/stylist is not currently active.")
 
+        ''' i intentionally commented this out since the barber is also validated in the model's clean
+                model.
+                
         if not BarberScheduler().can_receive_bookings(value):
             raise serializers.ValidationError(
                 "Selected staff member cannot receive bookings."
             )
+        '''
 
         return value
 
@@ -113,6 +116,8 @@ class CreateBookingSerializer(serializers.ModelSerializer):
                     "start_time", "booking_source", "booked_by",
         ]
 
+        read_only_fields = [ "booking_reference", "status",  ]
+
     def validate_customer_name(self, value):
         value = " ".join(value.split())
 
@@ -135,20 +140,16 @@ class CreateBookingSerializer(serializers.ModelSerializer):
         if value.status != StaffProfile.StaffStatus.ACTIVE:
             raise serializers.ValidationError("Selected barber/stylist is not currently active.")
 
+        ''' i intentionally commented this out since the barber is also validated in the model's clean
+                model.
         if not BarberScheduler().can_receive_bookings(value):
             raise serializers.ValidationError(
                 "Selected staff member cannot receive bookings."
             )
-
+        '''
         return value
 
     def validate(self, attrs):
-
-        salon_config, _ = BarberScheduler().get_salon_config()
-        open_time = salon_config["open_time"]
-        close_time = salon_config["close_time"]
-        booking_date = attrs.get("booking_date")
-        start_time = attrs.get("start_time")
 
         barber= attrs.get("barber")
         service = attrs.get("service")
@@ -159,10 +160,15 @@ class CreateBookingSerializer(serializers.ModelSerializer):
         service_duration_minutes = service.duration_minutes
 
         #  validate if barber can receive bookings
+        ''' i intentionally commented this out since the barber is also validated in the model's clean
+        model.
+        
         if not BarberScheduler().can_receive_bookings(barber):
             raise serializers.ValidationError({
                 "details": "selected staff member can not receive bookings."
             })
+            
+        '''
 
         #  validate if hairstyle belongs to that service
         if hairstyle and hairstyle.service_id != service.id:
@@ -182,9 +188,6 @@ class CreateBookingSerializer(serializers.ModelSerializer):
         color_price = color.price if color else 0
         color_duration_minutes = ( color.duration_minutes if color else 0 )
 
-        if booking_date < timezone.localdate():
-            raise serializers.ValidationError({ "booking_date": "Booking date cannot be in the past."})
-
         total_duration = timedelta(
             minutes=service_duration_minutes + hairstyle_duration_minutes + color_duration_minutes
         )
@@ -193,18 +196,38 @@ class CreateBookingSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"time": "Invalid session duration, Invalid session duration"
                                                        " is unexpectedly longer than 3 hours."})
 
+        booking_date = attrs.get("booking_date")
+        salon_config, _ = BarberScheduler().get_salon_config()
+        salon_tz = ZoneInfo(salon_config["time_zone"])
+        today_date_at_salon = timezone.now().astimezone(salon_tz).date()
+
+        if booking_date < today_date_at_salon:
+            raise serializers.ValidationError({ "booking_date": "Booking date cannot be in the past."})
+
+
+        salon_open_time = salon_config["open_time"]
+        salon_close_time = salon_config["close_time"]
+        start_time = attrs.get("start_time")
+
+        client_session_start_date_and_time = datetime.combine( booking_date, start_time, ).replace(tzinfo=salon_tz)
+
+        salon_open_date_time = datetime.combine(booking_date, salon_open_time, ).replace(tzinfo=salon_tz)
+        salon_close_date_time = datetime.combine( booking_date, salon_close_time, ).replace(tzinfo=salon_tz)
+
         # validate start_time is not less than salon open time
-        if start_time < open_time:
+        if client_session_start_date_and_time < salon_open_date_time:
             raise serializers.ValidationError({"time": "Invalid time, selected time is before salon open time."})
 
-        end_time = start_time + total_duration
+        client_session_end_date_and_time = client_session_start_date_and_time + total_duration
 
         # validate end_time greater than salon close time
-        if end_time > close_time:
+        if client_session_end_date_and_time > salon_close_date_time:
             raise serializers.ValidationError({"time": "Invalid duration time, session duration is "
                                                        "beyond salon close time."})
+
         # manually attach price
         attrs["price"] = service_price + hairstyle_price + color_price
+        attrs["salon_timezone"] = salon_tz
 
 
         return attrs
@@ -227,6 +250,7 @@ class CreateBookingSerializer(serializers.ModelSerializer):
                                booking_date=validated_data["booking_date"],
                                start_time=validated_data["start_time"],
                                end_time=validated_data["end_time"],
+                               salon_timezone = validated_data["salon_timezone"],
                                customer_name=validated_data["customer_name"],
                                phone_number=validated_data["phone_number"],
                                booking_source=validated_data["booking_source"],
@@ -333,7 +357,7 @@ class BarberBookingsTodaySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Booking
-        fields = ["start_time", "customer_name", "service", "hairstyle", "status",]
+        fields = ["start_time", "end_time", "customer_name", "service", "hairstyle", "status",]
 
 
 

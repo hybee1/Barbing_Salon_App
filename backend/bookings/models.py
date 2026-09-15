@@ -2,87 +2,94 @@
 import uuid
 
 import phonenumbers
+from django.contrib.postgres.fields import DateTimeRangeField
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.db import models
-from django.utils import timezone
+from django.db.models import Func, F, Q
 from phonenumber_field.modelfields import PhoneNumberField
 from phonenumbers import NumberParseException
 
-from backend.accounts.models import StaffProfile
 
+class TsRange(Func):
+    function = "TSRANGE"
+    output_field = DateTimeRangeField()
 
 class Booking(models.Model):
 
     class STATUS(models.TextChoices):
-        ARRIVED = "ARRIVED", "Arrived",
-        IN_PROGRESS = "IN_PROGRESS", "In Progress",
-        CANCELLED = "CANCELLED", "Cancelled",
-        COMPLETED = "COMPLETED", "Completed",
-        CONFIRMED = "CONFIRMED", "Confirmed",
+        ARRIVED = "ARRIVED", "Arrived"
+        IN_PROGRESS = "IN_PROGRESS", "In Progress"
+        CANCELLED = "CANCELLED", "Cancelled"
+        COMPLETED = "COMPLETED", "Completed"
+        CONFIRMED = "CONFIRMED", "Confirmed"
         NO_SHOW = "NO_SHOW", "No Show"
         PENDING = "PENDING", "Pending"
 
     class BookingSource(models.TextChoices):
-        ONLINE = "ONLINE", "Online",
+        ONLINE = "ONLINE", "Online"
         WALK_IN = "WALK_IN", "Walk In"
 
-    booking_reference = models.CharField( max_length=30, unique=True )
+    booking_reference = models.CharField( max_length=30, unique=True, )
 
-    barber = models.ForeignKey("accounts.StaffProfile", on_delete=models.CASCADE,
-                               related_name="bookings")
+    barber = models.ForeignKey(
+        "accounts.StaffProfile", on_delete=models.CASCADE, related_name="bookings",
+    )
 
-    service = models.ForeignKey("services.Service", on_delete=models.CASCADE,
-                                related_name="bookings")
+    service = models.ForeignKey(
+        "services.Service", on_delete=models.CASCADE, related_name="bookings",
+    )
 
-    hairstyle = models.ForeignKey("services.Hairstyle", null=True, blank=True,
-                                  on_delete=models.SET_NULL, related_name="bookings")
+    hairstyle = models.ForeignKey(
+        "services.Hairstyle", null=True,  blank=True, on_delete=models.SET_NULL, related_name="bookings",
+    )
 
-    color = models.ForeignKey("services.Color", null=True, blank=True,
-                                  on_delete=models.SET_NULL, related_name="bookings")
+    color = models.ForeignKey(
+        "services.Color",  null=True,  blank=True, on_delete=models.SET_NULL, related_name="bookings",
+    )
 
-    price = models.DecimalField(max_digits = 10, decimal_places = 2, default=True, )
+    price = models.DecimalField( max_digits=10, decimal_places=2, )
 
-    customer_name = models.CharField(max_length=100, null=True, blank=True,
-                                     validators=[
-                                             RegexValidator(
-                                                 regex=r"^[A-Za-z]+(?: [A-Za-z]+)*$",
-                                                 message='full_name only support letters and space.'
-                                             )
-                                         ]
-                                     ) # this not a logged-in user so allow
-    email = models.EmailField(null=True, blank=True,) # this not a logged-in user so allow
+    customer_name = models.CharField( max_length=100, null=True, blank=True,
+        validators=[
+            RegexValidator(
+                regex=r"^[A-Za-z]+(?: [A-Za-z]+)*$",
+                message="full_name only support letters and space.",
+            )
+        ],
+    )
 
-    phone_number =  PhoneNumberField()
+    email = models.EmailField( null=True, blank=True, )
+
+    phone_number = PhoneNumberField()
 
     booking_date = models.DateField()
 
-    arrival_time = models.DateTimeField(null=True, blank=True)
+    arrival_time = models.DateTimeField( null=True, blank=True, )
 
     start_time = models.TimeField()
+
     end_time = models.TimeField()
 
-    status = models.CharField(max_length=20, choices=STATUS, default=STATUS.CONFIRMED)
+    status = models.CharField( max_length=20, choices=STATUS, default=STATUS.CONFIRMED, )
 
-    reason_for_cancellation = models.CharField(max_length=100, null=True, blank=True)
+    reason_for_cancellation = models.CharField( max_length=100,  null=True, blank=True, )
 
-    booking_source = models.CharField(
-        max_length=20, choices=BookingSource, default=BookingSource.ONLINE
-    )
+    booking_source = models.CharField( max_length=20, choices=BookingSource, default=BookingSource.ONLINE,  )
 
-    booked_by = models.CharField(max_length=15)
+    booked_by = models.CharField(  max_length=15, )
 
     class Meta:
         indexes = [
-            models.Index(fields=["barber", "booking_date", "start_time"]),
-            models.Index(fields=["booking_date", "status"]),
-            models.Index(fields=["booking_date", "barber", "status"]),
-            models.Index(fields=["booking_reference"]),
+            models.Index( fields=["barber", "booking_date", "start_time"]  ),
+            models.Index( fields=["booking_date", "status"]  ),
+            models.Index( fields=["booking_date", "barber", "status"] ),
         ]
 
         constraints = [
+            # start_time must be before end_time
             models.CheckConstraint(
-                condition=models.Q(start_time__lt=models.F("end_time")),
+                condition=Q( start_time__lt=F("end_time") ),
                 name="booking_start_time_should_before_end",
             ),
         ]
@@ -156,8 +163,8 @@ class Booking(models.Model):
             # raise BookingConflictException( self.start_time, self.end_time)
             raise ValidationError({"start_time": str(exc)})
 
-    def save(self, *args, **kwargs):
-
-        self.full_clean()
-        return super().save(*args, **kwargs)
+    # def save(self, *args, **kwargs):
+    #
+    #     self.full_clean()
+    #     return super().save(*args, **kwargs)
 
