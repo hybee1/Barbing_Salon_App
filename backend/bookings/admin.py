@@ -11,7 +11,7 @@ class BookingAdmin(admin.ModelAdmin):
 
     list_display = ( "booking_reference", "barber__user__username", "service__name",
                      "hairstyle__name", "price", "customer_name", "email",  "phone_number",
-                     "booking_date",  "arrival_time", "start_time",  "end_time",
+                     "booking_date",  "arrival_time", "session_start_date_time",  "session_end_date_time",
                      "status",  "reason_for_cancellation", "booking_source",
                      "booked_by",)
 

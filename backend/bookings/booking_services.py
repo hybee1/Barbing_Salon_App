@@ -10,18 +10,12 @@ from backend.salon_settings.services_salon_config import get_salon_info_config
 
 @transaction.atomic
 def create_booking( *, barber_id, service_id, hairstyle_id, color_id, total_price,
-                       booking_date, start_time, end_time, salon_timezone, customer_name,
-                    phone_number, booking_source, booked_by, ):
+                       booking_date, session_start_date_time, session_end_date_time,
+                    customer_name, phone_number, booking_source, booked_by, ):
 
     # convert the start and end time to utc time
-
-    client_session_start_date_and_time = (
-                    datetime.combine(booking_date, start_time, ).replace(tzinfo=salon_timezone) )
-    client_session_end_date_and_time = (
-                    datetime.combine(booking_date, end_time, ).replace(tzinfo=salon_timezone) )
-
-    start_time_utc = client_session_start_date_and_time.astimezone(timezone.utc).time()
-    end_time_utc = client_session_end_date_and_time.astimezone(timezone.utc).time()
+    session_start_date_time_utc = session_start_date_time.astimezone(timezone.utc).time()
+    session_end_date_time_utc = session_end_date_time.astimezone(timezone.utc).time()
 
     # Lock this barber for the duration of the transaction.
     # Any other booking attempt for this same barber must wait.
@@ -31,9 +25,9 @@ def create_booking( *, barber_id, service_id, hairstyle_id, color_id, total_pric
     booking = Booking(
 
     booking_reference=None, service=service_id, hairstyle=hairstyle_id, color=color_id,
-    barber=barber, booking_date=booking_date, start_time=start_time_utc, end_time=end_time_utc,
-    customer_name=customer_name, booking_source=booking_source, phone_number=phone_number,
-    price=total_price, booked_by=booked_by
+    barber=barber, booking_date=booking_date, session_start_date_time=session_start_date_time_utc,
+    session_end_date_time_utc=session_end_date_time_utc, customer_name=customer_name,
+    booking_source=booking_source, phone_number=phone_number, price=total_price, booked_by=booked_by
 
     )
 

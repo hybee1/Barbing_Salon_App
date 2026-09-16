@@ -2,11 +2,11 @@
 import uuid
 
 import phonenumbers
-from django.contrib.postgres.fields import DateTimeRangeField
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.db import models
 from django.db.models import Func, F, Q
+from django.utils.dateparse import parse_datetime, parse_date
 from phonenumber_field.modelfields import PhoneNumberField
 from phonenumbers import NumberParseException
 
@@ -65,11 +65,11 @@ class Booking(models.Model):
 
     booking_date = models.DateField()
 
+    session_start_date_time = models.DateTimeField()
+
+    session_end_date_time = models.DateTimeField()
+
     arrival_time = models.DateTimeField( null=True, blank=True, )
-
-    start_time = models.TimeField()
-
-    end_time = models.TimeField()
 
     status = models.CharField( max_length=20, choices=STATUS, default=STATUS.CONFIRMED, )
 
@@ -81,16 +81,15 @@ class Booking(models.Model):
 
     class Meta:
         indexes = [
-            models.Index( fields=["barber", "booking_date", "start_time"]  ),
+            models.Index( fields=["barber", "booking_date", "session_start_date_time"]  ),
             models.Index( fields=["booking_date", "status"]  ),
             models.Index( fields=["booking_date", "barber", "status"] ),
         ]
 
         constraints = [
-            # start_time must be before end_time
             models.CheckConstraint(
-                condition=Q( start_time__lt=F("end_time") ),
-                name="booking_start_time_should_before_end",
+                condition=Q( session_start_date_time__lt=F("session_end_date_time") ),
+                name="booking_session_start_time_should_before_session_end_time",
             ),
         ]
 
@@ -153,15 +152,14 @@ class Booking(models.Model):
 
             barber_scheduler = BarberScheduler()
 
-            # barber_scheduler.is_overlap( self.barber.user.staff, self.start_time, self.end_time)
-            barber_scheduler.validate_no_overlap(self.barber, self.booking_date,
-                                                 self.start_time, self.end_time)
+            barber_scheduler.validate_no_overlap(self.barber, parse_date(self.booking_date),
+                                                 parse_datetime(self.session_start_date_time),
+                                                 parse_datetime(self.session_end_date_time))
 
 
         except BookingConflictException as exc:
 
-            # raise BookingConflictException( self.start_time, self.end_time)
-            raise ValidationError({"start_time": str(exc)})
+            raise ValidationError({"details": str(exc)})
 
     def save(self, *args, **kwargs):
 

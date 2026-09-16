@@ -166,7 +166,7 @@ class CreateBookingView(APIView):
         else:
             raise ValidationError({"time": "Invalid date/time format."})
 
-        start_time = start_datetime.time()
+        session_start_date_time = start_datetime
 
         customer_data = request.data.get("customer") or {}
 
@@ -177,8 +177,9 @@ class CreateBookingView(APIView):
         serializer = CreateBookingSerializer(data={
 
             "service": service_id, "hairstyle": hairstyle_id, "color": color_id,
-            "barber": barber_id, "booking_date": booking_date, "start_time": start_time,
-             "customer_name": customer_name, "booking_source": booking_source,
+            "barber": barber_id, "booking_date": booking_date,
+            "session_start_date_time": session_start_date_time,
+            "customer_name": customer_name, "booking_source": booking_source,
             "phone_number": phone_number, "booked_by": booked_by
 
         })

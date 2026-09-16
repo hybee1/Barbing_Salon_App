@@ -1,7 +1,9 @@
 from logging import raiseExceptions
 
+from django.conf import settings
 from django.db import transaction
 from django.shortcuts import get_object_or_404
+from rest_framework.exceptions import ValidationError
 
 from backend.bookings.models import Booking
 from datetime import datetime, date, time, timedelta
@@ -39,48 +41,49 @@ class BarberScheduler:
 
     # Step 1. Get today's bookings
     def get_this_barber_bookings_for_this_date(self, barber: StaffProfile,
-                                               date: date) -> list[Booking]:
+                                               date_utc: date) -> list[Booking]:
 
 
         if not self.can_receive_bookings(barber):
 
             raise UserException('Not a barber or stylist')
 
-        bookings = ( Booking.objects.filter(barber=barber, booking_date=date)
+        bookings = ( Booking.objects.filter(barber=barber, booking_date=date_utc)
                      .order_by("start_time") )
 
         return bookings
 
 
-    # Step 2a. Determine where "now" starts
-    def determine_start(self, date: date) -> datetime:
+    # Step 2a. Determine session start by supplying date_time in utc time_zone
+    def determine_start(self, session_star_date_time_utc: datetime) -> datetime:
 
         salon_config, booking_config = self.get_salon_config()
 
-        opening_time = time.fromisoformat( salon_config["open_time"] )
+        salon_opening_time = time.fromisoformat( salon_config["open_time"] )
+        salon_close_time = time.fromisoformat(salon_config["close_time"])
 
         salon_timezone = ZoneInfo(salon_config["time_zone"])
 
-        opening = datetime.combine( date, opening_time, tzinfo=salon_timezone, )
+        now_utc = timezone.now().astimezone(settings.TIME_ZONE)
 
-        now = timezone.now().astimezone(salon_timezone)
+        opening_utc = datetime.combine(now_utc.date(), salon_opening_time, tzinfo=ZoneInfo(settings.TIME_ZONE), )
 
-        if date < now.date():
+        if session_star_date_time_utc.date() < now_utc.date():
 
             raise BookingDateException(date)
 
         # If customer is booking today...
-        if date == now.date():
+        elif session_star_date_time_utc.date() == now_utc.date():
 
             _, booking_config = self.get_salon_config()
 
             interval = int(booking_config["booking_slot_interval"])
 
-            start = max(opening, (now + timedelta(minutes=interval)))
+            start = max(opening_utc, (now_utc + timedelta(minutes=interval)))
 
         else: # if date > now.date():
 
-            start = opening
+            start = opening_utc
 
         return self.round_to_booking_interval(start)
 
@@ -91,18 +94,19 @@ class BarberScheduler:
     Then start = 10:03
     '''
 
-    # Step 2b. Determine where "now" starts
-    def determine_close(self, date: date) -> datetime:
+    # Step 2b. Determine session close by supplying date_time in utc timezone
+    def determine_close(self, session_star_date_time_utc: datetime) -> datetime:
 
         salon_config, _ = self.get_salon_config()
 
         salon_timezone = ZoneInfo( salon_config["time_zone"] )
 
-        closing_time = time.fromisoformat( salon_config["close_time"] )
+        salon_closing_time = time.fromisoformat( salon_config["close_time"] )
 
-        closing = datetime.combine( date, closing_time, tzinfo=salon_timezone, )
+        salon_closing = datetime.combine( session_star_date_time_utc.date(), salon_closing_time,
+                                          tzinfo=salon_timezone, )
 
-        return closing
+        return salon_closing
 
     # Step 3. Round to next booking interval
     ''' Usually you don't want customers booking at
@@ -120,7 +124,7 @@ class BarberScheduler:
     
     Example function:
     '''
-    # def round_to_next_15(self, dt: datetime) -> datetime:
+    # the supplied datetime is in utc
     def round_to_booking_interval(self, dt: datetime) -> datetime:
 
         _, booking_config = self.get_salon_config()
@@ -164,20 +168,9 @@ class BarberScheduler:
     # be staffProfile_id
 
     def determine_free_period_for_barber(self, staffProfile_id: int,
-                                         date1: date) -> list[tuple[datetime, datetime]]:
-
-        salon_config, _ = self.get_salon_config()
-        salon_timezone = ZoneInfo(salon_config["time_zone"])
-        try:
-
-            start: datetime = self.determine_start(date1)
-            closing: datetime = self.determine_close(date1)
-        except BookingDateException as b_exc:
+                                         session_star_date_time_utc: datetime) -> list[tuple[datetime, datetime]]:
 
 
-            raise b_exc
-
-        # barber = User.objects.filter(id=barber_id)
         barber = get_object_or_404(StaffProfile, id=staffProfile_id)
 
         if not barber:
@@ -188,49 +181,34 @@ class BarberScheduler:
 
             raise RoleException()
 
-        if  (barber.department.lower() not in [StaffProfile.Department.BARBER.name.lower(),
-                                                  StaffProfile.Department.BARBER.value.lower(),
-                                                  StaffProfile.Department.BARBER.label.lower(),
-                                                  StaffProfile.Department.BARBER_STYLIST.name.lower(),
-                                                  StaffProfile.Department.BARBER_STYLIST.label.lower(),
-                                                  StaffProfile.Department.BARBER_STYLIST.value.lower()]):
+        if  (not self.can_receive_bookings(barber)):
 
-            raise UserException("Department Exception, this user doesn't belong Barber Department")
+            raise UserException("Department Exception, this user can render this service")
+
+        try:
+
+            start: datetime = self.determine_start(session_star_date_time_utc)
+            closing: datetime = self.determine_close(session_star_date_time_utc)
+        except BookingDateException as b_exc:
+            raise b_exc
 
         bookings_for_the_barber: list[Booking] = (
                         self.get_this_barber_bookings_for_this_date(barber, start.date()))
 
         free_periods: list[tuple[datetime, datetime]] = []
         pointer: datetime = start
-        # pointer: time = start.time()
 
         for booking in bookings_for_the_barber:
 
-            # converted_booking_start_time is datetime
-            converted_booking_start_time = datetime.combine(
-                            start.date(), booking.start_time, tzinfo=salon_timezone,)
+            if booking.session_start_date_time > pointer:
 
-            # converted_booking_end_time is datetime
-            converted_booking_end_time = datetime.combine(
-                start.date(), booking.end_time, tzinfo=salon_timezone,)
+                free_periods.append(  ( pointer, booking.session_start_date_time )  )
 
-            # if booking.start_time > pointer:
-            # if booking.start_time > pointer.time():
-            if converted_booking_start_time > pointer:
+            if booking.session_end_date_time > pointer:
 
-                free_periods.append(
+                pointer = booking.session_end_date_time
 
-                    ( pointer, converted_booking_start_time )
-                )
 
-            # if booking.end_time > pointer:
-            # if booking.end_time > pointer.time():
-            if converted_booking_end_time > pointer:
-
-                pointer = converted_booking_end_time
-
-        # if pointer.time() < closing.time():
-        # if pointer < closing.time():
         if pointer < closing:
 
             free_periods.append((pointer, closing))
@@ -385,29 +363,25 @@ class BarberScheduler:
     # Even if two customers click 10:15 simultaneously, you must validate again before saving.
 
     def validate_no_overlap(self, barber: StaffProfile, booking_date: date,
-                                                        new_start: time, new_end: time) -> bool:
+                            session_start_date_time: datetime, session_end_date_time: datetime) -> bool:
 
         if barber.user.role != User.Role.STAFF:
             raise RoleException()
 
-        BOOKING_STAFF_DEPARTMENTS = {
-            StaffProfile.Department.BARBER,
-            StaffProfile.Department.BARBER_STYLIST,
-            StaffProfile.Department.STYLIST,
-        }
-
-        if barber.department not in BOOKING_STAFF_DEPARTMENTS:
-            raise UserException('Selected user not in the right department')
+        if not self.can_receive_bookings(barber):
+            raise UserException('Selected user can not render this service at staff does not belong '
+                                'to the right department')
 
         with transaction.atomic():
             overlap = (Booking.objects.filter( barber=barber, booking_date=booking_date,
-                                            start_time__lt=new_end, end_time__gt=new_start
+                                            session_start_date_time__lt=session_start_date_time,
+                                            session_end_date_time__gt=session_end_date_time
                                                 ).exists())
 
 
         if overlap:
 
-            raise BookingConflictException(new_start, new_end)
+            raise BookingConflictException(session_start_date_time.time(), session_start_date_time.time())
 
         return False
 
@@ -422,10 +396,10 @@ class BarberScheduler:
     If true, the booking conflicts.
     '''
 
-    def check_schedule(self, staffProfile_id: int, date1: date,  total_service_duration: int):
+    def check_schedule(self, staffProfile_id: int, date1_utc: datetime,  total_service_duration: int):
 
         try:
-            barber_free_periods = self.determine_free_period_for_barber( staffProfile_id, date1 )
+            barber_free_periods = self.determine_free_period_for_barber( staffProfile_id, date1_utc )
         except Exception as e:
             raise e
 
