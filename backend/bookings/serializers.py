@@ -227,6 +227,7 @@ class CreateBookingSerializer(serializers.ModelSerializer):
 
         # manually attach price
         attrs["price"] = service_price + hairstyle_price + color_price
+        attrs["end_time"] = client_session_end_date_and_time.time()
         attrs["salon_timezone"] = salon_tz
 
 
