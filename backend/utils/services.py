@@ -373,8 +373,8 @@ class BarberScheduler:
 
         with transaction.atomic():
             overlap = (Booking.objects.filter( barber=barber, booking_date=booking_date,
-                                            session_start_date_time__lt=session_start_date_time,
-                                            session_end_date_time__gt=session_end_date_time
+                                            session_start_date_time__lt=session_end_date_time,
+                                            session_end_date_time__gt=session_start_date_time
                                                 ).exists())
 
 

@@ -18,18 +18,18 @@ class BreakTimeAndOffDays(admin.ModelAdmin):
                      # "staff__user__role", "staff__user__image", "staff__user__is_active",
                      # "is_staff",  "is_superuser",
                      # "staff__user__last_login", "staff__user__date_joined",
-                     "date", "break_start_date_time", "break_end_date_time", "status", "reason"
+                     "break_date", "break_start_date_time", "break_end_date_time", "status", "reason"
                      )
 
     search_fields = ( "staff__user__username",
                       # "staff__user__phone_number", "staff__user__email",
                       "staff__department",
-                      "date", "break_end_date_time", "break_end_date_time", "status",
+                      "break_date", "break_end_date_time", "break_end_date_time", "status",
                       )
 
     list_filter = ( "staff__department", "status",)
 
-    ordering = ( "date", )
+    ordering = ( "break_date", )
 
     @admin.display(ordering="staff__user__username")
     def username(self, obj):

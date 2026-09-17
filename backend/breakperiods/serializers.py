@@ -30,8 +30,8 @@ class BreakTimeAndOffDaysSerializer(serializers.ModelSerializer):
 
         salon_config, _ = BarberScheduler().get_salon_config()
         salon_tz = ZoneInfo(salon_config["time_zone"])
-        salon_open_time = ZoneInfo(salon_config["open_time"])
-        salon_close_time = ZoneInfo(salon_config["close_time"])
+        salon_open_time = salon_config["open_time"]
+        salon_close_time = salon_config["close_time"]
 
         salon_today_date_time = timezone.localtime().astimezone(salon_tz)
         salon_today_date = salon_today_date_time.data()
@@ -70,12 +70,12 @@ class BreakTimeAndOffDaysSerializer(serializers.ModelSerializer):
 
 class BreakTimeAndOffDaysSerializer(serializers.ModelSerializer):
 
-    staff_name = serializers.CharField(source="barber.user.username", read_only=True)
+    staff_name = serializers.CharField(source="staff.user.username", read_only=True)
 
     class Meta:
         model = BreakTimeAndOffDays
         fields = [
-                    "id", "break_date", "arrival_time", "break_start_date_time",
+                    "id", "break_date", "break_start_date_time",
                     "break_end_date_time", "status", "reason",
                  ]
 
@@ -97,7 +97,7 @@ class BarberBreakTimeAndOffDaySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = BreakTimeAndOffDays
-        fields = ["date", "break_start_date_time", "break_end_date_time", "reason", "status"]
+        fields = ["break_date", "break_start_date_time", "break_end_date_time", "reason", "status"]
 
 
 

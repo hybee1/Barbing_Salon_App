@@ -7,7 +7,6 @@ from rest_framework import serializers
 from backend.accounts.models import User, StaffProfile
 from backend.bookings.booking_services import create_booking, update_booking
 from backend.bookings.models import Booking
-from backend.salon_settings.services_salon_config import get_salon_info_config
 from backend.services.models import Service, Hairstyle, Color
 from backend.utils.services import BarberScheduler
 
@@ -39,7 +38,7 @@ class BookingSerializer(serializers.ModelSerializer):
         fields = [
                     "id", "booking_reference", "barber", "service", "hairstyle", "color",
                     "price", "customer_name", "email", "phone_number", "booking_date",
-                    "arrival_time", "session_start_date_time", "end_time", "status",
+                    "arrival_time", "session_start_date_time", "session_end_date_time", "status",
                     "reason_for_cancellation", "booking_source", "booked_by",
         ]
 
@@ -185,7 +184,7 @@ class CreateBookingSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"time": "Invalid session duration, Invalid session duration"
                                                        " is unexpectedly longer than 3 hours."})
 
-        booking_date = attrs.get("booking_date")
+
         session_start_date_time = attrs.get("session_start_date_time")
         salon_config, _ = BarberScheduler().get_salon_config()
         salon_tz = ZoneInfo(salon_config["time_zone"])
@@ -347,7 +346,7 @@ class BarberBookingsTodaySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Booking
-        fields = ["session_start_date_time", "session_start_date_time", "customer_name",
+        fields = ["session_start_date_time", "session_end_date_time", "customer_name",
                   "service", "hairstyle", "status",]
 
 

@@ -48,7 +48,7 @@ class BreakTimeAndOffDays(TimeStampedModel):
     class Meta:
         verbose_name = "BreakTimeAndOffDays"
         verbose_name_plural = "BreakTimeAndOffDays"
-        ordering = ["-date", "break_start_date_time"]
+        ordering = ["-break_date", "break_start_date_time"]
 
         constraints = [
             models.CheckConstraint(
@@ -73,7 +73,7 @@ class BreakTimeAndOffDays(TimeStampedModel):
                 {"staff": "Only staff members can have break periods or off days."}
             )
 
-        selected_date = self.date
+        selected_date = self.break_date
         break_start_date_time = self.break_start_date_time
         break_end_date_time = self.break_end_date_time
 

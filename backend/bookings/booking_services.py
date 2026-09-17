@@ -94,7 +94,7 @@ def booking_data_with_timezone(*, data: dict | list[dict]) -> dict | list[dict]:
     if isinstance(data, dict):
         if "booking_date" not in data:
             raise ValidationError({"details": "A booking 'date' is required."})
-        booking_date_str = data['booking_date']
+
 
         if "session_start_date_time" not in data:
             raise ValidationError({"details": "A booking 'session_start_date_time' is required."})

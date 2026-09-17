@@ -14,7 +14,7 @@ from backend.bookings.booking_services import booking_data_with_timezone
 from backend.bookings.models import Booking
 from backend.bookings.serializers import (BarberAvailableTimeQuerySerializer,
                                           BookingReadSerializer, BarberBookingStatsSerializer,
-                                          BarberBookingsTodaySerializer, BookingSerializer, CreateBookingSerializer,
+                                          BarberBookingsTodaySerializer, CreateBookingSerializer,
                                           UpdateBookingSerializer)
 from backend.breakperiods.models import BreakTimeAndOffDays
 from backend.custom_permissions.permissions import (Is_Authenticated_Staff_User, Is_SalonManager,

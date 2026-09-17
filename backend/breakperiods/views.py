@@ -53,7 +53,7 @@ class Last7daysAnd3DaysAheadBarberBreakTimeAndOffDayAPIView(APIView):
         seven_days_ago = today - timedelta(days=7)
 
         break_or_off = BreakTimeAndOffDays.objects.filter(
-                        date__range=(seven_days_ago, three_days_ahead))
+                        break_date__range=(seven_days_ago, three_days_ahead))
 
         serializer = BreakTimeAndOffDaysSerializer(break_or_off, many=True)
 
@@ -92,7 +92,7 @@ class OneBarberBreakTimeAndOffDayAPIView(APIView):
         two_days_ago = today - timedelta(days=7)
 
         break_or_off = BreakTimeAndOffDays.objects.filter(
-            date__range=(two_days_ago, three_days_ahead),
+            break_date__range=(two_days_ago, three_days_ahead),
             staff=request.user.staffprofile,)
 
         serializer = BarberBreakTimeAndOffDaySerializer(break_or_off, many=True)
