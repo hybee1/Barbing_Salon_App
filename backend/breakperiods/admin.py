@@ -18,13 +18,13 @@ class BreakTimeAndOffDays(admin.ModelAdmin):
                      # "staff__user__role", "staff__user__image", "staff__user__is_active",
                      # "is_staff",  "is_superuser",
                      # "staff__user__last_login", "staff__user__date_joined",
-                     "date", "start_time", "end_time", "status", "reason"
+                     "date", "break_start_date_time", "break_end_date_time", "status", "reason"
                      )
 
     search_fields = ( "staff__user__username",
                       # "staff__user__phone_number", "staff__user__email",
                       "staff__department",
-                      "date", "start_time", "end_time", "status",
+                      "date", "break_end_date_time", "break_end_date_time", "status",
                       )
 
     list_filter = ( "staff__department", "status",)

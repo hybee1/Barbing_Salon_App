@@ -3,7 +3,6 @@ from logging import raiseExceptions
 from django.conf import settings
 from django.db import transaction
 from django.shortcuts import get_object_or_404
-from rest_framework.exceptions import ValidationError
 
 from backend.bookings.models import Booking
 from datetime import datetime, date, time, timedelta
@@ -90,7 +89,7 @@ class BarberScheduler:
 
     '''
     If now is 10:03
-    
+
     Then start = 10:03
     '''
 
@@ -110,18 +109,18 @@ class BarberScheduler:
 
     # Step 3. Round to next booking interval
     ''' Usually you don't want customers booking at
-    
+
     10:03
     10:04
     10:06
-    
+
     # Instead round to every 5 or 15 minutes.
     # Example (15 minutes):
-    
+
     10:03 → 10:15
     10:11 →10:15
     10:16 →10:30
-    
+
     Example function:
     '''
     # the supplied datetime is in utc
@@ -152,14 +151,14 @@ class BarberScheduler:
     Imagine timeline
      9:00 ---------------------------21:30
     Booked
-    
+
     9:30-10:00
     11:15-12:00
     1:00-1:45
     4:30-5:15
-    
+
     Walk through bookings.
-    
+
     '''
 
     # free_periods = []
@@ -236,32 +235,32 @@ class BarberScheduler:
     # Step 5. Generate actual booking slots
     '''
     Suppose customer selected
-    
+
     - Haircut
-    
+
     - Duration 45 minutes
-    
+
     - Now generate only slots that fit.
-    
+
     - Example
-    
+
     Free
-    
+
     - 10:15 ->11:15
-    
+
     Length
-    
+
     - 60 mins
-    
+
     Haircut
-    
+
     - 45 mins
-    
+
     Possible slots
-    
+
     - 10:15
     - 10:30
-    
+
     because 10:45 ->11:30 ❌ exceeds 11:15
     '''
 
@@ -300,62 +299,62 @@ class BarberScheduler:
 
     '''
     If duration is 15 minutes
-    
+
     then
-    
+
     10:15
-    
+
     10:30
-    
+
     10:45
-    
+
     11:00
-    
+
     Example
-    
+
     Current time
-    
+
     10:04
-    
-    
+
+
     Rounded
-    
+
     10:15
-    
-    
+
+
     Bookings
-    
+
     9:30-10:00
-    
+
     11:15-12:00
-    
+
     1:00-1:45
-    
+
     Customer selected
-    
+
     Haircut
-    
+
     45 mins
-    
-    
+
+
     Available slots become
-    
+
     10:15
-    
+
     10:30
-    
+
     12:00
-    
+
     12:15
-    
+
     1:45
-    
+
     2:00
-    
+
     2:15
-    
+
     ...
-    
+
     No clashes.
     '''
 
@@ -387,12 +386,12 @@ class BarberScheduler:
 
     '''
     This overlap rule is the standard interval-overlap check:
-    
+
     existing.start < new.end
     AND
     existing.end > new.start
-    
-    
+
+
     If true, the booking conflicts.
     '''
 

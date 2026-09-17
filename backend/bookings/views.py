@@ -96,7 +96,7 @@ class ManageBooking_Api_View(APIView):
         if status and status.upper() != "ALL STATUS":
             bookings = bookings.filter( status=status )
 
-        bookings = bookings.order_by( "-booking_date", "-start_time" )
+        bookings = bookings.order_by( "-booking_date", "-session_start_date_time" )
 
         serializer = BookingReadSerializer( bookings, many=True )
 
@@ -233,7 +233,7 @@ class OneBarberBookingForLast7Days_Api_View(APIView):
                         ).filter(
                                 barber=request.user.staffprofile,
                                 booking_date__range=(last_7_days, today_date),
-                        ).order_by("booking_date", "-start_time")
+                        ).order_by("booking_date", "-session_start_date_time")
         )
 
         serializer = BookingReadSerializer(booking_obj, many=True)
@@ -253,14 +253,12 @@ class BookingForLast7Days_Api_View(APIView):
         last_7_days = today_date - timedelta(days=7)
 
         booking_obj = ( Booking.objects .select_related(
-                        "barber__user",
-                        "service",
-                        "hairstyle",
+                        "barber__user", "service", "hairstyle",
                         "color",
                     ).filter(
                         booking_date__range=(last_7_days, today_date),
                     )
-                    .order_by("booking_date", "-start_time")
+                    .order_by("booking_date", "-session_start_date_time")
         )
 
         serializer = BookingReadSerializer(booking_obj, many=True)
@@ -314,7 +312,7 @@ class BarberBookingStatsView(APIView):
             upcoming_count=Count(
                                 "id",
                                 filter=Q(
-                                    start_time__gte=time_now,
+                                    session_start_date_time__gte=date_time_today,
                                     status__in=[ Booking.STATUS.ARRIVED, Booking.STATUS.CONFIRMED, ], ),
                                 ),
         )
@@ -375,9 +373,9 @@ class OneBarberUpcomingBookingsToday(APIView):
 
         barber = request.user.staffprofile
 
-        date_and_time = timezone.localtime()
-        date_today = date_and_time.date()
-        current_time = date_and_time.time()
+        today_date_and_time = timezone.localtime()
+        date_today = today_date_and_time.date()
+        current_time = today_date_and_time.time()
 
         if not BarberScheduler().can_receive_bookings(request.user.staffprofile):
             return Response(
@@ -389,7 +387,7 @@ class OneBarberUpcomingBookingsToday(APIView):
                                                         .filter(
                                                                 barber=barber,
                                                                 booking_date=date_today,
-                                                                 start_time__gte=current_time,
+                                                                 session_start_date_time__gte=today_date_and_time,
                                                                  status=Booking.STATUS.CONFIRMED,
                                                          )
                                            )
@@ -409,9 +407,9 @@ class BarberUpcomingBookingsToday(APIView):
 
         barber = request.user.staffprofile
 
-        date_and_time = timezone.localtime()
-        date_today = date_and_time.date()
-        current_time = date_and_time.time()
+        today_date_and_time = timezone.localtime()
+        date_today = today_date_and_time.date()
+        current_time = today_date_and_time.time()
 
         barber_bookings_stats_for_today = (
                                             Booking.objects.select_related(
@@ -419,7 +417,7 @@ class BarberUpcomingBookingsToday(APIView):
                                                     )
                                                     .filter(
                                                         booking_date=date_today,
-                                                        start_time__gte=current_time,
+                                                        session_start_date_time__gte=today_date_and_time,
                                                         status=Booking.STATUS.CONFIRMED,
                                                     )
                                             )

@@ -1,12 +1,13 @@
-from datetime import timedelta
 
-from django.db.models import Q
-from django.shortcuts import render
+from datetime import timedelta, datetime
+
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK
 from rest_framework.views import APIView
+
+from backend.breakperiods.break_periods_services import break_time_and_offDays_data_with_timezone
 from backend.breakperiods.models import BreakTimeAndOffDays
 from backend.breakperiods.serializers import (BarberBreakTimeAndOffDaySerializer,
                                               BreakTimeAndOffDaysSerializer,
@@ -21,6 +22,17 @@ class CreateBarberBreakTimeAndOffDayAPIView(APIView):
     def post(self, request):
         data = request.data
         data['staff'] = request.user.staffprofile.pk
+
+        break_date = data['date']
+        start_time = data['start_time']
+        end_time = data['end_time']
+
+        # for the below we considered the both are salon timezone
+        break_start_date_time: datetime = datetime.fromisoformat(f"{break_date}T{start_time}")
+        break_end_date_time: datetime = datetime.fromisoformat(f"{break_date}T{end_time}")
+
+        data['break_start_date_time'] = break_start_date_time
+        data['break_end_date_time'] = break_end_date_time
 
         serializer = BreakTimeAndOffDaysSerializer(data=data)
 
@@ -41,29 +53,32 @@ class Last7daysAnd3DaysAheadBarberBreakTimeAndOffDayAPIView(APIView):
         seven_days_ago = today - timedelta(days=7)
 
         break_or_off = BreakTimeAndOffDays.objects.filter(
-            date__range=(seven_days_ago, three_days_ahead))
+                        date__range=(seven_days_ago, three_days_ahead))
 
         serializer = BreakTimeAndOffDaysSerializer(break_or_off, many=True)
 
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        res = break_time_and_offDays_data_with_timezone(data=serializer.data)
+
+        return Response(res, status=status.HTTP_200_OK)
 
 
 class ActiveBreakTimeAndOffDayAPIView(APIView):
-    permission_classes = [Is_SalonManager]  # only salon manager
+    permission_classes = [Is_SalonManager] # only salon manager
 
     def get(self, request):
+        today_date_and_time = timezone.localtime()
+        date_today = today_date_and_time.date()
+        current_time = today_date_and_time.time()
 
-        today = timezone.localtime()
-        today_date = today.date()
-        current_time = today.time()
-
-        active_break = BreakTimeAndOffDays.objects.filter( date=today_date,
-                               start_time__lte=current_time, end_time__gte=current_time )
+        active_break = BreakTimeAndOffDays.objects.filter( break_date=date_today,
+                               break_start_date_time__lte=today_date_and_time,
+                               break_end_date_time__gte=today_date_and_time )
 
         serializer = ActiveBreakTimeSerializer(active_break, many=True)
 
+        res = break_time_and_offDays_data_with_timezone(data=serializer.data)
 
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(res, status=status.HTTP_200_OK)
 
 
 class OneBarberBreakTimeAndOffDayAPIView(APIView):
@@ -81,7 +96,10 @@ class OneBarberBreakTimeAndOffDayAPIView(APIView):
             staff=request.user.staffprofile,)
 
         serializer = BarberBreakTimeAndOffDaySerializer(break_or_off, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+
+        res = break_time_and_offDays_data_with_timezone(data=serializer.data)
+
+        return Response(res, status=status.HTTP_200_OK)
 
 
 class BarberBreakTimeAndOffDayStatusesAPIView(APIView):

@@ -1,89 +1,38 @@
-
-from datetime import datetime
 from zoneinfo import ZoneInfo
 
 from django.conf import settings
-from django.core.exceptions import ValidationError
 from django.db import transaction
-from django.utils import timezone
+from rest_framework.exceptions import ValidationError
 
 from backend.accounts.models import StaffProfile
-from backend.bookings.models import Booking
+from backend.breakperiods.models import BreakTimeAndOffDays
 from backend.salon_settings.services_salon_config import get_salon_info_config
 
 
 @transaction.atomic
-def create_booking( *, barber_id, service_id, hairstyle_id, color_id, total_price,
-                     session_start_date_time, session_end_date_time,
-                    customer_name, phone_number, booking_source, booked_by, ):
+def create_break_period( *, staff_id, break_start_date_time, break_end_date_time, status, reason):
 
     # convert the start and end time to utc time
-    session_start_date_time_utc = session_start_date_time.astimezone(ZoneInfo(settings.TIME_ZONE))
-    session_end_date_time_utc = session_end_date_time.astimezone(ZoneInfo(settings.TIME_ZONE))
-    booking_date = session_start_date_time_utc.date()
+    break_start_date_time_utc = break_start_date_time.astimezone(ZoneInfo(settings.TIME_ZONE))
+    break_end_date_time_utc = break_end_date_time.astimezone(ZoneInfo(settings.TIME_ZONE))
+    break_date = break_start_date_time.date()
 
-    # Lock this barber for the duration of the transaction.
+    # Lock this staff for the duration of the transaction.
     # Any other booking attempt for this same barber must wait.
-    barber = ( StaffProfile.objects.select_for_update().get(pk=barber_id) )
+    staff = ( StaffProfile.objects.select_for_update().get(pk=staff_id) )
 
 
-    booking = Booking(
-
-    booking_reference=None, service=service_id, hairstyle=hairstyle_id, color=color_id,
-    barber=barber, booking_date=booking_date, session_start_date_time=session_start_date_time_utc,
-    session_end_date_time=session_end_date_time_utc, customer_name=customer_name,
-    booking_source=booking_source, phone_number=phone_number, price=total_price, booked_by=booked_by
-
-    )
+    booking = BreakTimeAndOffDays( staff=staff, break_date=break_date,
+                                   break_start_date_time=break_start_date_time_utc,
+                                   break_end_date_time=break_end_date_time_utc,
+                                   status=status, reason=reason )
 
     booking.full_clean()
     booking.save()
     return booking
 
 
-
-@transaction.atomic
-def update_booking( *, booking_reference, status,  reason_for_cancellation=None, ):
-
-    booking = ( Booking.objects.select_for_update().get(booking_reference=booking_reference) )
-
-    # Cancellation requires a reason
-    if ( status == Booking.STATUS.CANCELLED ):
-
-        if ( not reason_for_cancellation ):
-            raise ValidationError({
-                "reason_for_cancellation": "A cancellation reason is required when cancelling a booking."
-            })
-
-        if (booking.status == Booking.STATUS.COMPLETED):
-            raise ValidationError({
-                "details": "This booking was already cancelled and cannot be completed "
-                           "please place another service session."
-            })
-
-        if ( booking.status==Booking.STATUS.CANCELLED ):
-            raise ValidationError({
-                "details": "This booking was already cancelled."
-            })
-
-
-
-    # Do not allow a cancellation reason for a non-cancelled booking
-    if status != Booking.STATUS.CANCELLED:
-        reason_for_cancellation = booking.reason_for_cancellation
-
-    booking.status = status
-    booking.reason_for_cancellation = reason_for_cancellation
-
-    # Run model validation before saving
-    booking.full_clean()
-
-    booking.save( update_fields=[ "status", "reason_for_cancellation", ] )
-
-    return booking
-
-
-def booking_data_with_timezone(*, data: dict | list[dict]) -> dict | list[dict]:
+def break_time_and_offDays_data_with_timezone(*, data: dict | list[dict]) -> dict | list[dict]:
     salon_info = get_salon_info_config()
     salon_timezone = salon_info.timezone
 
@@ -149,7 +98,3 @@ def booking_data_with_timezone(*, data: dict | list[dict]) -> dict | list[dict]:
             res_list.append(item)
 
         return res_list
-
-
-
-

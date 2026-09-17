@@ -9,6 +9,9 @@ from backend.accounts.models import StaffProfile
 from backend.salon_settings.models import TimeStampedModel
 
 from django.contrib.auth import get_user_model
+
+from backend.utils.services import BarberScheduler
+
 User = get_user_model()
 
 
@@ -33,10 +36,10 @@ class BreakTimeAndOffDays(TimeStampedModel):
         StaffProfile, on_delete=models.CASCADE, related_name="breaktime_or_off_days"
     )
 
-    date = models.DateField()
+    break_date = models.DateField()
 
-    start_time = models.TimeField()
-    end_time = models.TimeField()
+    break_start_date_time = models.DateTimeField()
+    break_end_date_time = models.DateTimeField()
 
     status = models.CharField( max_length=20, choices=BlockStatus.choices, )
 
@@ -45,11 +48,11 @@ class BreakTimeAndOffDays(TimeStampedModel):
     class Meta:
         verbose_name = "BreakTimeAndOffDays"
         verbose_name_plural = "BreakTimeAndOffDays"
-        ordering = ["-date", "start_time"]
+        ordering = ["-date", "break_start_date_time"]
 
         constraints = [
             models.CheckConstraint(
-                condition=models.Q(start_time__lt=models.F("end_time")),
+                condition=models.Q(break_start_date_time__lt=models.F("break_end_date_time")),
                 name="break_start_time_should_before_end",
             ),
 
@@ -71,15 +74,15 @@ class BreakTimeAndOffDays(TimeStampedModel):
             )
 
         selected_date = self.date
-        start_time = self.start_time
-        end_time = self.end_time
+        break_start_date_time = self.break_start_date_time
+        break_end_date_time = self.break_end_date_time
 
-        salon_config, booking_config = self.get_salon_config()
+        salon_config, booking_config = BarberScheduler().get_salon_config()
 
         SALON_TIMEZONE = ZoneInfo(salon_config["time_zone"])
 
         # Date validation
-        today_date_and_time = timezone.localtime(SALON_TIMEZONE)
+        today_date_and_time = timezone.localtime().astimezone(SALON_TIMEZONE)
         today_date = today_date_and_time.date()
         current_time = today_date_and_time.time()
 
@@ -95,39 +98,24 @@ class BreakTimeAndOffDays(TimeStampedModel):
             )
 
         # Time validation
-        if end_time <= start_time:
+        if break_end_date_time <= break_start_date_time:
             raise ValidationError(
                 {"end_time": "End time must be after start time."}
             )
 
         # If today, start time must be in the future
         if selected_date == today_date:
-            if start_time <= current_time:
+            if break_start_date_time.time() <= current_time:
                 raise ValidationError(
                     {"start_time": "Start time must be after the current time."}
                 )
-
-        # if self.status == self.BlockStatus.ON_LEAVE:
-        #     days_before_leave = (self.date - today_date).days
-        #
-        #     if days_before_leave < 3:
-        #         raise ValidationError({
-        #             "date": "Leave requests must be made at least 3 days before the "
-        #                     "leave start date."
-        #         })
-        #
-        #     if days_before_leave > 5:
-        #         raise ValidationError({
-        #             "date": "Leave requests cannot be made more than 5 days before the "
-        #                     "leave start date."
-        #         })
 
         # Overlap validation
         overlap = BreakTimeAndOffDays.objects.filter(
             staff=self.staff,
             date=selected_date,
-            start_time__lt=end_time,
-            end_time__gt=start_time,
+            break_start_date_time__lt=break_end_date_time,
+            break_end_date_time__gt=break_start_date_time,
         )
 
         if self.pk:

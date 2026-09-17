@@ -39,7 +39,7 @@ class BookingSerializer(serializers.ModelSerializer):
         fields = [
                     "id", "booking_reference", "barber", "service", "hairstyle", "color",
                     "price", "customer_name", "email", "phone_number", "booking_date",
-                    "arrival_time", "start_time", "end_time", "status",
+                    "arrival_time", "session_start_date_time", "end_time", "status",
                     "reason_for_cancellation", "booking_source", "booked_by",
         ]
 
@@ -193,6 +193,8 @@ class CreateBookingSerializer(serializers.ModelSerializer):
         salon_open_time = salon_config["open_time"]
         salon_close_time = salon_config["close_time"]
 
+        # for the below, we considered the session_start_date_time was already in salon time_zone.
+        # so replacing the time_zone in with salon time_zone is just for clarity sake
         session_start_date_time = session_start_date_time.replace(salon_tz)
 
         if session_start_date_time.time() < salon_open_time:
@@ -211,7 +213,6 @@ class CreateBookingSerializer(serializers.ModelSerializer):
         if session_end_date_time.time() > salon_close_time:
             raise serializers.ValidationError({"time": "Invalid duration time, session finish time time is after "
                                                        "salon close time."})
-
 
 
         # manually attach price
@@ -307,12 +308,12 @@ class BookingReadSerializer(serializers.ModelSerializer):
     class Meta:
         model = Booking
         fields = [
-                    "id", "booking_reference", "price", "customer_name", "email",
-                    "phone_number", "booking_date", "arrival_time",
-                    "start_time", "end_time", "status", "reason_for_cancellation",
-                    "booking_source", "booked_by",
+                    "id", "booking_reference", "price", "customer_name", "email", "phone_number",
+                    "booking_date", "arrival_time", "session_start_date_time",
+                    "session_end_date_time", "status", "reason_for_cancellation", "booking_source",
+                    "booked_by", "staff_name", "service_name", "hairstyle_name", "color_name"
 
-                    "staff_name", "service_name", "hairstyle_name", "color_name"]
+                     ]
 
 
 # class BarberAvailableTimeQuerySerializer(serializers.Serializer):
@@ -346,7 +347,8 @@ class BarberBookingsTodaySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Booking
-        fields = ["start_time", "end_time", "customer_name", "service", "hairstyle", "status",]
+        fields = ["session_start_date_time", "session_start_date_time", "customer_name",
+                  "service", "hairstyle", "status",]
 
 
 
