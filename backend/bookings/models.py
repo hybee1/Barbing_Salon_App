@@ -64,7 +64,7 @@ class Booking(models.Model):
     phone_number = PhoneNumberField()
 
     # this must be in salon date and time
-    booking_date = models.DateTimeField()
+    booking_date = models.DateField()
 
     # this must be in utc date and time
     session_start_date_time = models.DateTimeField()
