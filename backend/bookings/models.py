@@ -63,13 +63,17 @@ class Booking(models.Model):
 
     phone_number = PhoneNumberField()
 
-    booking_date = models.DateField()
+    # this must be in salon date and time
+    booking_date = models.DateTimeField()
 
+    # this must be in utc date and time
     session_start_date_time = models.DateTimeField()
 
+    # this must be in utc date and time
     session_end_date_time = models.DateTimeField()
 
-    arrival_time = models.DateTimeField( null=True, blank=True, )
+    # this must be in utc date and time
+    arrival_time = models.DateTimeField(null=True, blank=True, )
 
     status = models.CharField( max_length=20, choices=STATUS, default=STATUS.CONFIRMED, )
 

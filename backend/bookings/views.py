@@ -387,7 +387,7 @@ class OneBarberUpcomingBookingsToday(APIView):
                                                         .filter(
                                                                 barber=barber,
                                                                 booking_date=date_today,
-                                                                 session_start_date_time__gte=today_date_and_time,
+                                                                session_start_date_time__gte=today_date_and_time,
                                                                  status=Booking.STATUS.CONFIRMED,
                                                          )
                                            )

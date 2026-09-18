@@ -36,7 +36,7 @@ class BreakTimeAndOffDays(TimeStampedModel):
         StaffProfile, on_delete=models.CASCADE, related_name="breaktime_or_off_days"
     )
 
-    break_date = models.DateField()
+    break_date = models.DateTimeField()
 
     break_start_date_time = models.DateTimeField()
     break_end_date_time = models.DateTimeField()

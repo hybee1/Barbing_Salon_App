@@ -199,13 +199,13 @@ class BarberScheduler:
 
         for booking in bookings_for_the_barber:
 
-            if booking.session_start_date_time > pointer:
+            if booking.session_start_date_time_utc > pointer:
 
-                free_periods.append(  ( pointer, booking.session_start_date_time )  )
+                free_periods.append(( pointer, booking.session_start_date_time_utc))
 
-            if booking.session_end_date_time > pointer:
+            if booking.session_end_date_time_utc > pointer:
 
-                pointer = booking.session_end_date_time
+                pointer = booking.session_end_date_time_utc
 
 
         if pointer < closing:

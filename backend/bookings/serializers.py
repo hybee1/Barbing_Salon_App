@@ -1,7 +1,7 @@
-from datetime import timedelta, datetime
+
+from datetime import timedelta
 from zoneinfo import ZoneInfo
 
-from django.utils import timezone
 from rest_framework import serializers
 
 from backend.accounts.models import User, StaffProfile
@@ -185,7 +185,7 @@ class CreateBookingSerializer(serializers.ModelSerializer):
                                                        " is unexpectedly longer than 3 hours."})
 
 
-        session_start_date_time = attrs.get("session_start_date_time")
+        session_start_date_time_salon_time = attrs.get("session_start_date_time")
         salon_config, _ = BarberScheduler().get_salon_config()
         salon_tz = ZoneInfo(salon_config["time_zone"])
 
@@ -194,30 +194,29 @@ class CreateBookingSerializer(serializers.ModelSerializer):
 
         # for the below, we considered the session_start_date_time was already in salon time_zone.
         # so replacing the time_zone in with salon time_zone is just for clarity sake
-        session_start_date_time = session_start_date_time.replace(salon_tz)
+        session_start_date_time_salon_time = session_start_date_time_salon_time.replace(tzinfo=salon_tz)
 
-        if session_start_date_time.time() < salon_open_time:
+        if session_start_date_time_salon_time.time() < salon_open_time:
             raise serializers.ValidationError({"time": "Invalid time, selected time is before salon open time."})
 
-        if session_start_date_time.time() > salon_close_time:
+        if session_start_date_time_salon_time.time() > salon_close_time:
             raise serializers.ValidationError({"time": "Invalid duration time, session duration is "
                                                        "beyond salon close time."})
 
-        session_end_date_time = session_start_date_time + total_duration
+        session_end_date_time_salon_time = session_start_date_time_salon_time + total_duration
 
-        if session_end_date_time.time() < salon_open_time:
+        if session_end_date_time_salon_time.time() < salon_open_time:
             raise serializers.ValidationError({"time": "Invalid time, session finish time time is before "
                                                        "salon open time."})
 
-        if session_end_date_time.time() > salon_close_time:
+        if session_end_date_time_salon_time.time() > salon_close_time:
             raise serializers.ValidationError({"time": "Invalid duration time, session finish time time is after "
                                                        "salon close time."})
 
 
         # manually attach price
         attrs["price"] = service_price + hairstyle_price + color_price
-        attrs["session_end_date_time"] = session_end_date_time
-        attrs["salon_timezone"] = salon_tz
+        attrs["session_end_date_time"] = session_end_date_time_salon_time
 
 
         return attrs

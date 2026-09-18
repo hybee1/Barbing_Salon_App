@@ -15,7 +15,7 @@ def create_break_period( *, staff_id, break_start_date_time, break_end_date_time
     # convert the start and end time to utc time
     break_start_date_time_utc = break_start_date_time.astimezone(ZoneInfo(settings.TIME_ZONE))
     break_end_date_time_utc = break_end_date_time.astimezone(ZoneInfo(settings.TIME_ZONE))
-    break_date = break_start_date_time.date()
+    break_date = break_start_date_time
 
     # Lock this staff for the duration of the transaction.
     # Any other booking attempt for this same barber must wait.
@@ -41,29 +41,22 @@ def break_time_and_offDays_data_with_timezone(*, data: dict | list[dict]) -> dic
                                           "is either a dict or a list of dict"})
 
     if isinstance(data, dict):
-        if "booking_date" not in data:
+        if "break_date" not in data:
             raise ValidationError({"details": "A booking 'date' is required."})
-        booking_date_str = data['booking_date']
 
-        if "session_start_date_time" not in data:
-            raise ValidationError({"details": "A booking 'session_start_date_time' is required."})
-        session_start_date_time_str = data['session_start_date_time']
+        if "break_start_date_time" not in data:
+            raise ValidationError({"details": "A booking 'break_start_date_time' is required."})
+        break_start_date_time_str = data['break_start_date_time']
 
-        if "session_end_date_time" not in data:
-            raise ValidationError({"details": "A booking 'session_end_date_time' is required."})
-        session_end_date_time_str = data['session_end_date_time']
+        if "break_end_date_time" not in data:
+            raise ValidationError({"details": "A booking 'break_end_date_time' is required."})
+        break_end_date_time_str = data['break_end_date_time']
 
-        # booking_date_start_time_str = f"{booking_date_str} {start_time_str}"
-        # booking_date_end_time_str = f"{booking_date_str} {end_time_str}"
+        break_date_start_time = break_start_date_time_str.astimezone(salon_timezone)
+        break_date_end_time = break_end_date_time_str.astimezone(salon_timezone)
 
-        # booking_date_start_time = datetime.strptime(booking_date_start_time_str, "%Y-%m-%d %H:%M")
-        # booking_date_end_time = datetime.strptime(booking_date_end_time_str, "%Y-%m-%d %H:%M")
-
-        booking_date_start_time = session_start_date_time_str.astimezone(salon_timezone)
-        booking_date_end_time = session_end_date_time_str.astimezone(salon_timezone)
-
-        data['start_time'] = booking_date_start_time.time()
-        data['end_time'] = booking_date_end_time.time()
+        data['start_time'] = break_date_start_time.time()
+        data['end_time'] = break_date_end_time.time()
 
         return data
 
@@ -71,29 +64,23 @@ def break_time_and_offDays_data_with_timezone(*, data: dict | list[dict]) -> dic
 
         res_list: list[dict] = []
         for item in data:
-            if "booking_date" not in item:
+            if "break_date" not in item:
                 raise ValidationError({"details": "A booking 'date' is required."})
-            booking_date_str = item['booking_date']
+            break_date_str = item['break_date']
 
-            if "session_start_date_time" not in item:
-                raise ValidationError({"details": "A booking 'session_start_date_time' is required."})
-            session_start_date_time_str = item['session_start_date_time']
+            if "break_start_date_time" not in item:
+                raise ValidationError({"details": "A booking 'break_start_date_time' is required."})
+            break_start_date_time_str = item['break_start_date_time']
 
-            if "session_end_date_time" not in item:
-                raise ValidationError({"details": "A booking 'session_end_date_time' is required."})
-            session_end_date_time_str = item['session_end_date_time']
+            if "break_end_date_time" not in item:
+                raise ValidationError({"details": "A booking 'break_end_date_time' is required."})
+            break_end_date_time_str = item['break_end_date_time']
 
-            # booking_date_start_time_str = f"{booking_date_str} {start_time_str}"
-            # booking_date_end_time_str = f"{booking_date_str} {end_time_str}"
-            #
-            # booking_date_start_time = datetime.strptime(booking_date_start_time_str, "%Y-%m-%d %H:%M")
-            # booking_date_end_time = datetime.strptime(booking_date_end_time_str, "%Y-%m-%d %H:%M")
+            break_date_start_time = break_start_date_time_str.astimezone(salon_timezone)
+            break_date_end_time = break_end_date_time_str.astimezone(salon_timezone)
 
-            booking_date_start_time = session_start_date_time_str.astimezone(salon_timezone)
-            booking_date_end_time = session_end_date_time_str.astimezone(salon_timezone)
-
-            item['start_time'] = booking_date_start_time.time()
-            item['end_time'] = booking_date_end_time.time()
+            item['start_time'] = break_date_start_time.time()
+            item['end_time'] = break_date_end_time.time()
 
             res_list.append(item)
 
