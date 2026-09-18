@@ -1,5 +1,6 @@
 
 from datetime import timedelta, datetime
+from zoneinfo import ZoneInfo
 
 from django.db.models import Count, Q
 from django.utils import timezone
@@ -23,6 +24,7 @@ from backend.custom_permissions.permissions import (Is_Authenticated_Staff_User,
                                                     SalonManager_Or_Barber_Or_Stylist_Or_Is_Barber_Stylist_Or_Receptionist)
 from backend.exceptions.exceptions import BookingDateException
 from backend.rate_limit_or_throttling.booking_create_throttle import BookingCreateThrottle
+from backend.salon_settings import services_salon_config
 from backend.utils.services import BarberScheduler
 
 
@@ -200,10 +202,15 @@ class TodayBooking_Api_View(APIView):
 
     def get(self, request):
 
-        today_date = timezone.localdate()
+        salon_info = services_salon_config.get_salon_info_config()
+        salon_tz = ZoneInfo(salon_info["timezone"])
+
+        today_date_time_in_salon_tz = timezone.localtime().astimezone(salon_tz)
+        today_date_in_salon_tz = today_date_time_in_salon_tz.date()
+
         bookings_for_today = (
             Booking.objects.select_related( "barber__user", "service","hairstyle", "color",
-                        ).filter( booking_date=today_date )
+                        ).filter( booking_date=today_date_in_salon_tz )
         )
 
         serializer = BookingReadSerializer( bookings_for_today, many=True )
@@ -218,9 +225,13 @@ class OneBarberBookingForLast7Days_Api_View(APIView):
     permission_classes = [Is_Authenticated_Staff_User]
 
     def get(self, request):
+        salon_info = services_salon_config.get_salon_info_config()
+        salon_tz = ZoneInfo(salon_info["timezone"])
 
-        today_date = timezone.localdate()
-        last_7_days = today_date - timedelta(days=7)
+        today_date_time_in_salon_tz = timezone.localtime().astimezone(salon_tz)
+        today_date_in_salon_tz = today_date_time_in_salon_tz.date()
+
+        last_7_days_in_salon_tz = today_date_in_salon_tz - timedelta(days=7)
 
         if not BarberScheduler().can_receive_bookings(request.user.staffprofile):
             return Response(
@@ -232,7 +243,7 @@ class OneBarberBookingForLast7Days_Api_View(APIView):
                             "barber__user", "service", "hairstyle", "color",
                         ).filter(
                                 barber=request.user.staffprofile,
-                                booking_date__range=(last_7_days, today_date),
+                                booking_date__range=(last_7_days_in_salon_tz, today_date_in_salon_tz),
                         ).order_by("booking_date", "-session_start_date_time")
         )
 
@@ -248,15 +259,19 @@ class BookingForLast7Days_Api_View(APIView):
     permission_classes = [SalonManager_Or_Receptionist]
 
     def get(self, request):
+        salon_info = services_salon_config.get_salon_info_config()
+        salon_tz = ZoneInfo(salon_info["timezone"])
 
-        today_date = timezone.localdate()
-        last_7_days = today_date - timedelta(days=7)
+        today_date_time_in_salon_tz = timezone.localtime().astimezone(salon_tz)
+        today_date_in_salon_tz = today_date_time_in_salon_tz.date()
+
+        last_7_days_in_salon_tz = today_date_in_salon_tz - timedelta(days=7)
 
         booking_obj = ( Booking.objects .select_related(
                         "barber__user", "service", "hairstyle",
                         "color",
                     ).filter(
-                        booking_date__range=(last_7_days, today_date),
+                        booking_date__range=(last_7_days_in_salon_tz, today_date_in_salon_tz),
                     )
                     .order_by("booking_date", "-session_start_date_time")
         )
@@ -300,11 +315,18 @@ class BarberBookingStatsView(APIView):
 
         barber = request.user.staffprofile
 
-        date_time_today = timezone.localtime()
-        date_today = date_time_today.date()
-        time_now = date_time_today.time()
+        today_date_time_utc = timezone.localtime()
+        current_time_utc = today_date_time_utc.time()
 
-        barber_bookings_stats_for_today = Booking.objects.filter(booking_date=date_today, barber=barber)
+        salon_info = services_salon_config.get_salon_info_config()
+        salon_tz = ZoneInfo(salon_info["timezone"])
+
+        today_date_time_in_salon_tz = timezone.localtime().astimezone(salon_tz)
+        today_date_in_salon_tz = today_date_time_in_salon_tz.date()
+        current_time_in_salon_tz = today_date_time_in_salon_tz.time()
+
+        barber_bookings_stats_for_today = Booking.objects.filter(
+                                        booking_date=today_date_in_salon_tz, barber=barber)
 
         stats = barber_bookings_stats_for_today.aggregate(
             today_count=Count("id"),
@@ -312,12 +334,13 @@ class BarberBookingStatsView(APIView):
             upcoming_count=Count(
                                 "id",
                                 filter=Q(
-                                    session_start_date_time__gte=date_time_today,
+                                    session_start_date_time__gte=today_date_time_utc,
                                     status__in=[ Booking.STATUS.ARRIVED, Booking.STATUS.CONFIRMED, ], ),
                                 ),
         )
 
-        break_or_off_days = list( BreakTimeAndOffDays.objects.filter( staff=barber, date=date_today,)[:7] )
+        break_or_off_days = list( BreakTimeAndOffDays.objects.filter(
+                                                staff=barber, break_date=today_date_in_salon_tz)[:7] )
 
         if not break_or_off_days:
             break_status = ( BreakTimeAndOffDays.BlockStatus.AVAILABLE.label )
@@ -325,7 +348,8 @@ class BarberBookingStatsView(APIView):
             break_status = ( BreakTimeAndOffDays.BlockStatus.AVAILABLE.label )
 
             for break_stat in break_or_off_days:
-                if ( break_stat.start_time < time_now and break_stat.end_time > time_now ):
+                if ( break_stat.break_start_date_time < current_time_utc and
+                                                        break_stat.end_time > current_time_utc ):
                     break_status = break_stat.status.label
                     break
 
@@ -347,7 +371,11 @@ class OneBarberBookingsToday(APIView):
 
         barber = request.user.staffprofile
 
-        date_today = timezone.localdate()
+        salon_info = services_salon_config.get_salon_info_config()
+        salon_tz = ZoneInfo(salon_info["timezone"])
+
+        today_date_time_in_salon_tz = timezone.localtime().astimezone(salon_tz)
+        today_date_in_salon_tz = today_date_time_in_salon_tz.date()
 
         if not BarberScheduler().can_receive_bookings(request.user.staffprofile):
             return Response(
@@ -355,7 +383,7 @@ class OneBarberBookingsToday(APIView):
             )
 
         barber_bookings_stats_for_today = Booking.objects.filter(
-                            booking_date=date_today, barber=barber,
+                            booking_date=today_date_in_salon_tz, barber=barber,
                             status=Booking.STATUS.CONFIRMED)
 
         serializer = BarberBookingsTodaySerializer(barber_bookings_stats_for_today, many=True)
@@ -373,9 +401,14 @@ class OneBarberUpcomingBookingsToday(APIView):
 
         barber = request.user.staffprofile
 
-        today_date_and_time = timezone.localtime()
-        date_today = today_date_and_time.date()
-        current_time = today_date_and_time.time()
+        today_date_time_utc = timezone.localtime()
+        current_time_utc = today_date_time_utc.time()
+
+        salon_info = services_salon_config.get_salon_info_config()
+        salon_tz = ZoneInfo(salon_info["timezone"])
+
+        today_date_time_in_salon_tz = timezone.localtime().astimezone(salon_tz)
+        today_date_in_salon_tz = today_date_time_in_salon_tz.date()
 
         if not BarberScheduler().can_receive_bookings(request.user.staffprofile):
             return Response(
@@ -386,8 +419,8 @@ class OneBarberUpcomingBookingsToday(APIView):
                                                         .select_related( "service", "hairstyle", )
                                                         .filter(
                                                                 barber=barber,
-                                                                booking_date=date_today,
-                                                                session_start_date_time__gte=today_date_and_time,
+                                                                booking_date=today_date_in_salon_tz,
+                                                                session_start_date_time__gte=today_date_time_utc,
                                                                  status=Booking.STATUS.CONFIRMED,
                                                          )
                                            )
@@ -407,17 +440,22 @@ class BarberUpcomingBookingsToday(APIView):
 
         barber = request.user.staffprofile
 
-        today_date_and_time = timezone.localtime()
-        date_today = today_date_and_time.date()
-        current_time = today_date_and_time.time()
+        today_date_time_utc = timezone.localtime()
+        current_time_utc = today_date_time_utc.time()
+
+        salon_info = services_salon_config.get_salon_info_config()
+        salon_tz = ZoneInfo(salon_info["timezone"])
+
+        today_date_time_in_salon_tz = timezone.localtime().astimezone(salon_tz)
+        today_date_in_salon_tz = today_date_time_in_salon_tz.date()
 
         barber_bookings_stats_for_today = (
                                             Booking.objects.select_related(
                                                         "barber__user", "service", "hairstyle",
                                                     )
                                                     .filter(
-                                                        booking_date=date_today,
-                                                        session_start_date_time__gte=today_date_and_time,
+                                                        booking_date=today_date_in_salon_tz,
+                                                        session_start_date_time__gte=today_date_time_utc,
                                                         status=Booking.STATUS.CONFIRMED,
                                                     )
                                             )

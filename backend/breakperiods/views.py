@@ -1,5 +1,6 @@
 
 from datetime import timedelta, datetime
+from zoneinfo import ZoneInfo
 
 from django.utils import timezone
 from rest_framework import status
@@ -13,6 +14,7 @@ from backend.breakperiods.serializers import (BarberBreakTimeAndOffDaySerializer
                                               BreakTimeAndOffDaysSerializer,
                                                 ActiveBreakTimeSerializer)
 from backend.custom_permissions.permissions import Is_Authenticated_Staff_User, Is_SalonManager
+from backend.salon_settings import services_salon_config
 
 
 class CreateBarberBreakTimeAndOffDayAPIView(APIView):
@@ -48,12 +50,17 @@ class Last7daysAnd3DaysAheadBarberBreakTimeAndOffDayAPIView(APIView):
 
     def get(self, request):
 
-        today = timezone.localdate()
-        three_days_ahead = today + timedelta(days=3)
-        seven_days_ago = today - timedelta(days=7)
+        salon_info = services_salon_config.get_salon_info_config()
+        salon_tz = ZoneInfo(salon_info["timezone"])
+
+        today_date_time_in_salon_tz = timezone.localtime().astimezone(salon_tz)
+        today_date_in_salon_tz = today_date_time_in_salon_tz.date()
+
+        three_days_ahead_in_salon_tz = today_date_in_salon_tz + timedelta(days=3)
+        seven_days_ago_in_salon_tz = today_date_in_salon_tz - timedelta(days=7)
 
         break_or_off = BreakTimeAndOffDays.objects.filter(
-                        break_date__range=(seven_days_ago, three_days_ahead))
+                        break_date__range=(seven_days_ago_in_salon_tz, three_days_ahead_in_salon_tz))
 
         serializer = BreakTimeAndOffDaysSerializer(break_or_off, many=True)
 
@@ -66,13 +73,17 @@ class ActiveBreakTimeAndOffDayAPIView(APIView):
     permission_classes = [Is_SalonManager] # only salon manager
 
     def get(self, request):
-        today_date_and_time = timezone.localtime()
-        date_today = today_date_and_time.date()
-        current_time = today_date_and_time.time()
+        today_date_time_utc = timezone.localtime()
 
-        active_break = BreakTimeAndOffDays.objects.filter( break_date=date_today,
-                               break_start_date_time__lte=today_date_and_time,
-                               break_end_date_time__gte=today_date_and_time )
+        salon_info = services_salon_config.get_salon_info_config()
+        salon_tz = ZoneInfo(salon_info["timezone"])
+
+        today_date_time_in_salon_tz = timezone.localtime().astimezone(salon_tz)
+        today_date_in_salon_tz = today_date_time_in_salon_tz.date()
+
+        active_break = BreakTimeAndOffDays.objects.filter( break_date=today_date_in_salon_tz,
+                               break_start_date_time__lte=today_date_time_utc,
+                               break_end_date_time__gte=today_date_time_utc )
 
         serializer = ActiveBreakTimeSerializer(active_break, many=True)
 
@@ -87,12 +98,18 @@ class OneBarberBreakTimeAndOffDayAPIView(APIView):
 
     #  this return between seven days ago and three days ahead for that barber
     def get(self, request):
-        today = timezone.localdate()
-        three_days_ahead = today + timedelta(days=3)
-        two_days_ago = today - timedelta(days=7)
+
+        salon_info = services_salon_config.get_salon_info_config()
+        salon_tz = ZoneInfo(salon_info["timezone"])
+
+        today_date_time_in_salon_tz = timezone.localtime().astimezone(salon_tz)
+        today_date_in_salon_tz = today_date_time_in_salon_tz.date()
+
+        three_days_ahead_in_salon_tz = today_date_in_salon_tz + timedelta(days=3)
+        two_days_ago_in_salon_tz = today_date_in_salon_tz - timedelta(days=7)
 
         break_or_off = BreakTimeAndOffDays.objects.filter(
-            break_date__range=(two_days_ago, three_days_ahead),
+            break_date__range=(two_days_ago_in_salon_tz, three_days_ahead_in_salon_tz),
             staff=request.user.staffprofile,)
 
         serializer = BarberBreakTimeAndOffDaySerializer(break_or_off, many=True)
