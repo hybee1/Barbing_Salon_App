@@ -20,7 +20,7 @@ def create_booking( *, barber_id, service_id, hairstyle_id, color_id, total_pric
     # convert the start and end time to utc time
     session_start_date_time_utc = session_start_date_time_salon_time.astimezone(ZoneInfo(settings.TIME_ZONE))
     session_end_date_time_utc = session_end_date_time_salon_time.astimezone(ZoneInfo(settings.TIME_ZONE))
-    booking_date = session_start_date_time_salon_time
+    booking_date = session_start_date_time_salon_time.date()
 
     # Lock this barber for the duration of the transaction.
     # Any other booking attempt for this same barber must wait.
