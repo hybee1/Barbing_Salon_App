@@ -24,7 +24,7 @@ class BarberScheduler:
         return salon_config, booking_config
 
     @staticmethod
-    def can_receive_bookings(staff: StaffProfile):
+    def can_receive_bookings(*, staff: StaffProfile):
         return (
                 staff.user.role == User.Role.STAFF
                 and staff.user.is_active
@@ -39,73 +39,58 @@ class BarberScheduler:
     # For a particular day:
 
     # Step 1. Get today's bookings
-    def get_this_barber_bookings_for_this_date(self, barber: StaffProfile,
-                                               date_utc: date) -> list[Booking]:
+    def get_this_barber_bookings_for_this_date(self, *, barber: StaffProfile,
+                                               date_in_salon_tz: date) -> list[Booking]:
 
 
         if not self.can_receive_bookings(barber):
 
             raise UserException('Not a barber or stylist')
 
-        bookings = ( Booking.objects.filter(barber=barber, booking_date=date_utc)
-                     .order_by("start_time") )
+        bookings = ( Booking.objects.filter(barber=barber, booking_date=date_in_salon_tz)
+                     .order_by("session_start_date_time") )
 
         return bookings
 
 
-    # Step 2a. Determine session start by supplying date_time in utc time_zone
-    def determine_start(self, session_star_date_time_utc: datetime) -> datetime:
+    # Step 2a. Determine barbing session start by supplying
+    def determine_start(self, *, booking_date_in_salon_tz: date, salon_opening_time:time,
+                                         salon_timezone: ZoneInfo, booking_slot_interval: int) -> datetime:
 
-        salon_config, booking_config = self.get_salon_config()
+        salon_opening_date_time_in_salon_tz = datetime.combine(
+                                                    booking_date_in_salon_tz, salon_opening_time,
+                                                    tzinfo=salon_timezone)
 
-        salon_opening_time = time.fromisoformat( salon_config["open_time"] )
-        salon_close_time = time.fromisoformat(salon_config["close_time"])
+        # this gives instant datetime in utc
+        now_utc = timezone.now()
+        now_salon_tz = now_utc.astimezone(salon_timezone)
 
-        salon_timezone = ZoneInfo(salon_config["time_zone"])
-
-        now_utc = timezone.now().astimezone(settings.TIME_ZONE)
-
-        opening_utc = datetime.combine(now_utc.date(), salon_opening_time, tzinfo=ZoneInfo(settings.TIME_ZONE), )
-
-        if session_star_date_time_utc.date() < now_utc.date():
+        if salon_opening_date_time_in_salon_tz.date() < now_salon_tz.date():
 
             raise BookingDateException(date)
 
         # If customer is booking today...
-        elif session_star_date_time_utc.date() == now_utc.date():
+        elif salon_opening_date_time_in_salon_tz.date() == now_salon_tz.date():
 
-            _, booking_config = self.get_salon_config()
+            start = max(salon_opening_date_time_in_salon_tz, now_salon_tz)
 
-            interval = int(booking_config["booking_slot_interval"])
+        else: # if session_star_date_time_in_salon_tz.date() > now_salon_tz.date():
 
-            start = max(opening_utc, (now_utc + timedelta(minutes=interval)))
+            start = salon_opening_date_time_in_salon_tz
 
-        else: # if date > now.date():
-
-            start = opening_utc
-
-        return self.round_to_booking_interval(start)
+        # return start date_time in salon_tz
+        return self.round_to_booking_interval(dt=start, booking_slot_interval=booking_slot_interval)
 
 
-    '''
-    If now is 10:03
+    # Step 2b. Determine salon close
+    def determine_close(self, *, booking_date_in_salon_tz: date, salon_closing_time:time,
+                                                            salon_timezone:ZoneInfo) -> datetime:
 
-    Then start = 10:03
-    '''
+        salon_closing_date_time_in_salon_tz = datetime.combine(
+                                        booking_date_in_salon_tz, salon_closing_time, tzinfo=salon_timezone)
 
-    # Step 2b. Determine session close by supplying date_time in utc timezone
-    def determine_close(self, session_star_date_time_utc: datetime) -> datetime:
-
-        salon_config, _ = self.get_salon_config()
-
-        salon_timezone = ZoneInfo( salon_config["time_zone"] )
-
-        salon_closing_time = time.fromisoformat( salon_config["close_time"] )
-
-        salon_closing = datetime.combine( session_star_date_time_utc.date(), salon_closing_time,
-                                          tzinfo=salon_timezone, )
-
-        return salon_closing
+        # return close date_time in salon_tz
+        return salon_closing_date_time_in_salon_tz
 
     # Step 3. Round to next booking interval
     ''' Usually you don't want customers booking at
@@ -124,11 +109,9 @@ class BarberScheduler:
     Example function:
     '''
     # the supplied datetime is in utc
-    def round_to_booking_interval(self, dt: datetime) -> datetime:
+    def round_to_booking_interval(self, *, dt: datetime, booking_slot_interval: int) -> datetime:
 
-        _, booking_config = self.get_salon_config()
-
-        interval = int( booking_config["booking_slot_interval"] )
+        interval = booking_slot_interval
 
         if interval <= 0:
             raise ValueError( "booking_slot_interval must be greater than zero"  )
@@ -166,8 +149,10 @@ class BarberScheduler:
     # barber_id = could be staffProfile_id or User_id, from ui perspective it should
     # be staffProfile_id
 
-    def determine_free_period_for_barber(self, staffProfile_id: int,
-                                         session_star_date_time_utc: datetime) -> list[tuple[datetime, datetime]]:
+    def determine_free_period_for_barber(self, staffProfile_id: int, booking_date_in_salon_tz: date,
+                                         salon_opening_time: time, salon_closing_time: time,
+                                         salon_timezone: ZoneInfo,
+                                         booking_slot_interval: int ) -> list[tuple[datetime, datetime]]:
 
 
         barber = get_object_or_404(StaffProfile, id=staffProfile_id)
@@ -180,38 +165,47 @@ class BarberScheduler:
 
             raise RoleException()
 
-        if  (not self.can_receive_bookings(barber)):
+        if  (not self.can_receive_bookings(staff=barber)):
 
             raise UserException("Department Exception, this user can render this service")
 
         try:
 
-            start: datetime = self.determine_start(session_star_date_time_utc)
-            closing: datetime = self.determine_close(session_star_date_time_utc)
+            start: datetime = self.determine_start(booking_date_in_salon_tz=booking_date_in_salon_tz,
+                                                   salon_opening_time=salon_opening_time,
+                                                   salon_timezone=salon_timezone,
+                                                   booking_slot_interval=booking_slot_interval)
+
+            closing: datetime = self.determine_close(booking_date_in_salon_tz=booking_date_in_salon_tz,
+                                                   salon_closing_time=salon_closing_time,
+                                                   salon_timezone=salon_timezone)
         except BookingDateException as b_exc:
             raise b_exc
 
         bookings_for_the_barber: list[Booking] = (
-                        self.get_this_barber_bookings_for_this_date(barber, start.date()))
+                        self.get_this_barber_bookings_for_this_date(barber=barber,
+                                                                    date_in_salon_tz=start.date()))
 
         free_periods: list[tuple[datetime, datetime]] = []
         pointer: datetime = start
 
         for booking in bookings_for_the_barber:
 
-            if booking.session_start_date_time_utc > pointer:
+            if booking.session_start_date_time > pointer:
 
-                free_periods.append(( pointer, booking.session_start_date_time_utc))
+                free_periods.append(( pointer, booking.session_start_date_time))
 
-            if booking.session_end_date_time_utc > pointer:
+            if booking.session_end_date_time > pointer:
 
-                pointer = booking.session_end_date_time_utc
+                pointer = booking.session_end_date_time
 
 
         if pointer < closing:
 
             free_periods.append((pointer, closing))
 
+        # the free periods are datetime in utc because of session_start_date_time
+        # and session_end_date_time
         return free_periods
 
 
@@ -266,13 +260,13 @@ class BarberScheduler:
 
 
     # Algorithm
-    def available_start_time_for_the_service(self, free_periods: list[tuple[datetime, datetime]],
-                                             total_service_duration: int) -> list[time] | None:
+    def available_start_time_for_the_service_in_salon_tz(self,
+                                                         free_periods: list[tuple[datetime, datetime]],
+                                                         total_service_duration: int,
+                                                         salon_timezone: ZoneInfo,
+                                                         booking_slot_interval: int) -> list[time] | None:
 
-        salon_info, booking_config = self.get_salon_config()
-        salon_timezone = salon_info["time_zone"]
-
-        interval = int( booking_config["booking_slot_interval"]  )
+        interval = booking_slot_interval
 
         if interval <= 0:
             raise ValueError( "booking_slot_interval must be greater than zero" )
@@ -361,18 +355,18 @@ class BarberScheduler:
     # Prevent Double Booking
     # Even if two customers click 10:15 simultaneously, you must validate again before saving.
 
-    def validate_no_overlap(self, barber: StaffProfile, booking_date: date,
+    def validate_no_overlap(self, barber: StaffProfile, booking_date_salon_tz: date,
                             session_start_date_time: datetime, session_end_date_time: datetime) -> bool:
 
         if barber.user.role != User.Role.STAFF:
             raise RoleException()
 
-        if not self.can_receive_bookings(barber):
+        if not self.can_receive_bookings(staff=barber):
             raise UserException('Selected user can not render this service at staff does not belong '
                                 'to the right department')
 
         with transaction.atomic():
-            overlap = (Booking.objects.filter( barber=barber, booking_date=booking_date,
+            overlap = (Booking.objects.filter( barber=barber, booking_date=booking_date_salon_tz,
                                             session_start_date_time__lt=session_end_date_time,
                                             session_end_date_time__gt=session_start_date_time
                                                 ).exists())
@@ -395,15 +389,28 @@ class BarberScheduler:
     If true, the booking conflicts.
     '''
 
-    def check_schedule(self, staffProfile_id: int, date1_utc: datetime,  total_service_duration: int):
+    def check_schedule(self, staffProfile_id: int,
+                       booking_date_in_salon_tz: date, total_service_duration: int,
+                       salon_opening_time: time, salon_closing_time: time,
+                       salon_timezone: ZoneInfo, booking_slot_interval:int ) -> list[time] | None:
 
         try:
-            barber_free_periods = self.determine_free_period_for_barber( staffProfile_id, date1_utc )
+            barber_free_periods = self.determine_free_period_for_barber(
+                                                staffProfile_id=staffProfile_id,
+                                                booking_date_in_salon_tz=booking_date_in_salon_tz,
+                                                salon_opening_time=salon_opening_time,
+                                                salon_closing_time=salon_closing_time,
+                                                salon_timezone=salon_timezone,
+                                                booking_slot_interval=booking_slot_interval)
+
         except Exception as e:
             raise e
 
-        available_start_time = self.available_start_time_for_the_service(
-                                              barber_free_periods, total_service_duration )
+        available_start_time = self.available_start_time_for_the_service_in_salon_tz(
+                                              free_periods=barber_free_periods,
+                                              total_service_duration=total_service_duration,
+                                              salon_timezone=salon_timezone,
+                                              booking_slot_interval=booking_slot_interval)
 
         return available_start_time
 

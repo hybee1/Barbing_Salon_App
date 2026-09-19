@@ -63,7 +63,8 @@ class Booking(models.Model):
 
     phone_number = PhoneNumberField()
 
-    # this must be in salon date
+    # Calendar date in the salon's timezone.
+    # This is intentionally NOT UTC and does not represent an instant.
     booking_date = models.DateField()
 
     # this must be in utc date and time

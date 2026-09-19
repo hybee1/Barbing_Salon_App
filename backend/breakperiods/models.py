@@ -36,6 +36,8 @@ class BreakTimeAndOffDays(TimeStampedModel):
         StaffProfile, on_delete=models.CASCADE, related_name="breaktime_or_off_days"
     )
 
+    # Calendar date in the salon's timezone.
+    # This is intentionally NOT UTC and does not represent an instant.
     break_date = models.DateField()
 
     break_start_date_time = models.DateTimeField()

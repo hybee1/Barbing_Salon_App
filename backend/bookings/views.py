@@ -301,8 +301,19 @@ class BarberBookingAvailability_Api_View(APIView):
 
         barber_scheduler = BarberScheduler()
 
+        salon_info, salon_booking_config = barber_scheduler.get_salon_config()
+        salon_opening_time = salon_info["opening_time"]
+        salon_closing_time = salon_info["closing_time"]
+        salon_timezone = ZoneInfo(salon_info["timezone"])
+        booking_slot_interval = salon_booking_config["booking_slot_interval"]
+
         available_start_time = barber_scheduler.check_schedule(
-                                                 barber_id, date1, total_service_duration)
+                                                 staffProfile_id=barber_id, booking_date_in_salon_tz=date1,
+                                                 total_service_duration=total_service_duration,
+                                                 salon_opening_time=salon_opening_time,
+                                                 salon_closing_time=salon_closing_time,
+                                                 salon_timezone=salon_timezone,
+                                                 booking_slot_interval=booking_slot_interval )
 
         return Response(available_start_time, status=status.HTTP_200_OK)
 
