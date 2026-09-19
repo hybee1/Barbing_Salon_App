@@ -52,41 +52,50 @@ class BarberScheduler:
 
     # Step 2a. Determine barbing session start by supplying
     def determine_start(self, *, booking_date_in_salon_tz: date, salon_opening_time: time,
-                        salon_timezone: ZoneInfo, booking_slot_interval: int) -> datetime:
+                        salon_timezone: ZoneInfo, booking_slot_interval: int, ) -> datetime:
+        """
+        Determine the earliest possible booking start.
 
-        salon_opening_date_time_in_salon_tz = datetime.combine(
-            booking_date_in_salon_tz, salon_opening_time,
-            tzinfo=salon_timezone)
+        The returned datetime is in the salon timezone.
 
-        # this gives instant datetime in utc
+        Rules:
+        - Past salon dates are rejected.
+        - For a future date, the salon opening time is the first possible slot.
+        - For today, use the later of opening time and current salon time,
+          then round upward to the next booking interval.
+        """
         now_utc = timezone.now()
         now_salon_tz = now_utc.astimezone(salon_timezone)
 
-        if salon_opening_date_time_in_salon_tz.date() < now_salon_tz.date():
+        if booking_date_in_salon_tz < now_salon_tz.date():
+            raise BookingDateException(booking_date_in_salon_tz)
 
-            raise BookingDateException(date)
+        opening_salon_dt = datetime.combine(
+            booking_date_in_salon_tz,
+            salon_opening_time,
+        ).replace(tzinfo=salon_timezone)
 
-        # If customer is booking today...
-        elif salon_opening_date_time_in_salon_tz.date() == now_salon_tz.date():
+        # Future date:
+        # Opening time itself should be a valid starting point.
+        if booking_date_in_salon_tz > now_salon_tz.date():
+            return opening_salon_dt
 
-            start = max(salon_opening_date_time_in_salon_tz, now_salon_tz)
+        # Today:
+        # Do not allow a time before opening.
+        start = max(opening_salon_dt, now_salon_tz)
 
-        else:  # if session_star_date_time_in_salon_tz.date() > now_salon_tz.date():
-
-            start = salon_opening_date_time_in_salon_tz
-
-        # return start date_time in salon_tz
-        return self.round_to_booking_interval(dt=start, booking_slot_interval=booking_slot_interval)
+        return self.round_to_booking_interval(dt=start, booking_slot_interval=booking_slot_interval, )
 
     # Step 2b. Determine salon close
-    def determine_close(self, *, booking_date_in_salon_tz: date, salon_closing_time: time,
-                        salon_timezone: ZoneInfo) -> datetime:
+    def determine_close( self, *, booking_date_in_salon_tz: date,
+                        salon_closing_time: time, salon_timezone: ZoneInfo, ) -> datetime:
+        """
+        Construct the salon's closing boundary for the specified
+        salon calendar date.
 
-        salon_closing_date_time_in_salon_tz = datetime.combine(
-            booking_date_in_salon_tz, salon_closing_time, tzinfo=salon_timezone)
-
-        # return close date_time in salon_tz
-        return salon_closing_date_time_in_salon_tz
+        Returned datetime is in the salon timezone.
+        """
+        return datetime.combine( booking_date_in_salon_tz, salon_closing_time, ).replace(tzinfo=salon_timezone)
 
     # Step 3. Round to next booking interval
     ''' Usually you don't want customers booking at
@@ -106,20 +115,34 @@ class BarberScheduler:
     '''
 
     # the supplied datetime is in utc
-    def round_to_booking_interval(self, *, dt: datetime, booking_slot_interval: int) -> datetime:
+    def round_to_booking_interval( self, *, dt: datetime, booking_slot_interval: int, ) -> datetime:
+        """
+        Round a salon-local datetime upward to the next booking interval.
 
-        interval = booking_slot_interval
+        Examples with a 15-minute interval:
 
-        if interval <= 0:
-            raise ValueError("booking_slot_interval must be greater than zero")
+            09:00:00 -> 09:00
+            09:01:00 -> 09:15
+            09:03:00 -> 09:15
+            09:14:59 -> 09:15
+            09:15:00 -> 09:15
+            09:16:00 -> 09:30
+        """
+        if booking_slot_interval <= 0:
+            raise ValueError( "booking_slot_interval must be greater than zero" )
 
-        minutes = ((dt.minute // interval) + 1) * interval
+        # Remove seconds/microseconds first.
+        dt = dt.replace(second=0, microsecond=0)
 
-        if minutes == 60:
-            dt = dt.replace(minute=0, second=0, microsecond=0)
-            return dt + timedelta(hours=1)
+        total_minutes = dt.hour * 60 + dt.minute
+        remainder = total_minutes % booking_slot_interval
 
-        return dt.replace(minute=minutes, second=0, microsecond=0)
+        if remainder == 0:
+            return dt
+
+        minutes_to_add = booking_slot_interval - remainder
+
+        return dt + timedelta(minutes=minutes_to_add)
 
     # Then start = round_to_booking_interval(start)
     # If you want 10:10 instead of 10:15, round to 10-minute intervals instead.
@@ -144,55 +167,84 @@ class BarberScheduler:
     # barber_id = could be staffProfile_id or User_id, from ui perspective it should
     # be staffProfile_id
 
-    def determine_free_period_for_barber(self, staffProfile_id: int, booking_date_in_salon_tz: date,
-                                         salon_opening_time: time, salon_closing_time: time,
-                                         salon_timezone: ZoneInfo,
-                                         booking_slot_interval: int) -> list[tuple[datetime, datetime]]:
+    def determine_free_period_for_barber(
+            self, *, staffProfile_id: int, booking_date_in_salon_tz: date,
+            salon_opening_time: time, salon_closing_time: time,
+            salon_timezone: ZoneInfo, booking_slot_interval: int, ) -> list[tuple[datetime, datetime]]:
 
-        barber = get_object_or_404(StaffProfile, id=staffProfile_id)
-
-        if not barber:
-            raise UserNotFoundException()
+        barber = get_object_or_404( StaffProfile, id=staffProfile_id, )
 
         if barber.user.role != User.Role.STAFF:
             raise RoleException()
 
-        if (not self.can_receive_bookings(staff=barber)):
-            raise UserException("Department Exception, this user can render this service")
+        if not self.can_receive_bookings(staff=barber):
+            raise UserException(
+                "Department Exception, this user can render this service"
+            )
 
-        try:
+        start_salon = self.determine_start(
+            booking_date_in_salon_tz=booking_date_in_salon_tz,
+            salon_opening_time=salon_opening_time,
+            salon_timezone=salon_timezone,
+            booking_slot_interval=booking_slot_interval,
+        )
 
-            start: datetime = self.determine_start(booking_date_in_salon_tz=booking_date_in_salon_tz,
-                                                   salon_opening_time=salon_opening_time,
-                                                   salon_timezone=salon_timezone,
-                                                   booking_slot_interval=booking_slot_interval)
+        closing_salon = self.determine_close(
+            booking_date_in_salon_tz=booking_date_in_salon_tz,
+            salon_closing_time=salon_closing_time,
+            salon_timezone=salon_timezone,
+        )
 
-            closing: datetime = self.determine_close(booking_date_in_salon_tz=booking_date_in_salon_tz,
-                                                     salon_closing_time=salon_closing_time,
-                                                     salon_timezone=salon_timezone)
-        except BookingDateException as b_exc:
-            raise b_exc
+        opening_salon = datetime.combine(
+            booking_date_in_salon_tz, salon_opening_time, ).replace(tzinfo=salon_timezone)
 
-        bookings_for_the_barber: list[Booking] = (
-            self.get_this_barber_bookings_for_this_date(barber=barber,
-                                                        date_in_salon_tz=start.date()))
+        if closing_salon <= opening_salon:
+            raise ValueError( "Salon closing time must be later than opening time." )
+
+        # Convert business boundaries to UTC.
+        #
+        # From this point onward, all interval arithmetic is done in UTC.
+        start_utc = start_salon.astimezone(timezone.utc)
+        closing_utc = closing_salon.astimezone(timezone.utc)
+
+        # The salon-local booking date is authoritative.
+        bookings_for_the_barber = (
+            self.get_this_barber_bookings_for_this_date(
+                barber=barber, date_in_salon_tz=booking_date_in_salon_tz, )
+        )
 
         free_periods: list[tuple[datetime, datetime]] = []
-        pointer: datetime = start.astimezone(ZoneInfo(settings.TIME_ZONE))
+
+        pointer = start_utc
 
         for booking in bookings_for_the_barber:
+            booking_start_utc = booking.session_start_date_time
+            booking_end_utc = booking.session_end_date_time
 
-            if booking.session_start_date_time > pointer:
-                free_periods.append((pointer, booking.session_start_date_time))
+            # Ignore bookings that ended before our scheduling window.
+            if booking_end_utc <= pointer:
+                continue
 
-            if booking.session_end_date_time > pointer:
-                pointer = booking.session_end_date_time
+            # There is free time before this booking.
+            if booking_start_utc > pointer:
+                free_start = pointer
+                free_end = min( booking_start_utc, closing_utc,  )
 
-        if pointer < closing.astimezone(ZoneInfo(settings.TIME_ZONE)):
-            free_periods.append((pointer, closing.astimezone(ZoneInfo(settings.TIME_ZONE))))
+                if free_start < free_end:
+                    free_periods.append( (free_start, free_end)  )
 
-        # the free periods are datetime in utc because of session_start_date_time
-        # and session_end_date_time
+            # Move the pointer past this booking.
+            if booking_end_utc > pointer:
+                pointer = booking_end_utc
+
+            # No need to process bookings after closing.
+            if pointer >= closing_utc:
+                break
+
+        # There is free time after the final booking.
+        if pointer < closing_utc:
+            free_periods.append( (pointer, closing_utc) )
+
         return free_periods
 
     # Suppose current time is
@@ -244,33 +296,33 @@ class BarberScheduler:
     '''
 
     # Algorithm
-    def available_start_time_for_the_service_in_salon_tz(self,
-                                                         free_periods: list[tuple[datetime, datetime]],
-                                                         total_service_duration: int,
-                                                         salon_timezone: ZoneInfo,
-                                                         booking_slot_interval: int) -> list[time] | None:
+    def available_start_time_for_the_service_in_salon_tz(
+            self, *, free_periods: list[tuple[datetime, datetime]],
+            total_service_duration: int, salon_timezone: ZoneInfo,
+            booking_slot_interval: int, ) -> list[time]:
 
-        interval = booking_slot_interval
+        if booking_slot_interval <= 0:
+            raise ValueError( "booking_slot_interval must be greater than zero" )
 
-        if interval <= 0:
-            raise ValueError("booking_slot_interval must be greater than zero")
+        if total_service_duration <= 0:
+            raise ValueError( "total_service_duration must be greater than zero" )
+
+        duration = timedelta( minutes=total_service_duration  )
+
+        interval = timedelta(  minutes=booking_slot_interval )
 
         slots: list[time] = []
 
-        for free_period in free_periods:
+        for free_start_utc, free_end_utc in free_periods:
 
-            free_start, free_end = free_period
+            slot_utc = free_start_utc
 
-            # because free_start and free_end are still in UTC so convert the to salon time zone
-            free_start = free_start.astimezone(salon_timezone)
-            free_end = free_end.astimezone(salon_timezone)
+            while ( slot_utc + duration <= free_end_utc ):
+                slot_salon = slot_utc.astimezone( salon_timezone )
 
-            slot = free_start
+                slots.append( slot_salon.time().replace( second=0, microsecond=0, )  )
 
-            while slot + timedelta(minutes=total_service_duration) <= free_end:
-                slots.append(slot.time())
-
-                slot += timedelta(minutes=interval)
+                slot_utc += interval
 
         return slots
 
