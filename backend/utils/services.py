@@ -42,8 +42,7 @@ class BarberScheduler:
     def get_this_barber_bookings_for_this_date(self, *, barber: StaffProfile,
                                                date_in_salon_tz: date) -> list[Booking]:
 
-
-        if not self.can_receive_bookings(barber):
+        if not self.can_receive_bookings(staff=barber):
 
             raise UserException('Not a barber or stylist')
 
@@ -187,7 +186,7 @@ class BarberScheduler:
                                                                     date_in_salon_tz=start.date()))
 
         free_periods: list[tuple[datetime, datetime]] = []
-        pointer: datetime = start
+        pointer: datetime = start.astimezone(ZoneInfo(settings.TIME_ZONE))
 
         for booking in bookings_for_the_barber:
 
@@ -200,7 +199,7 @@ class BarberScheduler:
                 pointer = booking.session_end_date_time
 
 
-        if pointer < closing:
+        if pointer < closing.astimezone(ZoneInfo(settings.TIME_ZONE)):
 
             free_periods.append((pointer, closing))
 
