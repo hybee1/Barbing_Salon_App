@@ -9,12 +9,15 @@ from django.db import transaction
 from backend.accounts.models import StaffProfile
 from backend.bookings.models import Booking
 from backend.salon_settings.services_salon_config import get_salon_info_config
+from backend.utils.services import BarberScheduler
 
 
 @transaction.atomic
-def create_booking( *, barber_id, service_id, hairstyle_id, color_id, total_price,
-                     session_start_date_time_salon_time, session_end_date_time_salon_time,
-                    customer_name, phone_number, booking_source, booked_by, ):
+def create_booking( *, barber_id: int, service_id: int, hairstyle_id: int, color_id: int,
+                    total_price: int, session_start_date_time_salon_time: datetime,
+                    session_end_date_time_salon_time: datetime,
+                    customer_name: str, phone_number, booking_source: str, booked_by: str,
+                    salon_timezone:ZoneInfo):
 
     # convert the start and end time to utc time
     session_start_date_time_utc = session_start_date_time_salon_time.astimezone(timezone.utc)
@@ -24,6 +27,12 @@ def create_booking( *, barber_id, service_id, hairstyle_id, color_id, total_pric
     # Lock this barber for the duration of the transaction.
     # Any other booking attempt for this same barber must wait.
     barber = ( StaffProfile.objects.select_for_update().get(pk=barber_id) )
+
+    BarberScheduler().validate_no_overlap(
+                    barber=barber, booking_date_in_salon_tz=booking_date,
+                    session_start_utc=session_start_date_time_utc, session_end_utc=session_end_date_time_utc,
+                    salon_timezone=salon_timezone,
+                )
 
 
     booking = Booking(

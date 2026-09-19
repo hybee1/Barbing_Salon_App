@@ -217,6 +217,8 @@ class CreateBookingSerializer(serializers.ModelSerializer):
         # manually attach price
         attrs["price"] = service_price + hairstyle_price + color_price
         attrs["session_end_date_time"] = session_end_date_time_salon_time
+        attrs["salon_timezone"] = salon_tz
+
 
 
         return attrs
@@ -242,7 +244,8 @@ class CreateBookingSerializer(serializers.ModelSerializer):
                                customer_name=validated_data["customer_name"],
                                phone_number=validated_data["phone_number"],
                                booking_source=validated_data["booking_source"],
-                               booked_by=validated_data["booked_by"] )
+                               booked_by=validated_data["booked_by"],
+                               salon_timezone=validated_data["salon_timezone"])
 
 
 class UpdateBookingSerializer(serializers.ModelSerializer):

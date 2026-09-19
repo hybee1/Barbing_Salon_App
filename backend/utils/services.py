@@ -387,7 +387,8 @@ class BarberScheduler:
     '''
 
     def validate_no_overlap( self, *, barber: StaffProfile, booking_date_in_salon_tz: date,
-                                    session_start_utc: datetime, session_end_utc: datetime, ) -> bool:
+                             session_start_utc: datetime, session_end_utc: datetime,
+                             salon_timezone: ZoneInfo,) -> bool:
 
         if barber.user.role != User.Role.STAFF:
             raise RoleException()
@@ -409,8 +410,8 @@ class BarberScheduler:
 
         if overlap:
             raise BookingConflictException(
-                session_start_utc.astimezone( timezone.get_current_timezone() ).time(),
-                session_end_utc.astimezone( timezone.get_current_timezone() ).time(),
+                session_start_utc.astimezone(salon_timezone).time(),
+                session_end_utc.astimezone(salon_timezone).time(),
             )
 
         return False

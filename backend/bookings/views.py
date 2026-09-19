@@ -340,7 +340,6 @@ class BarberBookingStatsView(APIView):
 
         today_date_time_in_salon_tz = timezone.localtime().astimezone(salon_tz)
         today_date_in_salon_tz = today_date_time_in_salon_tz.date()
-        current_time_in_salon_tz = today_date_time_in_salon_tz.time()
 
         barber_bookings_stats_for_today = Booking.objects.filter(
                                         booking_date=today_date_in_salon_tz, barber=barber)
@@ -351,7 +350,7 @@ class BarberBookingStatsView(APIView):
             upcoming_count=Count(
                                 "id",
                                 filter=Q(
-                                    session_start_date_time__gte=today_date_time_utc,
+                                    session_start_date_time__gte=now_utc,
                                     status__in=[ Booking.STATUS.ARRIVED, Booking.STATUS.CONFIRMED, ], ),
                                 ),
         )
@@ -365,7 +364,8 @@ class BarberBookingStatsView(APIView):
             break_status = ( BreakTimeAndOffDays.BlockStatus.AVAILABLE.label )
 
             for break_stat in break_or_off_days:
-                if ( break_stat.break_start_date_time <= now_utc and break_stat.end_time >= now_utc ):
+                if ( break_stat.break_start_date_time <= now_utc and
+                        break_stat.break_end_date_time >= now_utc ):
                     break_status = break_stat.status.label
                     break
 

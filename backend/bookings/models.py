@@ -1,5 +1,6 @@
 
 import uuid
+from zoneinfo import ZoneInfo
 
 import phonenumbers
 from django.core.exceptions import ValidationError
@@ -131,6 +132,7 @@ class Booking(models.Model):
         # Validate phone against salon country
         if self.phone_number:
             salon_config, _ = BarberScheduler().get_salon_config()
+            # salon_timezone = ZoneInfo(salon_config["time_zone"])
             country_code = salon_config["country"]
 
             try:
@@ -153,18 +155,20 @@ class Booking(models.Model):
             except InvalidPhoneNumberError:
                 raise ValidationError({ "phone_number": "Phone number must match the salon's country." })
 
-        try:
-
-            barber_scheduler = BarberScheduler()
-
-            barber_scheduler.validate_no_overlap(self.barber, parse_date(self.booking_date),
-                                                 parse_datetime(self.session_start_date_time),
-                                                 parse_datetime(self.session_end_date_time))
-
-
-        except BookingConflictException as exc:
-
-            raise ValidationError({"details": str(exc)})
+        # try:
+        #
+        #     barber_scheduler = BarberScheduler()
+        #
+        #     barber_scheduler.validate_no_overlap(barber=self.barber,
+        #                                          booking_date_in_salon_tz=parse_date(self.booking_date),
+        #                                          session_start_utc=parse_datetime(self.session_start_date_time),
+        #                                          session_end_utc=parse_datetime(self.session_end_date_time),
+        #                                          salon_timezone=salon_timezone)
+        #
+        #
+        # except BookingConflictException as exc:
+        #
+        #     raise ValidationError({"details": str(exc)})
 
     def save(self, *args, **kwargs):
 
