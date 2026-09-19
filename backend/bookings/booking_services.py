@@ -1,11 +1,10 @@
 
-from datetime import datetime
+from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import transaction
-from django.utils import timezone
 
 from backend.accounts.models import StaffProfile
 from backend.bookings.models import Booking
@@ -18,8 +17,8 @@ def create_booking( *, barber_id, service_id, hairstyle_id, color_id, total_pric
                     customer_name, phone_number, booking_source, booked_by, ):
 
     # convert the start and end time to utc time
-    session_start_date_time_utc = session_start_date_time_salon_time.astimezone(ZoneInfo(settings.TIME_ZONE))
-    session_end_date_time_utc = session_end_date_time_salon_time.astimezone(ZoneInfo(settings.TIME_ZONE))
+    session_start_date_time_utc = session_start_date_time_salon_time.astimezone(timezone.utc)
+    session_end_date_time_utc = session_end_date_time_salon_time.astimezone(timezone.utc)
     booking_date = session_start_date_time_salon_time.date()
 
     # Lock this barber for the duration of the transaction.

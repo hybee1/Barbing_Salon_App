@@ -1,6 +1,5 @@
-from zoneinfo import ZoneInfo
 
-from django.conf import settings
+from datetime import timezone
 from django.db import transaction
 from rest_framework.exceptions import ValidationError
 
@@ -13,8 +12,8 @@ from backend.salon_settings.services_salon_config import get_salon_info_config
 def create_break_period( *, staff_id, break_start_date_time, break_end_date_time, status, reason):
 
     # convert the start and end time to utc time
-    break_start_date_time_utc = break_start_date_time.astimezone(ZoneInfo(settings.TIME_ZONE))
-    break_end_date_time_utc = break_end_date_time.astimezone(ZoneInfo(settings.TIME_ZONE))
+    break_start_date_time_utc = break_start_date_time.astimezone(timezone.utc)
+    break_end_date_time_utc = break_end_date_time.astimezone(timezone.utc)
     break_date = break_start_date_time.date()
 
     # Lock this staff for the duration of the transaction.

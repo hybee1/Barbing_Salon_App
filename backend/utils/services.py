@@ -1,7 +1,6 @@
 from logging import raiseExceptions
 
-from django.conf import settings
-from django.db import transaction
+
 from django.shortcuts import get_object_or_404
 
 from backend.bookings.models import Booking
@@ -9,7 +8,7 @@ from datetime import datetime, date, time, timedelta
 from django.utils import timezone
 from zoneinfo import ZoneInfo
 from backend.accounts.models import StaffProfile, User
-from backend.exceptions.exceptions import (BookingDateException, UserNotFoundException,
+from backend.exceptions.exceptions import (BookingDateException,
                                            RoleException, UserException, BookingConflictException)
 from backend.salon_settings import services_salon_config
 
@@ -387,27 +386,32 @@ class BarberScheduler:
     No clashes.
     '''
 
-    # Prevent Double Booking
-    # Even if two customers click 10:15 simultaneously, you must validate again before saving.
-
-    def validate_no_overlap(self, barber: StaffProfile, booking_date_salon_tz: date,
-                            session_start_date_time: datetime, session_end_date_time: datetime) -> bool:
+    def validate_no_overlap( self, *, barber: StaffProfile, booking_date_in_salon_tz: date,
+                                    session_start_utc: datetime, session_end_utc: datetime, ) -> bool:
 
         if barber.user.role != User.Role.STAFF:
             raise RoleException()
 
         if not self.can_receive_bookings(staff=barber):
-            raise UserException('Selected user can not render this service at staff does not belong '
-                                'to the right department')
+            raise UserException( "Selected user cannot render this service." )
 
-        with transaction.atomic():
-            overlap = (Booking.objects.filter(barber=barber, booking_date=booking_date_salon_tz,
-                                              session_start_date_time__lt=session_end_date_time,
-                                              session_end_date_time__gt=session_start_date_time
-                                              ).exists())
+        if timezone.is_naive(session_start_utc):
+            raise ValueError( "session_start_utc must be timezone-aware."  )
+
+        if timezone.is_naive(session_end_utc):
+            raise ValueError( "session_end_utc must be timezone-aware." )
+
+        overlap = Booking.objects.filter(
+            barber=barber, booking_date=booking_date_in_salon_tz,
+            session_start_date_time__lt=session_end_utc,
+            session_end_date_time__gt=session_start_utc,
+        ).exists()
 
         if overlap:
-            raise BookingConflictException(session_start_date_time.time(), session_start_date_time.time())
+            raise BookingConflictException(
+                session_start_utc.astimezone( timezone.get_current_timezone() ).time(),
+                session_end_utc.astimezone( timezone.get_current_timezone() ).time(),
+            )
 
         return False
 

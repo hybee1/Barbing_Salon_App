@@ -153,6 +153,9 @@ class CreateBookingView(APIView):
 
         color_id: dict | None = (request.data.get("color") or {}).get("id", None)
 
+        salon_info = services_salon_config.get_salon_info_config()
+        salon_timezone = ZoneInfo(salon_info["timezone"])
+
         booking_date = request.data.get("date")
 
         start_time_str = request.data.get("time")
@@ -161,14 +164,18 @@ class CreateBookingView(APIView):
 
         for fmt in ("%Y-%m-%d %H:%M", "%Y-%m-%d %H:%M:%S"):
             try:
-                start_datetime = datetime.strptime(datetime_str, fmt)
+                start_datetime_naive = datetime.strptime(datetime_str, fmt)
                 break
             except ValueError:
                 pass
         else:
             raise ValidationError({"time": "Invalid date/time format."})
 
-        session_start_date_time = start_datetime
+        # The frontend supplied the date/time in the salon's timezone.
+        session_start_in_salon_tz = start_datetime_naive.replace( tzinfo=salon_timezone, )
+
+        # Persist actual appointment instant in UTC.
+        session_start_date_time = ( session_start_in_salon_tz.astimezone(timezone.utc) )
 
         customer_data = request.data.get("customer") or {}
 
@@ -326,8 +333,7 @@ class BarberBookingStatsView(APIView):
 
         barber = request.user.staffprofile
 
-        today_date_time_utc = timezone.localtime()
-        current_time_utc = today_date_time_utc.time()
+        now_utc = timezone.now()
 
         salon_info = services_salon_config.get_salon_info_config()
         salon_tz = ZoneInfo(salon_info["timezone"])
@@ -359,8 +365,7 @@ class BarberBookingStatsView(APIView):
             break_status = ( BreakTimeAndOffDays.BlockStatus.AVAILABLE.label )
 
             for break_stat in break_or_off_days:
-                if ( break_stat.break_start_date_time < current_time_utc and
-                                                        break_stat.end_time > current_time_utc ):
+                if ( break_stat.break_start_date_time <= now_utc and break_stat.end_time >= now_utc ):
                     break_status = break_stat.status.label
                     break
 
