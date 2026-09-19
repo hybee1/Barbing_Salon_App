@@ -81,12 +81,12 @@ class BreakTimeAndOffDays(TimeStampedModel):
 
         salon_config, booking_config = BarberScheduler().get_salon_config()
 
-        SALON_TIMEZONE = ZoneInfo(salon_config["time_zone"])
+        salon_timezone = ZoneInfo( salon_config["timezone"] )
 
-        # Date validation
-        today_date_and_time = timezone.localtime().astimezone(SALON_TIMEZONE)
-        today_date = today_date_and_time.date()
-        current_time = today_date_and_time.time()
+        now_utc = timezone.now()
+        now_salon = now_utc.astimezone(salon_timezone)
+
+        today_date = now_salon.date()
 
         if selected_date < today_date:
             raise ValidationError(
@@ -94,28 +94,34 @@ class BreakTimeAndOffDays(TimeStampedModel):
             )
 
         three_days_ahead = today_date + timedelta(days=3)
+
         if selected_date > three_days_ahead:
             raise ValidationError(
                 {"date": "Date cannot be more than three days ahead."}
             )
 
-        # Time validation
         if break_end_date_time <= break_start_date_time:
             raise ValidationError(
                 {"end_time": "End time must be after start time."}
             )
 
-        # If today, start time must be in the future
         if selected_date == today_date:
-            if break_start_date_time.time() <= current_time:
+            break_start_in_salon_tz = (
+                break_start_date_time.astimezone(salon_timezone)
+            )
+
+            if break_start_in_salon_tz <= now_salon:
                 raise ValidationError(
-                    {"start_time": "Start time must be after the current time."}
+                    {
+                        "start_time":
+                            "Start time must be after the current time."
+                    }
                 )
 
         # Overlap validation
         overlap = BreakTimeAndOffDays.objects.filter(
             staff=self.staff,
-            date=selected_date,
+            break_date=selected_date,
             break_start_date_time__lt=break_end_date_time,
             break_end_date_time__gt=break_start_date_time,
         )

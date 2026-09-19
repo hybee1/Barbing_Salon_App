@@ -51,7 +51,7 @@ class Last7daysAnd3DaysAheadBarberBreakTimeAndOffDayAPIView(APIView):
     def get(self, request):
 
         salon_info = services_salon_config.get_salon_info_config()
-        salon_tz = ZoneInfo(salon_info["timezone"])
+        salon_tz = ZoneInfo(salon_info["time_zone"])
 
         today_date_time_in_salon_tz = timezone.localtime().astimezone(salon_tz)
         today_date_in_salon_tz = today_date_time_in_salon_tz.date()
@@ -76,7 +76,7 @@ class ActiveBreakTimeAndOffDayAPIView(APIView):
         today_date_time_utc = timezone.localtime()
 
         salon_info = services_salon_config.get_salon_info_config()
-        salon_tz = ZoneInfo(salon_info["timezone"])
+        salon_tz = ZoneInfo(salon_info["time_zone"])
 
         today_date_time_in_salon_tz = timezone.localtime().astimezone(salon_tz)
         today_date_in_salon_tz = today_date_time_in_salon_tz.date()
@@ -100,7 +100,7 @@ class OneBarberBreakTimeAndOffDayAPIView(APIView):
     def get(self, request):
 
         salon_info = services_salon_config.get_salon_info_config()
-        salon_tz = ZoneInfo(salon_info["timezone"])
+        salon_tz = ZoneInfo(salon_info["time_zone"])
 
         today_date_time_in_salon_tz = timezone.localtime().astimezone(salon_tz)
         today_date_in_salon_tz = today_date_time_in_salon_tz.date()

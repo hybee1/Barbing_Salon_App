@@ -1,5 +1,7 @@
 
 from datetime import timezone
+from zoneinfo import ZoneInfo
+
 from django.db import transaction
 from rest_framework.exceptions import ValidationError
 
@@ -33,7 +35,7 @@ def create_break_period( *, staff_id, break_start_date_time, break_end_date_time
 
 def break_time_and_offDays_data_with_timezone(*, data: dict | list[dict]) -> dict | list[dict]:
     salon_info = get_salon_info_config()
-    salon_timezone = salon_info.timezone
+    salon_timezone = ZoneInfo(salon_info["timezone"])
 
     if not isinstance(data, (dict, list[dict])):
         raise ValidationError({"details": "invalid booking data. booking data "

@@ -2,9 +2,9 @@
 from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 
-from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import transaction
+from django.utils import timezone
 
 from backend.accounts.models import StaffProfile
 from backend.bookings.models import Booking
@@ -18,6 +18,12 @@ def create_booking( *, barber_id: int, service_id: int, hairstyle_id: int, color
                     session_end_date_time_salon_time: datetime,
                     customer_name: str, phone_number, booking_source: str, booked_by: str,
                     salon_timezone:ZoneInfo):
+
+    if timezone.is_naive( session_start_date_time_salon_time ):
+        raise ValueError( "session_start_date_time_salon_time must be timezone-aware." )
+
+    if timezone.is_naive( session_end_date_time_salon_time ):
+        raise ValueError( "session_end_date_time_salon_time must be timezone-aware." )
 
     # convert the start and end time to utc time
     session_start_date_time_utc = session_start_date_time_salon_time.astimezone(timezone.utc)
@@ -93,7 +99,7 @@ def update_booking( *, booking_reference, status,  reason_for_cancellation=None,
 
 def booking_data_with_timezone(*, data: dict | list[dict]) -> dict | list[dict]:
     salon_info = get_salon_info_config()
-    salon_timezone = salon_info.timezone
+    salon_timezone = ZoneInfo(salon_info["time_zone"])
 
     if not isinstance(data, (dict, list[dict])):
         raise ValidationError({"details": "invalid booking data. booking data "

@@ -212,7 +212,9 @@ class TodayBooking_Api_View(APIView):
         salon_info = services_salon_config.get_salon_info_config()
         salon_tz = ZoneInfo(salon_info["timezone"])
 
-        today_date_time_in_salon_tz = timezone.localtime().astimezone(salon_tz)
+        now_utc = timezone.now()
+
+        today_date_time_in_salon_tz = now_utc.astimezone(salon_tz)
         today_date_in_salon_tz = today_date_time_in_salon_tz.date()
 
         bookings_for_today = (
@@ -235,7 +237,9 @@ class OneBarberBookingForLast7Days_Api_View(APIView):
         salon_info = services_salon_config.get_salon_info_config()
         salon_tz = ZoneInfo(salon_info["timezone"])
 
-        today_date_time_in_salon_tz = timezone.localtime().astimezone(salon_tz)
+        now_utc = timezone.now()
+
+        today_date_time_in_salon_tz = now_utc.astimezone(salon_tz)
         today_date_in_salon_tz = today_date_time_in_salon_tz.date()
 
         last_7_days_in_salon_tz = today_date_in_salon_tz - timedelta(days=7)
@@ -269,7 +273,9 @@ class BookingForLast7Days_Api_View(APIView):
         salon_info = services_salon_config.get_salon_info_config()
         salon_tz = ZoneInfo(salon_info["timezone"])
 
-        today_date_time_in_salon_tz = timezone.localtime().astimezone(salon_tz)
+        now_utc = timezone.now()
+
+        today_date_time_in_salon_tz = now_utc.astimezone(salon_tz)
         today_date_in_salon_tz = today_date_time_in_salon_tz.date()
 
         last_7_days_in_salon_tz = today_date_in_salon_tz - timedelta(days=7)
@@ -338,7 +344,7 @@ class BarberBookingStatsView(APIView):
         salon_info = services_salon_config.get_salon_info_config()
         salon_tz = ZoneInfo(salon_info["timezone"])
 
-        today_date_time_in_salon_tz = timezone.localtime().astimezone(salon_tz)
+        today_date_time_in_salon_tz = now_utc.astimezone(salon_tz)
         today_date_in_salon_tz = today_date_time_in_salon_tz.date()
 
         barber_bookings_stats_for_today = Booking.objects.filter(
@@ -390,7 +396,9 @@ class OneBarberBookingsToday(APIView):
         salon_info = services_salon_config.get_salon_info_config()
         salon_tz = ZoneInfo(salon_info["timezone"])
 
-        today_date_time_in_salon_tz = timezone.localtime().astimezone(salon_tz)
+        now_utc = timezone.now()
+
+        today_date_time_in_salon_tz = now_utc.astimezone(salon_tz)
         today_date_in_salon_tz = today_date_time_in_salon_tz.date()
 
         if not BarberScheduler().can_receive_bookings(request.user.staffprofile):
@@ -423,7 +431,9 @@ class OneBarberUpcomingBookingsToday(APIView):
         salon_info = services_salon_config.get_salon_info_config()
         salon_tz = ZoneInfo(salon_info["timezone"])
 
-        today_date_time_in_salon_tz = timezone.localtime().astimezone(salon_tz)
+        now_utc = timezone.now()
+
+        today_date_time_in_salon_tz = now_utc.astimezone(salon_tz)
         today_date_in_salon_tz = today_date_time_in_salon_tz.date()
 
         if not BarberScheduler().can_receive_bookings(request.user.staffprofile):
@@ -462,7 +472,9 @@ class BarberUpcomingBookingsToday(APIView):
         salon_info = services_salon_config.get_salon_info_config()
         salon_tz = ZoneInfo(salon_info["timezone"])
 
-        today_date_time_in_salon_tz = timezone.localtime().astimezone(salon_tz)
+        now_utc = timezone.now()
+
+        today_date_time_in_salon_tz = now_utc.astimezone(salon_tz)
         today_date_in_salon_tz = today_date_time_in_salon_tz.date()
 
         barber_bookings_stats_for_today = (
