@@ -1,5 +1,5 @@
 
-from datetime import timedelta, datetime
+from datetime import timedelta, datetime, timezone
 from zoneinfo import ZoneInfo
 
 from django.db.models import Count, Q
@@ -154,7 +154,7 @@ class CreateBookingView(APIView):
         color_id: dict | None = (request.data.get("color") or {}).get("id", None)
 
         salon_info = services_salon_config.get_salon_info_config()
-        salon_timezone = ZoneInfo(salon_info["timezone"])
+        salon_timezone = ZoneInfo(salon_info["time_zone"])
 
         booking_date = request.data.get("date")
 
@@ -210,7 +210,7 @@ class TodayBooking_Api_View(APIView):
     def get(self, request):
 
         salon_info = services_salon_config.get_salon_info_config()
-        salon_tz = ZoneInfo(salon_info["timezone"])
+        salon_tz = ZoneInfo(salon_info["time_zone"])
 
         now_utc = timezone.now()
 
@@ -234,8 +234,10 @@ class OneBarberBookingForLast7Days_Api_View(APIView):
     permission_classes = [Is_Authenticated_Staff_User]
 
     def get(self, request):
+
+        user = request.user.staffprofile
         salon_info = services_salon_config.get_salon_info_config()
-        salon_tz = ZoneInfo(salon_info["timezone"])
+        salon_tz = ZoneInfo(salon_info["time_zone"])
 
         now_utc = timezone.now()
 
@@ -244,7 +246,7 @@ class OneBarberBookingForLast7Days_Api_View(APIView):
 
         last_7_days_in_salon_tz = today_date_in_salon_tz - timedelta(days=7)
 
-        if not BarberScheduler().can_receive_bookings(request.user.staffprofile):
+        if not BarberScheduler().can_receive_bookings(staff=user):
             return Response(
                 {"detail": "Access Denied."}, status=status.HTTP_403_FORBIDDEN,
             )
@@ -271,7 +273,7 @@ class BookingForLast7Days_Api_View(APIView):
 
     def get(self, request):
         salon_info = services_salon_config.get_salon_info_config()
-        salon_tz = ZoneInfo(salon_info["timezone"])
+        salon_tz = ZoneInfo(salon_info["time_zone"])
 
         now_utc = timezone.now()
 
@@ -317,7 +319,7 @@ class BarberBookingAvailability_Api_View(APIView):
         salon_info, salon_booking_config = barber_scheduler.get_salon_config()
         salon_opening_time = salon_info["opening_time"]
         salon_closing_time = salon_info["closing_time"]
-        salon_timezone = ZoneInfo(salon_info["timezone"])
+        salon_timezone = ZoneInfo(salon_info["time_zone"])
         booking_slot_interval = salon_booking_config["booking_slot_interval"]
 
         available_start_time = barber_scheduler.check_schedule(
@@ -342,7 +344,7 @@ class BarberBookingStatsView(APIView):
         now_utc = timezone.now()
 
         salon_info = services_salon_config.get_salon_info_config()
-        salon_tz = ZoneInfo(salon_info["timezone"])
+        salon_tz = ZoneInfo(salon_info["time_zone"])
 
         today_date_time_in_salon_tz = now_utc.astimezone(salon_tz)
         today_date_in_salon_tz = today_date_time_in_salon_tz.date()
@@ -394,14 +396,14 @@ class OneBarberBookingsToday(APIView):
         barber = request.user.staffprofile
 
         salon_info = services_salon_config.get_salon_info_config()
-        salon_tz = ZoneInfo(salon_info["timezone"])
+        salon_tz = ZoneInfo(salon_info["time_zone"])
 
         now_utc = timezone.now()
 
         today_date_time_in_salon_tz = now_utc.astimezone(salon_tz)
         today_date_in_salon_tz = today_date_time_in_salon_tz.date()
 
-        if not BarberScheduler().can_receive_bookings(request.user.staffprofile):
+        if not BarberScheduler().can_receive_bookings(staff=request.user.staffprofile):
             return Response(
                 {"detail": "Access Denied."}, status=status.HTTP_403_FORBIDDEN,
             )
@@ -425,18 +427,15 @@ class OneBarberUpcomingBookingsToday(APIView):
 
         barber = request.user.staffprofile
 
-        today_date_time_utc = timezone.localtime()
-        current_time_utc = today_date_time_utc.time()
-
         salon_info = services_salon_config.get_salon_info_config()
-        salon_tz = ZoneInfo(salon_info["timezone"])
+        salon_tz = ZoneInfo(salon_info["time_zone"])
 
         now_utc = timezone.now()
 
         today_date_time_in_salon_tz = now_utc.astimezone(salon_tz)
         today_date_in_salon_tz = today_date_time_in_salon_tz.date()
 
-        if not BarberScheduler().can_receive_bookings(request.user.staffprofile):
+        if not BarberScheduler().can_receive_bookings(staff=request.user.staffprofile):
             return Response(
                 {"detail": "Access Denied."}, status=status.HTTP_403_FORBIDDEN,
             )
@@ -446,7 +445,7 @@ class OneBarberUpcomingBookingsToday(APIView):
                                                         .filter(
                                                                 barber=barber,
                                                                 booking_date=today_date_in_salon_tz,
-                                                                session_start_date_time__gte=today_date_time_utc,
+                                                                session_start_date_time__gte=now_utc,
                                                                  status=Booking.STATUS.CONFIRMED,
                                                          )
                                            )
@@ -466,11 +465,8 @@ class BarberUpcomingBookingsToday(APIView):
 
         barber = request.user.staffprofile
 
-        today_date_time_utc = timezone.localtime()
-        current_time_utc = today_date_time_utc.time()
-
         salon_info = services_salon_config.get_salon_info_config()
-        salon_tz = ZoneInfo(salon_info["timezone"])
+        salon_tz = ZoneInfo(salon_info["time_zone"])
 
         now_utc = timezone.now()
 
@@ -483,14 +479,14 @@ class BarberUpcomingBookingsToday(APIView):
                                                     )
                                                     .filter(
                                                         booking_date=today_date_in_salon_tz,
-                                                        session_start_date_time__gte=today_date_time_utc,
+                                                        session_start_date_time__gte=now_utc,
                                                         status=Booking.STATUS.CONFIRMED,
                                                     )
                                             )
 
         serializer = BarberBookingsTodaySerializer(barber_bookings_stats_for_today, many=True)
 
-        res = booking_data_with_timezone(serializer.data)
+        res = booking_data_with_timezone(data=serializer.data)
 
         return Response(res, status=status.HTTP_200_OK)
 

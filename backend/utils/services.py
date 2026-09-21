@@ -427,6 +427,41 @@ class BarberScheduler:
     If true, the booking conflicts.
     '''
 
+    '''
+    validate no overlap with barber's breaktime or off days 
+    '''
+    def validate_no_overlap_with_barber_breaktime_or_off_days( self, *, barber: StaffProfile,
+                                                                booking_date_in_salon_tz: date,
+                             session_start_utc: datetime, session_end_utc: datetime,
+                             salon_timezone: ZoneInfo,) -> bool:
+
+        if barber.user.role != User.Role.STAFF:
+            raise RoleException()
+
+        if not self.can_receive_bookings(staff=barber):
+            raise UserException( "Selected user cannot render this service." )
+
+        if timezone.is_naive(session_start_utc):
+            raise ValueError( "session_start_utc must be timezone-aware."  )
+
+        if timezone.is_naive(session_end_utc):
+            raise ValueError( "session_end_utc must be timezone-aware." )
+
+        overlap = Booking.objects.filter(
+            barber=barber, booking_date=booking_date_in_salon_tz,
+            session_start_date_time__lt=session_end_utc,
+            session_end_date_time__gt=session_start_utc,
+        ).exists()
+
+        if overlap:
+            raise BookingConflictException(
+                session_start_utc.astimezone(salon_timezone).time(),
+                session_end_utc.astimezone(salon_timezone).time(),
+            )
+
+        return False
+
+
     def check_schedule(self, staffProfile_id: int,
                        booking_date_in_salon_tz: date, total_service_duration: int,
                        salon_opening_time: time, salon_closing_time: time,

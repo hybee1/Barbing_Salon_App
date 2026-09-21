@@ -1,5 +1,5 @@
 
-from datetime import timedelta, datetime
+from datetime import timedelta, datetime, timezone
 from zoneinfo import ZoneInfo
 
 from django.utils import timezone
@@ -25,13 +25,26 @@ class CreateBarberBreakTimeAndOffDayAPIView(APIView):
         data = request.data
         data['staff'] = request.user.staffprofile.pk
 
-        break_date = data['date']
+        salon_info = services_salon_config.get_salon_info_config()
+        salon_timezone = ZoneInfo(salon_info["time_zone"])
+
+        # break_date = data['date']
+        start_date = data['start_date']
+        end_date = data['end_date']
+
         start_time = data['start_time']
         end_time = data['end_time']
+        break_date = start_date
 
         # for the below we considered the both are salon timezone
-        break_start_date_time: datetime = datetime.fromisoformat(f"{break_date}T{start_time}")
-        break_end_date_time: datetime = datetime.fromisoformat(f"{break_date}T{end_time}")
+        break_start_date_time_in_salon_tz: datetime = datetime.fromisoformat(f"{start_date}T{start_time}")
+        break_end_date_time_in_salon_tz: datetime = datetime.fromisoformat(f"{end_date}T{end_time}")
+
+        break_start_date_time_in_salon_tz = break_start_date_time_in_salon_tz.replace(tzinfo=salon_timezone, )
+        break_end_date_time_in_salon_tz = break_end_date_time_in_salon_tz.replace(tzinfo=salon_timezone, )
+
+        break_start_date_time = break_start_date_time_in_salon_tz.astimezone(timezone.utc)
+        break_end_date_time = break_end_date_time_in_salon_tz.astimezone(timezone.utc)
 
         data['break_start_date_time'] = break_start_date_time
         data['break_end_date_time'] = break_end_date_time

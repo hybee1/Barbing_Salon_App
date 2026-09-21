@@ -1,5 +1,5 @@
 
-from datetime import timedelta
+from datetime import timedelta, datetime
 from zoneinfo import ZoneInfo
 
 from rest_framework import serializers
@@ -184,8 +184,7 @@ class CreateBookingSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"time": "Invalid session duration, Invalid session duration"
                                                        " is unexpectedly longer than 3 hours."})
 
-
-        session_start_date_time_salon_time = attrs.get("session_start_date_time")
+        session_start_date_time_salon_time: datetime = attrs.get("session_start_date_time")
         salon_config, _ = BarberScheduler().get_salon_config()
         salon_tz = ZoneInfo(salon_config["time_zone"])
 
@@ -194,7 +193,7 @@ class CreateBookingSerializer(serializers.ModelSerializer):
 
         # for the below, we considered the session_start_date_time was already in salon time_zone.
         # so replacing the time_zone in with salon time_zone is just for clarity sake
-        session_start_date_time_salon_time = session_start_date_time_salon_time.replace(tzinfo=salon_tz)
+        session_start_date_time_salon_time = session_start_date_time_salon_time.astimezone(tz=salon_tz)
 
         if session_start_date_time_salon_time.time() < salon_open_time:
             raise serializers.ValidationError({"time": "Invalid time, selected time is before salon open time."})
