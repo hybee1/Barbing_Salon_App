@@ -77,7 +77,9 @@ class BarberScheduler:
         if booking_date_in_salon_tz < now_salon_tz.date():
             raise BookingDateException(booking_date_in_salon_tz)
 
-        opening_salon_dt = datetime.combine( booking_date_in_salon_tz, salon_opening_time, ).replace(tzinfo=salon_timezone)
+        opening_salon_dt = datetime.combine(
+            booking_date_in_salon_tz, salon_opening_time,
+        ).replace(tzinfo=salon_timezone)
 
         # Future date.
         if booking_date_in_salon_tz > now_salon_tz.date():

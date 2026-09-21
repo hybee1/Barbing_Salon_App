@@ -10,7 +10,7 @@ from backend.salon_settings.models import TimeStampedModel
 
 from django.contrib.auth import get_user_model
 
-from backend.utils.services import BarberScheduler
+
 
 User = get_user_model()
 
@@ -78,6 +78,8 @@ class BreakTimeAndOffDays(TimeStampedModel):
         selected_date = self.break_date
         break_start_date_time = self.break_start_date_time
         break_end_date_time = self.break_end_date_time
+
+        from backend.utils.services import BarberScheduler
 
         salon_config, booking_config = BarberScheduler().get_salon_config()
 
