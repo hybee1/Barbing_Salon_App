@@ -24,7 +24,7 @@ class BreakTimeAndOffDays(TimeStampedModel):
 
     class BlockStatus(models.TextChoices):
 
-        AVAILABLE = "available", "Available"
+        # AVAILABLE = "available", "Available"
         BREAK = "break", "Break"
         OFF_DAY = "off_day", "Off Day"
         ON_LEAVE = "on_leave", "On Leave"
@@ -81,7 +81,7 @@ class BreakTimeAndOffDays(TimeStampedModel):
 
         salon_config, booking_config = BarberScheduler().get_salon_config()
 
-        salon_timezone = ZoneInfo( salon_config["timezone"] )
+        salon_timezone = ZoneInfo( salon_config["time_zone"] )
 
         now_utc = timezone.now()
         now_salon = now_utc.astimezone(salon_timezone)
