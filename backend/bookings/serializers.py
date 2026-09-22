@@ -237,7 +237,6 @@ class CreateBookingSerializer(serializers.ModelSerializer):
                                             else None
                                         ),
                                total_price=validated_data["price"],
-                               booking_date=validated_data["booking_date"],
                                session_start_date_time=validated_data["session_start_date_time"],
                                session_end_date_time=validated_data["session_end_date_time"],
                                customer_name=validated_data["customer_name"],

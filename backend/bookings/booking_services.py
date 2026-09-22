@@ -105,7 +105,7 @@ def booking_data_with_timezone(*, data: dict | list[dict]) -> dict | list[dict]:
     salon_info = get_salon_info_config()
     salon_timezone = ZoneInfo(salon_info["time_zone"])
 
-    if not isinstance(data, (dict, list[dict])):
+    if not isinstance(data, (dict, list)):
         raise ValidationError({"details": "invalid booking data. booking data "
                                           "is either a dict or a list of dict"})
 

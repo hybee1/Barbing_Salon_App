@@ -1,9 +1,10 @@
-from datetime import timedelta
+from datetime import timedelta, date, datetime
 from zoneinfo import ZoneInfo
 
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
+from django.utils.dateparse import parse_date, parse_datetime
 
 from backend.accounts.models import StaffProfile
 from backend.salon_settings.models import TimeStampedModel
@@ -70,25 +71,45 @@ class BreakTimeAndOffDays(TimeStampedModel):
                 {"staff": "A valid staff member is required."}
             )
 
-        if self.staff.user.role != User.Role.STAFF:
-            raise ValidationError(
-                {"staff": "Only staff members can have break periods or off days."}
-            )
+        # if self.staff.user.role != User.Role.STAFF:
+        #     raise ValidationError(
+        #         {"staff": "Only staff members can have break periods or off days."}
+        #     )
 
-        selected_date = self.break_date
-        break_start_date_time = self.break_start_date_time
-        break_end_date_time = self.break_end_date_time
+        selected_date: date = parse_date(self.break_date)
+        break_start_date_time: datetime = parse_datetime(self.break_start_date_time)
+        break_end_date_time = parse_datetime(self.break_end_date_time)
+
+        if timezone.is_naive(break_start_date_time):
+            raise ValidationError({
+                "break_start_date_time": "Start datetime must be timezone-aware."
+            })
+
+        if timezone.is_naive(break_end_date_time):
+            raise ValidationError({
+                "break_end_date_time": "End datetime must be timezone-aware."
+            })
 
         from backend.utils.services import BarberScheduler
 
         salon_config, booking_config = BarberScheduler().get_salon_config()
 
-        salon_timezone = ZoneInfo( salon_config["time_zone"] )
+        salon_timezone = ZoneInfo(salon_config["time_zone"])
+
+        start_salon = break_start_date_time.astimezone(salon_timezone)
 
         now_utc = timezone.now()
         now_salon = now_utc.astimezone(salon_timezone)
 
         today_date = now_salon.date()
+
+        if selected_date < today_date:
+            raise ValidationError(
+                {"date": "Date cannot be in the past."}
+            )
+
+        if start_salon.date() != selected_date:
+            raise ValidationError({ "details": "date"})
 
         if selected_date < today_date:
             raise ValidationError(
@@ -113,12 +134,7 @@ class BreakTimeAndOffDays(TimeStampedModel):
             )
 
             if break_start_in_salon_tz <= now_salon:
-                raise ValidationError(
-                    {
-                        "start_time":
-                            "Start time must be after the current time."
-                    }
-                )
+                raise ValidationError( { "start_time": "Start time must be after the current time." } )
 
         # Overlap validation
         overlap = BreakTimeAndOffDays.objects.filter(

@@ -57,8 +57,15 @@ class BarberScheduler:
         if not self.can_receive_bookings(staff=barber):
             raise UserException("Not a barber or stylist")
 
+        ACTIVE_BOOKING_STATUSES = ( Booking.STATUS.PENDING, Booking.STATUS.CONFIRMED,
+                                    Booking.STATUS.ARRIVED, Booking.STATUS.IN_PROGRESS,
+        )
+
         return (
             Booking.objects.filter(  barber=barber,  booking_date=date_in_salon_tz, )
+            .exclude(
+                status__in=ACTIVE_BOOKING_STATUSES,
+            )
             .order_by("session_start_date_time")
         )
 
@@ -475,6 +482,12 @@ class BarberScheduler:
             .filter(
                 barber=barber,
                 booking_date=booking_date_in_salon_tz,
+                status__in=(
+                    Booking.STATUS.PENDING,
+                    Booking.STATUS.CONFIRMED,
+                    Booking.STATUS.ARRIVED,
+                    Booking.STATUS.IN_PROGRESS,
+                ),
 
                 # Existing booking starts before
                 # requested booking ends.
