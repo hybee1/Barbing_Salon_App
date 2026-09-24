@@ -124,7 +124,7 @@ class Booking(models.Model):
 
         from backend.utils.services import BarberScheduler
 
-        if self.barber and not BarberScheduler().can_receive_bookings(self.barber):
+        if self.barber and not BarberScheduler().can_receive_bookings( staff=self.barber):
             raise ValidationError(
                     {"barber": "Selected user does not handle barbing and or styling."}
                 )
@@ -147,28 +147,13 @@ class Booking(models.Model):
                 phone_country = phonenumbers.region_code_for_number(phone)
 
                 if phone_country != country_code:
-                    raise InvalidPhoneNumberError(str(self.phone_number))
+                    raise InvalidPhoneNumberError({ "phone_number": f"Phone number {self.phone_number} must "
+                                                                    f"match the salon's country." }
+                    )
 
             except NumberParseException:
                 raise ValidationError({ "phone_number": "Invalid phone number." })
 
-            except InvalidPhoneNumberError:
-                raise ValidationError({ "phone_number": "Phone number must match the salon's country." })
-
-        # try:
-        #
-        #     barber_scheduler = BarberScheduler()
-        #
-        #     barber_scheduler.validate_no_overlap(barber=self.barber,
-        #                                          booking_date_in_salon_tz=parse_date(self.booking_date),
-        #                                          session_start_utc=parse_datetime(self.session_start_date_time),
-        #                                          session_end_utc=parse_datetime(self.session_end_date_time),
-        #                                          salon_timezone=salon_timezone)
-        #
-        #
-        # except BookingConflictException as exc:
-        #
-        #     raise ValidationError({"details": str(exc)})
 
     def save(self, *args, **kwargs):
 

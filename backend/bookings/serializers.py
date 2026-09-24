@@ -139,13 +139,6 @@ class CreateBookingSerializer(serializers.ModelSerializer):
         if value.status != StaffProfile.StaffStatus.ACTIVE:
             raise serializers.ValidationError("Selected barber/stylist is not currently active.")
 
-        ''' i intentionally commented this out since the barber is also validated in the model's clean
-                model.
-        if not BarberScheduler().can_receive_bookings(value):
-            raise serializers.ValidationError(
-                "Selected staff member cannot receive bookings."
-            )
-        '''
         return value
 
     def validate(self, attrs):
@@ -208,7 +201,11 @@ class CreateBookingSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"time": "Invalid time, session finish time time is before "
                                                        "salon open time."})
 
-        if session_end_date_time_salon_time.time() > salon_close_time:
+        salon_close_datetime = datetime.combine(
+                                    session_start_date_time_salon_time.date(),
+                                    salon_close_time ).replace(tzinfo=salon_tz)
+
+        if session_end_date_time_salon_time > salon_close_datetime:
             raise serializers.ValidationError({"time": "Invalid duration time, session finish time time is after "
                                                        "salon close time."})
 

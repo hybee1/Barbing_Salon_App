@@ -80,7 +80,7 @@ class SalonInfo(TimeStampedModel):
 
     @property
     def country(self):
-        country = pycountry.countries.get(alpha_2=self.salon_country)
+        country = pycountry.countries.get(alpha_2=str(self.salon_country))
         return country.name if country else None
 
     @property

@@ -76,9 +76,9 @@ class BreakTimeAndOffDays(TimeStampedModel):
         #         {"staff": "Only staff members can have break periods or off days."}
         #     )
 
-        selected_date: date = parse_date(self.break_date)
-        break_start_date_time: datetime = parse_datetime(self.break_start_date_time)
-        break_end_date_time = parse_datetime(self.break_end_date_time)
+        selected_date: date = self.break_date
+        break_start_date_time: datetime = self.break_start_date_time
+        break_end_date_time = self.break_end_date_time
 
         if timezone.is_naive(break_start_date_time):
             raise ValidationError({
