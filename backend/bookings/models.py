@@ -117,17 +117,24 @@ class Booking(models.Model):
 
         from backend.accounts.models import User
 
-        if self.barber and self.barber.user.role != User.Role.STAFF:
-            raise ValidationError(
-                {"barber": "Selected user is not a staff member."}
-            )
+        if self.barber:
 
-        from backend.utils.services import BarberScheduler
-
-        if self.barber and not BarberScheduler().can_receive_bookings( staff=self.barber):
-            raise ValidationError(
-                    {"barber": "Selected user does not handle barbing and or styling."}
+            if self.barber.user.role != User.Role.STAFF:
+                raise ValidationError(
+                    {"barber": "Selected user is not a staff member."}
                 )
+
+            if not self.barber.user.is_active:
+                raise ValidationError({
+                "barber": "Selected staff user is inactive."
+                })
+
+            from backend.utils.services import BarberScheduler
+
+            if not BarberScheduler().can_receive_bookings( staff=self.barber):
+                raise ValidationError(
+                        {"barber": "Selected user does not handle barbing and or styling."}
+                    )
 
         # Validate phone against salon country
         if self.phone_number:
@@ -139,20 +146,22 @@ class Booking(models.Model):
 
                 phone = phonenumbers.parse( str(self.phone_number), country_code, )
 
-                from backend.exceptions.exceptions import InvalidPhoneNumberError, BookingConflictException
-
-                if not phonenumbers.is_valid_number(phone):
-                    raise InvalidPhoneNumberError(str(self.phone_number))
-
-                phone_country = phonenumbers.region_code_for_number(phone)
-
-                if phone_country != country_code:
-                    raise InvalidPhoneNumberError({ "phone_number": f"Phone number {self.phone_number} must "
-                                                                    f"match the salon's country." }
-                    )
-
             except NumberParseException:
-                raise ValidationError({ "phone_number": "Invalid phone number." })
+                raise ValidationError({"phone_number": "Invalid phone number."})
+
+            from backend.exceptions.exceptions import InvalidPhoneNumberError, BookingConflictException
+
+            if not phonenumbers.is_valid_number(phone):
+                raise InvalidPhoneNumberError(str(self.phone_number))
+
+            phone_country = phonenumbers.region_code_for_number(phone)
+
+            if phone_country != country_code:
+                raise InvalidPhoneNumberError({ "phone_number": f"Phone number {self.phone_number} must "
+                                                                f"match the salon's country." }
+                )
+
+
 
 
     def save(self, *args, **kwargs):

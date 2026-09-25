@@ -32,7 +32,7 @@ class SalonInfo(TimeStampedModel):
     salon_email = models.EmailField(max_length=255, default="info@salon.com")
 
     salon_time_zone = TimeZoneField(default="Europe/London")
-    salon_country = models.CharField(max_length=2, default="England", validators=[validate_country_code],)
+    salon_country = models.CharField(max_length=2, default="GB", validators=[validate_country_code],)
     salon_phone_number = PhoneNumberField()
     salon_currency = models.CharField(max_length=3, default="GBP", validators=[validate_currency_code],)
 
@@ -80,7 +80,7 @@ class SalonInfo(TimeStampedModel):
 
     @property
     def country(self):
-        country = pycountry.countries.get(alpha_2=str(self.salon_country))
+        country = pycountry.countries.get(alpha_2=str(self.salon_country)).upper()
         return country.name if country else None
 
     @property

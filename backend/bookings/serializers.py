@@ -63,15 +63,6 @@ class BookingSerializer(serializers.ModelSerializer):
         if value.status != StaffProfile.StaffStatus.ACTIVE:
             raise serializers.ValidationError("Selected barber/stylist is not currently active.")
 
-        ''' i intentionally commented this out since the barber is also validated in the model's clean
-                model.
-                
-        if not BarberScheduler().can_receive_bookings(value):
-            raise serializers.ValidationError(
-                "Selected staff member cannot receive bookings."
-            )
-        '''
-
         return value
 
     def validate(self, attrs):
@@ -115,7 +106,7 @@ class CreateBookingSerializer(serializers.ModelSerializer):
                     "session_start_date_time", "booking_source", "booked_by",
         ]
 
-        read_only_fields = [ "booking_reference", "status",  ]
+        read_only_fields = [ "booking_reference", "status",  "price", "booking_date",]
 
     def validate_customer_name(self, value):
         value = " ".join(value.split())
@@ -184,8 +175,8 @@ class CreateBookingSerializer(serializers.ModelSerializer):
         salon_open_time = salon_config["open_time"]
         salon_close_time = salon_config["close_time"]
 
-        # for the below, we considered the session_start_date_time was already in salon time_zone.
-        # so replacing the time_zone in with salon time_zone is just for clarity sake
+        # Convert the supplied aware datetime to the salon's
+        # local timezone for business-rule validation.
         session_start_date_time_salon_time = session_start_date_time_salon_time.astimezone(tz=salon_tz)
 
         if session_start_date_time_salon_time.time() < salon_open_time:
