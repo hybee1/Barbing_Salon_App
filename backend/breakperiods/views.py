@@ -43,11 +43,11 @@ class CreateBarberBreakTimeAndOffDayAPIView(APIView):
         break_start_date_time_in_salon_tz = break_start_date_time_in_salon_tz.replace(tzinfo=salon_timezone, )
         break_end_date_time_in_salon_tz = break_end_date_time_in_salon_tz.replace(tzinfo=salon_timezone, )
 
-        break_start_date_time = break_start_date_time_in_salon_tz.astimezone(timezone.utc)
-        break_end_date_time = break_end_date_time_in_salon_tz.astimezone(timezone.utc)
+        break_start_date_time_utc = break_start_date_time_in_salon_tz.astimezone(timezone.utc)
+        break_end_date_time_utc = break_end_date_time_in_salon_tz.astimezone(timezone.utc)
 
-        data['break_start_date_time'] = break_start_date_time
-        data['break_end_date_time'] = break_end_date_time
+        data['break_start_date_time'] = break_start_date_time_utc
+        data['break_end_date_time'] = break_end_date_time_utc
 
         serializer = BreakTimeAndOffDaysSerializer(data=data)
 

@@ -62,9 +62,8 @@ class BarberScheduler:
         )
 
         return (
-            Booking.objects.filter(  barber=barber,  booking_date=date_in_salon_tz, )
-            .exclude(
-                status__in=ACTIVE_BOOKING_STATUSES,
+            Booking.objects.filter(  barber=barber,  booking_date=date_in_salon_tz,
+                                     status__in=ACTIVE_BOOKING_STATUSES
             )
             .order_by("session_start_date_time")
         )

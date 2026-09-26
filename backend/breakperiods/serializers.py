@@ -23,9 +23,9 @@ class BreakTimeAndOffDaysSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
     def validate(self, attrs):
-        break_start_date_time: datetime = attrs.get("break_start_date_time")
-        break_end_date_time: datetime = attrs.get("break_end_date_time")
-        break_date: date = attrs.get("break_date")
+        break_start_date_time_utc: datetime = attrs.get("break_start_date_time")
+        break_end_date_time_utc: datetime = attrs.get("break_end_date_time")
+
         break_status = attrs.get("status")
 
         salon_config, _ = BarberScheduler().get_salon_config()
@@ -40,12 +40,10 @@ class BreakTimeAndOffDaysSerializer(serializers.ModelSerializer):
         salon_open_time_in_salon_tz = datetime.combine(salon_today_date, salon_open_time, tzinfo=salon_tz)
         salon_close_time_in_salon_tz = datetime.combine(salon_today_date, salon_close_time, tzinfo=salon_tz)
 
-        break_start_date_time_salon_time = break_start_date_time.astimezone(salon_tz)
-        break_end_date_time_salon_time = break_end_date_time.astimezone(salon_tz)
+        break_start_date_time_salon_time = break_start_date_time_utc.astimezone(salon_tz)
+        break_end_date_time_salon_time = break_end_date_time_utc.astimezone(salon_tz)
 
-        if break_date < salon_today_date:
-            raise ValidationError( {"date": "Date cannot be in the past."} )
-
+        break_date_salon_time: date = salon_today_date_time.date()
 
         if break_start_date_time_salon_time > break_end_date_time_salon_time:
             raise serializers.ValidationError({"details": "Break end time must be after start time."})
@@ -60,26 +58,36 @@ class BreakTimeAndOffDaysSerializer(serializers.ModelSerializer):
 
             three_days_ahead = salon_today_date + timedelta(days=3)
 
-            if break_date > three_days_ahead:
+            if break_date_salon_time > three_days_ahead:
                 raise ValidationError({"date": "Date cannot be more than three days ahead."})
 
-            if ((break_start_date_time < salon_open_time_in_salon_tz) or
-                    (break_start_date_time > salon_close_time_in_salon_tz)):
+            if ((break_start_date_time_salon_time < salon_open_time_in_salon_tz) or
+                    (break_start_date_time_salon_time > salon_close_time_in_salon_tz)):
 
                 raise serializers.ValidationError({"details": "Break start time must be with "
                                                               "salon working hours."})
 
-            if (break_end_date_time - break_start_date_time > timedelta(hours=1)):
+            if (break_end_date_time_salon_time - break_start_date_time_salon_time > timedelta(hours=1)):
                 raise serializers.ValidationError({"details": "Break duration can not be more than one hour."})
 
         if break_status_enum == BreakTimeAndOffDays.BlockStatus.OFF_DAY:
-            break_start_date_time = salon_open_time_in_salon_tz.astimezone(timezone.utc)
-            break_end_date_time = salon_close_time_in_salon_tz.astimezone(timezone.utc)
+            three_days_ahead = salon_today_date + timedelta(days=3)
+
+            if break_date_salon_time > three_days_ahead:
+                raise ValidationError({"date": "Date cannot be more than three days ahead."})
+
+            if ((break_start_date_time_salon_time < salon_open_time_in_salon_tz) or
+                    (break_start_date_time_salon_time > salon_close_time_in_salon_tz)):
+                raise serializers.ValidationError({"details": "Break start time must be with "
+                                                              "salon working hours."})
+
+        break_start_date_time = salon_open_time_in_salon_tz.astimezone(timezone.utc)
+        break_end_date_time = salon_close_time_in_salon_tz.astimezone(timezone.utc)
 
         if break_status_enum in {BreakTimeAndOffDays.BlockStatus.ON_LEAVE,
-                            BreakTimeAndOffDays.BlockStatus.SICK_LEAVE, BreakTimeAndOffDays.BlockStatus.PERSONAL,
-                            BreakTimeAndOffDays.BlockStatus.OTHER,
-        }:
+                                 BreakTimeAndOffDays.BlockStatus.SICK_LEAVE,
+                                 BreakTimeAndOffDays.BlockStatus.PERSONAL,
+                                 BreakTimeAndOffDays.BlockStatus.OTHER }:
 
             if (break_end_date_time - break_start_date_time < timedelta(hours=6)):
                 raise serializers.ValidationError({"details": "duration can not be less than six hours."})
@@ -108,7 +116,7 @@ class BreakTimeAndOffDaysSerializer(serializers.ModelSerializer):
 
 
 class ActiveBreakTimeSerializer(serializers.ModelSerializer):
-    staff_name = serializers.CharField(source="staff.username", read_only=True)
+    staff_username = serializers.CharField(source="staff.username", read_only=True)
 
     class Meta:
         model = BreakTimeAndOffDays

@@ -146,7 +146,7 @@ class Booking(models.Model):
                 raise ValidationError({"phone_number": "Invalid phone number."})
 
             if not phonenumbers.is_valid_number(phone):
-                raise ValidationError(str(self.phone_number))
+                raise ValidationError({ "phone_number": "Invalid phone number." })
 
             phone_country = phonenumbers.region_code_for_number(phone)
 

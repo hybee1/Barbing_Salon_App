@@ -79,8 +79,14 @@ class SalonInfo(TimeStampedModel):
         return super().save(*args, **kwargs)
 
     @property
+    def country_code(self):
+        return str(self.salon_country).upper()
+
+    @property
     def country(self):
-        country = pycountry.countries.get( alpha_2=str(self.salon_country).upper() )
+        country = pycountry.countries.get(
+            alpha_2=self.country_code
+        )
         return country.name if country else None
 
     @property
