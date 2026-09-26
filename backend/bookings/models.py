@@ -120,14 +120,10 @@ class Booking(models.Model):
         if self.barber:
 
             if self.barber.user.role != User.Role.STAFF:
-                raise ValidationError(
-                    {"barber": "Selected user is not a staff member."}
-                )
+                raise ValidationError( {"barber": "Selected user is not a staff member."} )
 
             if not self.barber.user.is_active:
-                raise ValidationError({
-                "barber": "Selected staff user is inactive."
-                })
+                raise ValidationError({ "barber": "Selected staff user is inactive." })
 
             from backend.utils.services import BarberScheduler
 
@@ -149,19 +145,15 @@ class Booking(models.Model):
             except NumberParseException:
                 raise ValidationError({"phone_number": "Invalid phone number."})
 
-            from backend.exceptions.exceptions import InvalidPhoneNumberError, BookingConflictException
-
             if not phonenumbers.is_valid_number(phone):
-                raise InvalidPhoneNumberError(str(self.phone_number))
+                raise ValidationError(str(self.phone_number))
 
             phone_country = phonenumbers.region_code_for_number(phone)
 
             if phone_country != country_code:
-                raise InvalidPhoneNumberError({ "phone_number": f"Phone number {self.phone_number} must "
+                raise ValidationError({ "phone_number": f"Phone number {self.phone_number} must "
                                                                 f"match the salon's country." }
                 )
-
-
 
 
     def save(self, *args, **kwargs):

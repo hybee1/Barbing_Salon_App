@@ -1,19 +1,15 @@
+
 from datetime import timedelta, date, datetime
 from zoneinfo import ZoneInfo
 
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
-from django.utils.dateparse import parse_date, parse_datetime
 
 from backend.accounts.models import StaffProfile
 from backend.salon_settings.models import TimeStampedModel
 
-from django.contrib.auth import get_user_model
 
-
-
-User = get_user_model()
 
 
 # --------------------
