@@ -64,14 +64,17 @@ class Booking(models.Model):
 
     phone_number = PhoneNumberField()
 
-    # Calendar date in the salon's timezone.
-    # This is intentionally NOT UTC and does not represent an instant.
+    # Salon-local calendar date on which this session booking
+    # date record was created. This is intentionally NOT UTC
+    # and does not represent the scheduled booking date.
     booking_date = models.DateField()
 
     # this must be in utc date and time
+    # the actual session booking start datetime in utc
     session_start_date_time = models.DateTimeField()
 
     # this must be in utc date and time
+    # the actual session booking end datetime in utc
     session_end_date_time = models.DateTimeField()
 
     # this must be in utc date and time

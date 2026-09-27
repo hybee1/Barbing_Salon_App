@@ -1,5 +1,5 @@
 
-from datetime import datetime, timezone
+from datetime import datetime, timezone as dt_timezone, date
 from zoneinfo import ZoneInfo
 
 from django.core.exceptions import ValidationError
@@ -14,7 +14,7 @@ from backend.utils.services import BarberScheduler
 
 @transaction.atomic
 def create_booking( *, barber_id: int, service_id: int, hairstyle_id: int, color_id: int,
-                    total_price: int, session_start_date_time_salon_time: datetime,
+                    total_price: int, booking_date: date, session_start_date_time_salon_time: datetime,
                     session_end_date_time_salon_time: datetime,
                     customer_name: str, phone_number, booking_source: str, booked_by: str,
                     salon_timezone:ZoneInfo):
@@ -26,9 +26,9 @@ def create_booking( *, barber_id: int, service_id: int, hairstyle_id: int, color
         raise ValueError( "session_end_date_time_salon_time must be timezone-aware." )
 
     # convert the start and end time to utc time
-    session_start_date_time_utc = session_start_date_time_salon_time.astimezone(timezone.utc)
-    session_end_date_time_utc = session_end_date_time_salon_time.astimezone(timezone.utc)
-    booking_date = session_start_date_time_salon_time.date()
+    session_start_date_time_utc = session_start_date_time_salon_time.astimezone(dt_timezone.utc)
+    session_end_date_time_utc = session_end_date_time_salon_time.astimezone(dt_timezone.utc)
+    # booking_date = session_start_date_time_salon_time.date()
 
     # Lock this barber for the duration of the transaction.
     # Any other booking attempt for this same barber must wait.
@@ -116,20 +116,22 @@ def booking_data_with_timezone(*, data: dict | list[dict]) -> dict | list[dict]:
 
         if "session_start_date_time" not in data:
             raise ValidationError({"details": "A booking 'session_start_date_time' is required."})
+
         session_start_date_time_str = data['session_start_date_time']
 
         if "session_end_date_time" not in data:
             raise ValidationError({"details": "A booking 'session_end_date_time' is required."})
+
         session_end_date_time_str = data['session_end_date_time']
 
-        # booking_date_start_time_str = f"{booking_date_str} {start_time_str}"
-        # booking_date_end_time_str = f"{booking_date_str} {end_time_str}"
-
-        # booking_date_start_time = datetime.strptime(booking_date_start_time_str, "%Y-%m-%d %H:%M")
-        # booking_date_end_time = datetime.strptime(booking_date_end_time_str, "%Y-%m-%d %H:%M")
-
-        booking_date_start_time = session_start_date_time_str.astimezone(salon_timezone)
-        booking_date_end_time = session_end_date_time_str.astimezone(salon_timezone)
+        booking_date_start_time = (datetime.fromisoformat(session_start_date_time_str)
+                                                .replace(
+                                                    tzinfo=dt_timezone.utc
+                                                ).astimezone(salon_timezone))
+        booking_date_end_time = (datetime.fromisoformat(session_end_date_time_str)
+                                                .replace(
+                                                    tzinfo=dt_timezone.utc
+                                                ).astimezone(salon_timezone))
 
         data['start_time'] = booking_date_start_time.time()
         data['end_time'] = booking_date_end_time.time()

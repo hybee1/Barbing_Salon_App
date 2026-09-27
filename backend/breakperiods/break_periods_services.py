@@ -1,5 +1,5 @@
 
-from datetime import timezone
+from datetime import timezone as dt_timezone, datetime
 from zoneinfo import ZoneInfo
 
 from django.db import transaction
@@ -14,8 +14,8 @@ from backend.salon_settings.services_salon_config import get_salon_info_config
 def create_break_period( *, staff_id, break_start_date_time, break_end_date_time, status, reason):
 
     # convert the start and end time to utc time
-    break_start_date_time_utc = break_start_date_time.astimezone(timezone.utc)
-    break_end_date_time_utc = break_end_date_time.astimezone(timezone.utc)
+    break_start_date_time_utc = break_start_date_time.astimezone(dt_timezone.utc)
+    break_end_date_time_utc = break_end_date_time.astimezone(dt_timezone.utc)
     break_date = break_start_date_time.date()
 
     # Lock this staff for the duration of the transaction.
@@ -53,8 +53,18 @@ def break_time_and_offDays_data_with_timezone(*, data: dict | list[dict]) -> dic
             raise ValidationError({"details": "A booking 'break_end_date_time' is required."})
         break_end_date_time_str = data['break_end_date_time']
 
-        break_date_start_time = break_start_date_time_str.astimezone(salon_timezone)
-        break_date_end_time = break_end_date_time_str.astimezone(salon_timezone)
+        break_date_start_time = (datetime.fromisoformat(
+                                                break_start_date_time_str
+                                                )
+                                                .replace(
+                                                    tzinfo=dt_timezone.utc
+                                                ).astimezone(salon_timezone)
+                                 )
+        break_date_end_time = (datetime.fromisoformat(break_end_date_time_str)
+                                                .replace(
+                                                    tzinfo=dt_timezone.utc
+                                                ).astimezone(salon_timezone)
+                               )
 
         data['start_time'] = break_date_start_time.time()
         data['end_time'] = break_date_end_time.time()

@@ -33,11 +33,14 @@ class BreakTimeAndOffDays(TimeStampedModel):
         StaffProfile, on_delete=models.CASCADE, related_name="breaktime_or_off_days"
     )
 
-    # Calendar date in the salon's timezone.
-    # This is intentionally NOT UTC and does not represent an instant.
+    # Salon-local calendar date on which this break/off-day
+    # record was created. This is intentionally NOT UTC and
+    # does not represent the scheduled break date.
     break_date = models.DateField()
 
+    # the actual break start time in utc
     break_start_date_time = models.DateTimeField()
+    # the actual break start time in utc
     break_end_date_time = models.DateTimeField()
 
     status = models.CharField( max_length=20, choices=BlockStatus.choices, )

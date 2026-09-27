@@ -1,5 +1,5 @@
 
-from datetime import timedelta, datetime, timezone
+from datetime import timedelta, datetime, timezone as dt_timezone
 from zoneinfo import ZoneInfo
 
 from django.db.models import Count, Q
@@ -156,15 +156,19 @@ class CreateBookingView(APIView):
         salon_info = services_salon_config.get_salon_info_config()
         salon_timezone = ZoneInfo(salon_info["time_zone"])
 
-        booking_date = request.data.get("date")
+        # the date when the booking was made not the barbing session start datetime, it is
+        # possible that booking date is less than the barbing session start datetime.
+        booking_date = timezone.now().astimezone( salon_timezone ).date()
 
-        start_time_str = request.data.get("time")
+        session_start_date = request.data.get("date")
 
-        datetime_str = f"{booking_date} {start_time_str}"
+        session_start_time_str = request.data.get("time")
+
+        datetime_str = f"{session_start_date} {session_start_time_str}"
 
         for fmt in ("%Y-%m-%d %H:%M", "%Y-%m-%d %H:%M:%S"):
             try:
-                start_datetime_naive = datetime.strptime(datetime_str, fmt)
+                session_start_datetime_naive = datetime.strptime(datetime_str, fmt)
                 break
             except ValueError:
                 pass
@@ -172,10 +176,10 @@ class CreateBookingView(APIView):
             raise ValidationError({"time": "Invalid date/time format."})
 
         # The frontend supplied the date/time in the salon's timezone.
-        session_start_in_salon_tz = start_datetime_naive.replace( tzinfo=salon_timezone, )
+        session_start_in_salon_tz = session_start_datetime_naive.replace( tzinfo=salon_timezone, )
 
         # Persist actual appointment instant in UTC.
-        session_start_date_time = ( session_start_in_salon_tz.astimezone(timezone.utc) )
+        session_start_date_time = ( session_start_in_salon_tz.astimezone(dt_timezone.utc) )
 
         customer_data = request.data.get("customer") or {}
 

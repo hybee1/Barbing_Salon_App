@@ -1,5 +1,5 @@
 
-from datetime import timedelta, datetime, timezone
+from datetime import timedelta, datetime, timezone as dt_timezone
 from zoneinfo import ZoneInfo
 
 from django.utils import timezone
@@ -43,13 +43,13 @@ class CreateBarberBreakTimeAndOffDayAPIView(APIView):
         break_start_date_time_in_salon_tz = break_start_date_time_in_salon_tz.replace(tzinfo=salon_timezone, )
         break_end_date_time_in_salon_tz = break_end_date_time_in_salon_tz.replace(tzinfo=salon_timezone, )
 
-        break_start_date_time_utc = break_start_date_time_in_salon_tz.astimezone(timezone.utc)
-        break_end_date_time_utc = break_end_date_time_in_salon_tz.astimezone(timezone.utc)
+        break_start_date_time_utc = break_start_date_time_in_salon_tz.astimezone(dt_timezone.utc)
+        break_end_date_time_utc = break_end_date_time_in_salon_tz.astimezone(dt_timezone.utc)
 
         data['break_start_date_time'] = break_start_date_time_utc
         data['break_end_date_time'] = break_end_date_time_utc
 
-        serializer = BreakTimeAndOffDaysSerializer(data=data)
+        serializer = BreakTimeAndOffDaysSerializer(data=data, context={"request": request},)
 
         serializer.is_valid(raise_exception=True)
 

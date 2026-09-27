@@ -11,7 +11,7 @@ from backend.exceptions.exceptions import (
 )
 from backend.salon_settings import services_salon_config
 
-from datetime import datetime, date, time, timedelta
+from datetime import datetime, date, time, timedelta, timezone as dt_timezone
 from django.utils import timezone
 from zoneinfo import ZoneInfo
 
@@ -306,9 +306,9 @@ class BarberScheduler:
         # Convert scheduling window to UTC.
         # -----------------------------------------------------
 
-        start_utc = start_salon.astimezone( timezone.utc )
+        start_utc = start_salon.astimezone( dt_timezone.utc )
 
-        closing_utc = closing_salon.astimezone( timezone.utc )
+        closing_utc = closing_salon.astimezone( dt_timezone.utc )
 
         # -----------------------------------------------------
         # EXISTING BOOKINGS

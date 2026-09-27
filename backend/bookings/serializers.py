@@ -2,6 +2,7 @@
 from datetime import timedelta, datetime
 from zoneinfo import ZoneInfo
 
+from django.utils import timezone
 from rest_framework import serializers
 
 from backend.accounts.models import User, StaffProfile
@@ -106,7 +107,7 @@ class CreateBookingSerializer(serializers.ModelSerializer):
                     "session_start_date_time", "booking_source", "booked_by",
         ]
 
-        read_only_fields = [ "booking_reference", "status",  "price", "booking_date",]
+        read_only_fields = [ "booking_reference", "status",  "price", ]
 
     def validate_customer_name(self, value):
         value = " ".join(value.split())
@@ -138,6 +139,7 @@ class CreateBookingSerializer(serializers.ModelSerializer):
         service = attrs.get("service")
         hairstyle = attrs.get("hairstyle")
         color = attrs.get("color")
+        booking_date = attrs.get("booking_date")
 
         service_price = service.price
         service_duration_minutes = service.duration_minutes
@@ -175,7 +177,11 @@ class CreateBookingSerializer(serializers.ModelSerializer):
         salon_open_time = salon_config["open_time"]
         salon_close_time = salon_config["close_time"]
 
-        # Convert the supplied aware datetime to the salon's
+        today_date_time_in_salon_tz = timezone.now().astimezone(salon_tz).date()
+        if booking_date < today_date_time_in_salon_tz:
+            raise serializers.ValidationError({"details": "your computer date and time not correct."})
+
+    # Convert the supplied aware datetime to the salon's
         # local timezone for business-rule validation.
         session_start_date_time_salon_time = session_start_date_time_salon_time.astimezone(tz=salon_tz)
 
@@ -225,6 +231,7 @@ class CreateBookingSerializer(serializers.ModelSerializer):
                                             else None
                                         ),
                                total_price=validated_data["price"],
+                               booking_date=validated_data["booking_date"],
                                session_start_date_time_salon_time=validated_data["session_start_date_time"],
                                session_end_date_time_salon_time=validated_data["session_end_date_time"],
                                customer_name=validated_data["customer_name"],

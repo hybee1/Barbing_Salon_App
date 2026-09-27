@@ -1,10 +1,11 @@
-from datetime import timedelta, datetime, date, timezone
+from datetime import timedelta, datetime, date, timezone as dt_timezone
 from zoneinfo import ZoneInfo
 
 from django.utils import timezone
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
+from backend.accounts.models import StaffProfile
 from backend.accounts.serializers import StaffProfileSerializer
 from backend.breakperiods.break_periods_services import create_break_period
 from backend.breakperiods.models import BreakTimeAndOffDays
@@ -12,10 +13,10 @@ from backend.utils.services import BarberScheduler
 
 
 class BreakTimeAndOffDaysSerializer(serializers.ModelSerializer):
-    staff = StaffProfileSerializer()
+    staff = StaffProfileSerializer(read_only=True)
 
     # staff = serializers.PrimaryKeyRelatedField(
-    #     queryset=StaffProfile.objects.all()
+    #     queryset=StaffProfile.objects.all(),
     # )
 
     class Meta:
@@ -81,8 +82,8 @@ class BreakTimeAndOffDaysSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError({"details": "Break start time must be with "
                                                               "salon working hours."})
 
-        break_start_date_time = salon_open_time_in_salon_tz.astimezone(timezone.utc)
-        break_end_date_time = salon_close_time_in_salon_tz.astimezone(timezone.utc)
+        break_start_date_time = salon_open_time_in_salon_tz.astimezone(dt_timezone.utc)
+        break_end_date_time = salon_close_time_in_salon_tz.astimezone(dt_timezone.utc)
 
         if break_status_enum in {BreakTimeAndOffDays.BlockStatus.ON_LEAVE,
                                  BreakTimeAndOffDays.BlockStatus.SICK_LEAVE,
@@ -96,23 +97,13 @@ class BreakTimeAndOffDaysSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
 
+        request = self.context["request"]
+
         return create_break_period( staff_id=validated_data["staff"].pk,
                                break_start_date_time=validated_data["break_start_date_time"],
                                break_end_date_time=validated_data["break_end_date_time"],
                                status=validated_data["status"],
                                reason=validated_data["reason"] )
-
-
-# class BreakTimeAndOffDaysSerializer(serializers.ModelSerializer):
-#
-#     staff_name = serializers.CharField(source="staff.user.username", read_only=True)
-#
-#     class Meta:
-#         model = BreakTimeAndOffDays
-#         fields = [
-#                     "id", "break_date", "break_start_date_time",
-#                     "break_end_date_time", "status", "reason",
-#                  ]
 
 
 class ActiveBreakTimeSerializer(serializers.ModelSerializer):
@@ -124,11 +115,6 @@ class ActiveBreakTimeSerializer(serializers.ModelSerializer):
 
 
 class BarberBreakTimeAndOffDaySerializer(serializers.ModelSerializer):
-    # staff = StaffProfileSerializer(read_only=True)
-
-    # staff = serializers.PrimaryKeyRelatedField(
-    #     queryset=StaffProfile.objects.all(), read_only=True
-    # )
 
     class Meta:
         model = BreakTimeAndOffDays
