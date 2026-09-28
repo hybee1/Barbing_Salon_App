@@ -22,7 +22,7 @@ class CreateBarberBreakTimeAndOffDayAPIView(APIView):
     permission_classes = [Is_Authenticated_Staff_User]  # user must be authenticated
 
     def post(self, request):
-        data = request.data
+        data = request.data.copy()
         data['staff'] = request.user.staffprofile.pk
 
         salon_info = services_salon_config.get_salon_info_config()

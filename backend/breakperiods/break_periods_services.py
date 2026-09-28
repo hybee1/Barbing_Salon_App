@@ -77,7 +77,6 @@ def break_time_and_offDays_data_with_timezone(*, data: dict | list[dict]) -> dic
         for item in data:
             if "break_date" not in item:
                 raise ValidationError({"details": "A booking 'date' is required."})
-            break_date_str = item['break_date']
 
             if "break_start_date_time" not in item:
                 raise ValidationError({"details": "A booking 'break_start_date_time' is required."})
@@ -87,8 +86,15 @@ def break_time_and_offDays_data_with_timezone(*, data: dict | list[dict]) -> dic
                 raise ValidationError({"details": "A booking 'break_end_date_time' is required."})
             break_end_date_time_str = item['break_end_date_time']
 
-            break_date_start_time = break_start_date_time_str.astimezone(salon_timezone)
-            break_date_end_time = break_end_date_time_str.astimezone(salon_timezone)
+            break_date_start_time = (datetime.fromisoformat( break_start_date_time_str
+                                    ).replace(tzinfo=dt_timezone.utc
+                                    ).astimezone(salon_timezone)
+                                     )
+
+            break_date_end_time = (datetime.fromisoformat(break_end_date_time_str)
+                                   .replace( tzinfo=dt_timezone.utc
+                                    ).astimezone(salon_timezone)
+                                   )
 
             item['start_time'] = break_date_start_time.time()
             item['end_time'] = break_date_end_time.time()

@@ -22,6 +22,7 @@ class BreakTimeAndOffDaysSerializer(serializers.ModelSerializer):
     class Meta:
         model = BreakTimeAndOffDays
         fields = "__all__"
+        read_only_fields = ("staff",)
 
     def validate(self, attrs):
         break_start_date_time_utc: datetime = attrs.get("break_start_date_time")
@@ -34,17 +35,19 @@ class BreakTimeAndOffDaysSerializer(serializers.ModelSerializer):
         salon_open_time = salon_config["open_time"]
         salon_close_time = salon_config["close_time"]
 
+        break_start_date_time_salon_time = break_start_date_time_utc.astimezone(salon_tz)
+        break_end_date_time_salon_time = break_end_date_time_utc.astimezone(salon_tz)
+
+        break_date_salon_time: date = break_start_date_time_salon_time.date()
+
         salon_today_date_time = timezone.now().astimezone(salon_tz)
         salon_today_date = salon_today_date_time.date()
         salon_today_time = salon_today_date_time.time()
 
-        salon_open_time_in_salon_tz = datetime.combine(salon_today_date, salon_open_time, tzinfo=salon_tz)
-        salon_close_time_in_salon_tz = datetime.combine(salon_today_date, salon_close_time, tzinfo=salon_tz)
-
-        break_start_date_time_salon_time = break_start_date_time_utc.astimezone(salon_tz)
-        break_end_date_time_salon_time = break_end_date_time_utc.astimezone(salon_tz)
-
-        break_date_salon_time: date = salon_today_date_time.date()
+        salon_open_time_in_salon_tz = datetime.combine(break_start_date_time_salon_time.date(),
+                                                       salon_open_time, tzinfo=salon_tz)
+        salon_close_time_in_salon_tz = datetime.combine(break_start_date_time_salon_time.date(),
+                                                        salon_close_time, tzinfo=salon_tz)
 
         if break_start_date_time_salon_time > break_end_date_time_salon_time:
             raise serializers.ValidationError({"details": "Break end time must be after start time."})
@@ -82,16 +85,19 @@ class BreakTimeAndOffDaysSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError({"details": "Break start time must be with "
                                                               "salon working hours."})
 
-        break_start_date_time = salon_open_time_in_salon_tz.astimezone(dt_timezone.utc)
-        break_end_date_time = salon_close_time_in_salon_tz.astimezone(dt_timezone.utc)
-
         if break_status_enum in {BreakTimeAndOffDays.BlockStatus.ON_LEAVE,
                                  BreakTimeAndOffDays.BlockStatus.SICK_LEAVE,
                                  BreakTimeAndOffDays.BlockStatus.PERSONAL,
                                  BreakTimeAndOffDays.BlockStatus.OTHER }:
 
-            if (break_end_date_time - break_start_date_time < timedelta(hours=6)):
+            if (break_end_date_time_salon_time - break_start_date_time_salon_time < timedelta(hours=6)):
                 raise serializers.ValidationError({"details": "duration can not be less than six hours."})
+
+        break_start_date_time = break_start_date_time_salon_time.astimezone(dt_timezone.utc)
+        break_end_date_time = break_end_date_time_salon_time.astimezone(dt_timezone.utc)
+
+        attrs["break_start_date_time"] = break_start_date_time
+        attrs["break_end_date_time"] = break_end_date_time
 
         return attrs
 
@@ -99,7 +105,7 @@ class BreakTimeAndOffDaysSerializer(serializers.ModelSerializer):
 
         request = self.context["request"]
 
-        return create_break_period( staff_id=validated_data["staff"].pk,
+        return create_break_period( staff_id=request.user.staffprofile.pk,
                                break_start_date_time=validated_data["break_start_date_time"],
                                break_end_date_time=validated_data["break_end_date_time"],
                                status=validated_data["status"],
@@ -107,7 +113,7 @@ class BreakTimeAndOffDaysSerializer(serializers.ModelSerializer):
 
 
 class ActiveBreakTimeSerializer(serializers.ModelSerializer):
-    staff_username = serializers.CharField(source="staff.username", read_only=True)
+    staff_username = serializers.CharField(source="staff.user.username", read_only=True)
 
     class Meta:
         model = BreakTimeAndOffDays
