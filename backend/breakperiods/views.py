@@ -34,7 +34,6 @@ class CreateBarberBreakTimeAndOffDayAPIView(APIView):
 
         start_time = data['start_time']
         end_time = data['end_time']
-        break_date = start_date
 
         # for the below we considered the both are salon timezone
         break_start_date_time_in_salon_tz: datetime = datetime.fromisoformat(f"{start_date}T{start_time}")

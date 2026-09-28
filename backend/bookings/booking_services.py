@@ -14,7 +14,7 @@ from backend.utils.services import BarberScheduler
 
 @transaction.atomic
 def create_booking( *, barber_id: int, service_id: int, hairstyle_id: int, color_id: int,
-                    total_price: int, booking_date: date, session_start_date_time_salon_time: datetime,
+                    total_price: int, session_start_date_time_salon_time: datetime,
                     session_end_date_time_salon_time: datetime,
                     customer_name: str, phone_number, booking_source: str, booked_by: str,
                     salon_timezone:ZoneInfo):
@@ -28,7 +28,7 @@ def create_booking( *, barber_id: int, service_id: int, hairstyle_id: int, color
     # convert the start and end time to utc time
     session_start_date_time_utc = session_start_date_time_salon_time.astimezone(dt_timezone.utc)
     session_end_date_time_utc = session_end_date_time_salon_time.astimezone(dt_timezone.utc)
-    # booking_date = session_start_date_time_salon_time.date()
+    booking_date = session_start_date_time_salon_time.date()
 
     # Lock this barber for the duration of the transaction.
     # Any other booking attempt for this same barber must wait.

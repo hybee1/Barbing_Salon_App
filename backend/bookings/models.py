@@ -64,8 +64,8 @@ class Booking(models.Model):
 
     phone_number = PhoneNumberField()
 
-    # Salon-local calendar date on which this session booking
-    # date record was created. This is intentionally NOT UTC
+    # Salon-local calendar date on which this session booking date will start.
+    # it purposely for query convenience. This is intentionally NOT UTC
     # and does not represent the scheduled booking date.
     booking_date = models.DateField()
 

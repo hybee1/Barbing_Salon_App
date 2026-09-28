@@ -107,7 +107,7 @@ class CreateBookingSerializer(serializers.ModelSerializer):
                     "session_start_date_time", "booking_source", "booked_by",
         ]
 
-        read_only_fields = [ "booking_reference", "status",  "price", ]
+        read_only_fields = [ "booking_reference", "status",  "price", "booking_date", ]
 
     def validate_customer_name(self, value):
         value = " ".join(value.split())
@@ -139,7 +139,6 @@ class CreateBookingSerializer(serializers.ModelSerializer):
         service = attrs.get("service")
         hairstyle = attrs.get("hairstyle")
         color = attrs.get("color")
-        booking_date = attrs.get("booking_date")
 
         service_price = service.price
         service_duration_minutes = service.duration_minutes
@@ -177,11 +176,7 @@ class CreateBookingSerializer(serializers.ModelSerializer):
         salon_open_time = salon_config["open_time"]
         salon_close_time = salon_config["close_time"]
 
-        today_date_time_in_salon_tz = timezone.now().astimezone(salon_tz).date()
-        if booking_date < today_date_time_in_salon_tz:
-            raise serializers.ValidationError({"details": "your computer date and time not correct."})
-
-    # Convert the supplied aware datetime to the salon's
+        # Convert the supplied aware datetime to the salon's
         # local timezone for business-rule validation.
         session_start_date_time_salon_time = session_start_date_time_salon_time.astimezone(tz=salon_tz)
 
