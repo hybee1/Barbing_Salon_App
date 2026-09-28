@@ -35,8 +35,8 @@ def create_booking( *, barber_id: int, service_id: int, hairstyle_id: int, color
     barber = ( StaffProfile.objects.select_for_update().get(pk=barber_id) )
 
     BarberScheduler().validate_no_overlap(
-                    barber=barber, booking_date_in_salon_tz=booking_date,
-                    session_start_utc=session_start_date_time_utc, session_end_utc=session_end_date_time_utc,
+                    barber=barber, session_start_utc=session_start_date_time_utc,
+                    session_end_utc=session_end_date_time_utc,
                     salon_timezone=salon_timezone,
                 )
     BarberScheduler().validate_no_overlap_with_barber_breaktime_or_off_days(
@@ -54,7 +54,7 @@ def create_booking( *, barber_id: int, service_id: int, hairstyle_id: int, color
 
     )
 
-    booking.full_clean()
+    # booking.full_clean()
     booking.save()
     return booking
 
@@ -101,6 +101,9 @@ def update_booking( *, booking_reference, status,  reason_for_cancellation=None,
     return booking
 
 
+# this method receives data from serializer and convert fields with data as datetime
+# in utc to salon timezone and make or add start_time, end_time to the dataset for
+# frontend display purposes
 def booking_data_with_timezone(*, data: dict | list[dict]) -> dict | list[dict]:
     salon_info = get_salon_info_config()
     salon_timezone = ZoneInfo(salon_info["time_zone"])

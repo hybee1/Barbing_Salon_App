@@ -179,7 +179,7 @@ class CreateBookingSerializer(serializers.ModelSerializer):
 
         # Convert the supplied aware datetime to the salon's
         # local timezone for business-rule validation.
-        session_start_date_time_salon_time = session_start_date_time_salon_time.astimezone(tz=salon_tz)
+        session_start_date_time_in_salon_tz = session_start_date_time_salon_time.astimezone(tz=salon_tz)
 
         if session_start_date_time_salon_time.time() < salon_open_time:
             raise serializers.ValidationError({"time": "Invalid time, selected time is before salon open time."})
@@ -188,9 +188,9 @@ class CreateBookingSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"time": "Invalid duration time, session duration is "
                                                        "beyond salon close time."})
 
-        session_end_date_time_salon_time = session_start_date_time_salon_time + total_duration
+        session_end_date_time_in_salon_tz = session_start_date_time_salon_time + total_duration
 
-        if session_end_date_time_salon_time.time() < salon_open_time:
+        if session_end_date_time_in_salon_tz.time() < salon_open_time:
             raise serializers.ValidationError({"time": "Invalid time, session finish time time is before "
                                                        "salon open time."})
 
@@ -198,14 +198,14 @@ class CreateBookingSerializer(serializers.ModelSerializer):
                                     session_start_date_time_salon_time.date(),
                                     salon_close_time ).replace(tzinfo=salon_tz)
 
-        if session_end_date_time_salon_time > salon_close_datetime:
+        if session_end_date_time_in_salon_tz > salon_close_datetime:
             raise serializers.ValidationError({"time": "Invalid duration time, session finish time time is after "
                                                        "salon close time."})
 
 
         # manually attach price
         attrs["price"] = service_price + hairstyle_price + color_price
-        attrs["session_end_date_time"] = session_end_date_time_salon_time
+        attrs["session_end_date_time"] = session_end_date_time_in_salon_tz
         attrs["salon_timezone"] = salon_tz
 
 

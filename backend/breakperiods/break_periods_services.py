@@ -14,6 +14,16 @@ from backend.utils.services import convert_utc_iso_to_salon_time
 @transaction.atomic
 def create_break_period( *, staff_id, break_start_date_time, break_end_date_time, status, reason):
 
+    if break_start_date_time.tzinfo is None:
+        raise ValidationError({
+            "break_start_date_time": "Datetime must be timezone-aware."
+        })
+
+    if break_end_date_time.tzinfo is None:
+        raise ValidationError({
+            "break_end_date_time": "Datetime must be timezone-aware."
+        })
+
     # convert the start and end time to utc time
     break_start_date_time_utc = break_start_date_time.astimezone(dt_timezone.utc)
     break_end_date_time_utc = break_end_date_time.astimezone(dt_timezone.utc)
@@ -23,13 +33,28 @@ def create_break_period( *, staff_id, break_start_date_time, break_end_date_time
     # Any other booking attempt for this same barber must wait.
     staff = ( StaffProfile.objects.select_for_update().get(pk=staff_id) )
 
+    # Overlap validation
+    overlap = BreakTimeAndOffDays.objects.filter(
+        staff=staff,
+        # break_date=selected_date,
+        break_start_date_time__lt=break_end_date_time,
+        break_end_date_time__gt=break_start_date_time,
+    )
+
+    if overlap is not None:
+        overlap = overlap.exclude(pk=staff.pk)
+
+    if overlap.exists():
+        raise ValidationError({
+            "details": "This availability block overlaps with an existing one."})
+
 
     break_period = BreakTimeAndOffDays( staff=staff, break_date=break_date,
                                    break_start_date_time=break_start_date_time_utc,
                                    break_end_date_time=break_end_date_time_utc,
                                    status=status, reason=reason )
 
-    break_period.full_clean()
+    # break_period.full_clean()
     break_period.save()
     return break_period
 

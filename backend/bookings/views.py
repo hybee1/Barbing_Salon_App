@@ -156,10 +156,6 @@ class CreateBookingView(APIView):
         salon_info = services_salon_config.get_salon_info_config()
         salon_timezone = ZoneInfo(salon_info["time_zone"])
 
-        # the date when the booking was made not the barbing session start datetime, it is
-        # possible that booking date is less than the barbing session start datetime.
-        booking_date = timezone.now().astimezone( salon_timezone ).date()
-
         session_start_date_str = request.data.get("date")
 
         session_start_time_str = request.data.get("time")
@@ -190,8 +186,7 @@ class CreateBookingView(APIView):
         serializer = CreateBookingSerializer(data={
 
             "service": service_id, "hairstyle": hairstyle_id, "color": color_id,
-            "barber": barber_id, "booking_date": booking_date,
-            "session_start_date_time": session_start_date_time,
+            "barber": barber_id, "session_start_date_time": session_start_date_time,
             "customer_name": customer_name, "booking_source": booking_source,
             "phone_number": phone_number, "booked_by": booked_by
 
