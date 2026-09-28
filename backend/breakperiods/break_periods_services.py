@@ -8,6 +8,7 @@ from rest_framework.exceptions import ValidationError
 from backend.accounts.models import StaffProfile
 from backend.breakperiods.models import BreakTimeAndOffDays
 from backend.salon_settings.services_salon_config import get_salon_info_config
+from backend.utils.services import convert_utc_iso_to_salon_time
 
 
 @transaction.atomic
@@ -86,15 +87,19 @@ def break_time_and_offDays_data_with_timezone(*, data: dict | list[dict]) -> dic
                 raise ValidationError({"details": "A booking 'break_end_date_time' is required."})
             break_end_date_time_str = item['break_end_date_time']
 
-            break_date_start_time = (datetime.fromisoformat( break_start_date_time_str
-                                    ).replace(tzinfo=dt_timezone.utc
-                                    ).astimezone(salon_timezone)
-                                     )
+            # break_date_start_time = (datetime.fromisoformat( break_start_date_time_str
+            #                         ).replace(tzinfo=dt_timezone.utc
+            #                         ).astimezone(salon_timezone)
+            #                          )
 
-            break_date_end_time = (datetime.fromisoformat(break_end_date_time_str)
-                                   .replace( tzinfo=dt_timezone.utc
-                                    ).astimezone(salon_timezone)
-                                   )
+            break_date_start_time = convert_utc_iso_to_salon_time(break_start_date_time_str, salon_timezone)
+
+            # break_date_end_time = (datetime.fromisoformat(break_end_date_time_str)
+            #                        .replace( tzinfo=dt_timezone.utc
+            #                         ).astimezone(salon_timezone)
+            #                        )
+
+            break_date_end_time = convert_utc_iso_to_salon_time(break_end_date_time_str, salon_timezone)
 
             item['start_time'] = break_date_start_time.time()
             item['end_time'] = break_date_end_time.time()

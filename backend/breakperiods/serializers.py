@@ -22,7 +22,7 @@ class BreakTimeAndOffDaysSerializer(serializers.ModelSerializer):
     class Meta:
         model = BreakTimeAndOffDays
         fields = "__all__"
-        read_only_fields = ("staff",)
+        read_only_fields = ( "staff", "break_date", )
 
     def validate(self, attrs):
         break_start_date_time_utc: datetime = attrs.get("break_start_date_time")
@@ -74,6 +74,7 @@ class BreakTimeAndOffDaysSerializer(serializers.ModelSerializer):
             if (break_end_date_time_salon_time - break_start_date_time_salon_time > timedelta(hours=1)):
                 raise serializers.ValidationError({"details": "Break duration can not be more than one hour."})
 
+        # OFF_DAY is complete off from work for the entire day
         if break_status_enum == BreakTimeAndOffDays.BlockStatus.OFF_DAY:
             three_days_ahead = salon_today_date + timedelta(days=3)
 
@@ -84,6 +85,19 @@ class BreakTimeAndOffDaysSerializer(serializers.ModelSerializer):
                     (break_start_date_time_salon_time > salon_close_time_in_salon_tz)):
                 raise serializers.ValidationError({"details": "Break start time must be with "
                                                               "salon working hours."})
+
+            break_start_date_time = break_start_date_time_salon_time.astimezone(tz=dt_timezone.utc)
+            break_start_date_time = datetime.combine(break_start_date_time.date(), salon_open_time,
+                                                     tzinfo=dt_timezone.utc)
+
+            break_end_date_time = break_end_date_time_salon_time.astimezone(dt_timezone.utc)
+            break_end_date_time = datetime.combine(break_end_date_time.date(), salon_close_time,
+                                                     tzinfo=dt_timezone.utc)
+
+            attrs["break_start_date_time"] = break_start_date_time
+            attrs["break_end_date_time"] = break_end_date_time
+
+            return attrs
 
         if break_status_enum in {BreakTimeAndOffDays.BlockStatus.ON_LEAVE,
                                  BreakTimeAndOffDays.BlockStatus.SICK_LEAVE,

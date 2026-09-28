@@ -16,6 +16,16 @@ from django.utils import timezone
 from zoneinfo import ZoneInfo
 
 
+def convert_utc_iso_to_salon_time( value: str, salon_timezone: ZoneInfo,) -> datetime:
+
+    dt = datetime.fromisoformat( value.replace("Z", "+00:00") )
+
+    if timezone.is_naive(dt):
+        dt = dt.replace(tzinfo=dt_timezone.utc)
+
+    return dt.astimezone(salon_timezone)
+
+
 class BarberScheduler:
 
     # =========================================================
