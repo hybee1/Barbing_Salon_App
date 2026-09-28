@@ -467,7 +467,7 @@ class BarberScheduler:
     # =========================================================
 
     def validate_no_overlap(
-                            self, *, barber: StaffProfile, booking_date_in_salon_tz: date,
+                            self, *, barber: StaffProfile,
                             session_start_utc: datetime, session_end_utc: datetime,
                             salon_timezone: ZoneInfo,  ) -> bool:
 
@@ -490,7 +490,7 @@ class BarberScheduler:
             Booking.objects
             .filter(
                 barber=barber,
-                booking_date=booking_date_in_salon_tz,
+                # booking_date=booking_date_in_salon_tz,
                 status__in=(
                     Booking.STATUS.PENDING,
                     Booking.STATUS.CONFIRMED,

@@ -25,6 +25,7 @@ class BreakTimeAndOffDaysSerializer(serializers.ModelSerializer):
         read_only_fields = ( "staff", "break_date", )
 
     def validate(self, attrs):
+        # the two immediate lines below is expected to be in utc as commented in the model
         break_start_date_time_utc: datetime = attrs.get("break_start_date_time")
         break_end_date_time_utc: datetime = attrs.get("break_end_date_time")
 

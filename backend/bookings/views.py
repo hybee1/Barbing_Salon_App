@@ -160,11 +160,11 @@ class CreateBookingView(APIView):
         # possible that booking date is less than the barbing session start datetime.
         booking_date = timezone.now().astimezone( salon_timezone ).date()
 
-        session_start_date = request.data.get("date")
+        session_start_date_str = request.data.get("date")
 
         session_start_time_str = request.data.get("time")
 
-        datetime_str = f"{session_start_date} {session_start_time_str}"
+        datetime_str = f"{session_start_date_str} {session_start_time_str}"
 
         for fmt in ("%Y-%m-%d %H:%M", "%Y-%m-%d %H:%M:%S"):
             try:

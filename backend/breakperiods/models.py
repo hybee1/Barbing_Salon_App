@@ -91,11 +91,24 @@ class BreakTimeAndOffDays(TimeStampedModel):
         salon_open_time = booking_config["open_time"]
         salon_close_time = booking_config["close_time"]
 
-        start_salon = break_start_date_time.astimezone(salon_timezone)
-        end_salon = break_end_date_time.astimezone(salon_timezone)
+        start_salon_in_salon_tz = datetime.combine(break_start_date_time, salon_open_time,
+                                            tzinfo=salon_timezone).astimezone(salon_timezone)
 
-        start_time = start_salon.time()
-        end_time = end_salon.time()
+        end_salon_in_salon_tz = datetime.combine(break_end_date_time, salon_close_time,
+                                            tzinfo=salon_timezone).astimezone(salon_timezone)
+
+        expected_break_date = start_salon_in_salon_tz.date()
+
+        if self.break_date != expected_break_date:
+            raise ValidationError({
+                "break_date": (
+                    "break_date must match the salon-local date "
+                    "of break_start_date_time."
+                )
+            })
+
+        start_time = start_salon_in_salon_tz.time()
+        end_time = end_salon_in_salon_tz.time()
 
         if start_time < salon_open_time:
             raise ValidationError({ "details": "Break cannot start before salon opening time." })
@@ -141,13 +154,12 @@ class BreakTimeAndOffDays(TimeStampedModel):
 
         if break_status_enum == BreakTimeAndOffDays.BlockStatus.BREAK:
 
-            if start_salon.date() != selected_date:
+            if start_salon_in_salon_tz.date() != selected_date:
                 raise ValidationError({ "break_date": "Break start date and time must be on same day as"
                                                       " the selected date."})
 
-            if end_salon.date() != selected_date:
+            if end_salon_in_salon_tz.date() != selected_date:
                 raise ValidationError({ "break_date": "Break end datetime must belong to the selected date." })
-
 
 
             if selected_date == today_date:
@@ -161,7 +173,7 @@ class BreakTimeAndOffDays(TimeStampedModel):
         # Overlap validation
         overlap = BreakTimeAndOffDays.objects.filter(
             staff=self.staff,
-            break_date=selected_date,
+            # break_date=selected_date,
             break_start_date_time__lt=break_end_date_time,
             break_end_date_time__gt=break_start_date_time,
         )

@@ -119,29 +119,14 @@ def booking_data_with_timezone(*, data: dict | list[dict]) -> dict | list[dict]:
 
         session_start_date_time_str = data['session_start_date_time']
 
-        session_start_date_time = (datetime.fromisoformat(session_start_date_time_str
-                                                        ).replace(tzinfo=dt_timezone.utc
-                                                                  ).astimezone(salon_timezone)
-                                 )
+        session_start_date_time = convert_utc_iso_to_salon_time(session_start_date_time_str, salon_timezone)
 
         if "session_end_date_time" not in data:
             raise ValidationError({"details": "A booking 'session_end_date_time' is required."})
 
         session_end_date_time_str = data['session_end_date_time']
 
-        session_end_date_time = (datetime.fromisoformat(session_end_date_time_str
-                                                          ).replace(tzinfo=dt_timezone.utc
-                                                                    ).astimezone(salon_timezone)
-                                   )
-
-        # booking_date_start_time = (datetime.fromisoformat(session_start_date_time_str)
-        #                                         .replace(
-        #                                             tzinfo=dt_timezone.utc
-        #                                         ).astimezone(salon_timezone))
-        # booking_date_end_time = (datetime.fromisoformat(session_end_date_time_str)
-        #                                         .replace(
-        #                                             tzinfo=dt_timezone.utc
-        #                                         ).astimezone(salon_timezone))
+        session_end_date_time = convert_utc_iso_to_salon_time(session_end_date_time_str, salon_timezone)
 
         data['start_time'] = session_start_date_time.time()
         data['end_time'] = session_end_date_time.time()

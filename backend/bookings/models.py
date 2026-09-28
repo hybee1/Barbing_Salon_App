@@ -1,12 +1,11 @@
 
 import uuid
-from zoneinfo import ZoneInfo
-
 import phonenumbers
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.db import models
-from django.db.models import Func, F, Q
+from django.db.models import F, Q
+from django.utils import timezone
 from phonenumber_field.modelfields import PhoneNumberField
 from phonenumbers import NumberParseException
 
@@ -109,6 +108,31 @@ class Booking(TimeStampedModel):
     def clean(self):
 
         super().clean()
+
+        if self.session_start_date_time is None:
+            raise ValidationError({
+                "session_start_date_time": "A session start datetime is required."
+            })
+
+        if self.session_end_date_time is None:
+            raise ValidationError({
+                "session_end_date_time": "A session end datetime is required."
+            })
+
+        if timezone.is_naive(self.session_start_date_time):
+            raise ValidationError({
+                "session_start_date_time": "Datetime must be timezone-aware."
+            })
+
+        if timezone.is_naive(self.session_end_date_time):
+            raise ValidationError({
+                "session_end_date_time": "Datetime must be timezone-aware."
+            })
+
+        if self.session_start_date_time >= self.session_end_date_time:
+            raise ValidationError({
+                "session_end_date_time": "End datetime must be after start datetime."
+            })
 
         if not self.booking_reference:
             self.booking_reference = f"BK-{uuid.uuid4().hex[:10].upper()}"

@@ -169,6 +169,7 @@ class CreateBookingSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"time": "Invalid session duration, Invalid session duration"
                                                        " is unexpectedly longer than 3 hours."})
 
+        # the immediate line below is expected to be in utc as commented in the model
         session_start_date_time_salon_time: datetime = attrs.get("session_start_date_time")
         salon_config, _ = BarberScheduler().get_salon_config()
         salon_tz = ZoneInfo(salon_config["time_zone"])
