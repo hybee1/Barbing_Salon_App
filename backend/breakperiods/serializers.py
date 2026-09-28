@@ -86,13 +86,9 @@ class BreakTimeAndOffDaysSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError({"details": "Break start time must be with "
                                                               "salon working hours."})
 
-            break_start_date_time = break_start_date_time_salon_time.astimezone(tz=dt_timezone.utc)
-            break_start_date_time = datetime.combine(break_start_date_time.date(), salon_open_time,
-                                                     tzinfo=dt_timezone.utc)
+            break_start_date_time = ( salon_open_time_in_salon_tz.astimezone(dt_timezone.utc) )
 
-            break_end_date_time = break_end_date_time_salon_time.astimezone(dt_timezone.utc)
-            break_end_date_time = datetime.combine(break_end_date_time.date(), salon_close_time,
-                                                     tzinfo=dt_timezone.utc)
+            break_end_date_time = ( salon_close_time_in_salon_tz.astimezone(dt_timezone.utc) )
 
             attrs["break_start_date_time"] = break_start_date_time
             attrs["break_end_date_time"] = break_end_date_time

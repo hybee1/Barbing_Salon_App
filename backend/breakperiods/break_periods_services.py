@@ -38,7 +38,7 @@ def break_time_and_offDays_data_with_timezone(*, data: dict | list[dict]) -> dic
     salon_info = get_salon_info_config()
     salon_timezone = ZoneInfo(salon_info["time_zone"])
 
-    if not isinstance(data, (dict, list[dict])):
+    if not isinstance(data, (dict, list)):
         raise ValidationError({"details": "invalid booking data. booking data "
                                           "is either a dict or a list of dict"})
 
@@ -54,18 +54,23 @@ def break_time_and_offDays_data_with_timezone(*, data: dict | list[dict]) -> dic
             raise ValidationError({"details": "A booking 'break_end_date_time' is required."})
         break_end_date_time_str = data['break_end_date_time']
 
-        break_date_start_time = (datetime.fromisoformat(
-                                                break_start_date_time_str
-                                                )
-                                                .replace(
-                                                    tzinfo=dt_timezone.utc
-                                                ).astimezone(salon_timezone)
-                                 )
-        break_date_end_time = (datetime.fromisoformat(break_end_date_time_str)
-                                                .replace(
-                                                    tzinfo=dt_timezone.utc
-                                                ).astimezone(salon_timezone)
-                               )
+        # break_date_start_time = (datetime.fromisoformat(
+        #                                         break_start_date_time_str
+        #                                         )
+        #                                         .replace(
+        #                                             tzinfo=dt_timezone.utc
+        #                                         ).astimezone(salon_timezone)
+        #                          )
+
+        break_date_start_time = convert_utc_iso_to_salon_time(break_start_date_time_str, salon_timezone)
+
+        # break_date_end_time = (datetime.fromisoformat(break_end_date_time_str)
+        #                                         .replace(
+        #                                             tzinfo=dt_timezone.utc
+        #                                         ).astimezone(salon_timezone)
+        #                        )
+
+        break_date_end_time = convert_utc_iso_to_salon_time(break_end_date_time_str, salon_timezone)
 
         data['start_time'] = break_date_start_time.time()
         data['end_time'] = break_date_end_time.time()
