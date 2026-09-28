@@ -24,14 +24,14 @@ def create_break_period( *, staff_id, break_start_date_time, break_end_date_time
     staff = ( StaffProfile.objects.select_for_update().get(pk=staff_id) )
 
 
-    booking = BreakTimeAndOffDays( staff=staff, break_date=break_date,
+    break_period = BreakTimeAndOffDays( staff=staff, break_date=break_date,
                                    break_start_date_time=break_start_date_time_utc,
                                    break_end_date_time=break_end_date_time_utc,
                                    status=status, reason=reason )
 
-    booking.full_clean()
-    booking.save()
-    return booking
+    break_period.full_clean()
+    break_period.save()
+    return break_period
 
 
 def break_time_and_offDays_data_with_timezone(*, data: dict | list[dict]) -> dict | list[dict]:
@@ -81,6 +81,12 @@ def break_time_and_offDays_data_with_timezone(*, data: dict | list[dict]) -> dic
 
         res_list: list[dict] = []
         for item in data:
+
+            if not isinstance(item, dict):
+                raise ValidationError({
+                    "details": "Each item in booking data must be a dictionary."
+                })
+
             if "break_date" not in item:
                 raise ValidationError({"details": "A booking 'date' is required."})
 
@@ -92,17 +98,7 @@ def break_time_and_offDays_data_with_timezone(*, data: dict | list[dict]) -> dic
                 raise ValidationError({"details": "A booking 'break_end_date_time' is required."})
             break_end_date_time_str = item['break_end_date_time']
 
-            # break_date_start_time = (datetime.fromisoformat( break_start_date_time_str
-            #                         ).replace(tzinfo=dt_timezone.utc
-            #                         ).astimezone(salon_timezone)
-            #                          )
-
             break_date_start_time = convert_utc_iso_to_salon_time(break_start_date_time_str, salon_timezone)
-
-            # break_date_end_time = (datetime.fromisoformat(break_end_date_time_str)
-            #                        .replace( tzinfo=dt_timezone.utc
-            #                         ).astimezone(salon_timezone)
-            #                        )
 
             break_date_end_time = convert_utc_iso_to_salon_time(break_end_date_time_str, salon_timezone)
 

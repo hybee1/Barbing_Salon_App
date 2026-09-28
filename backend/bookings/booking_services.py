@@ -151,19 +151,21 @@ def booking_data_with_timezone(*, data: dict | list[dict]) -> dict | list[dict]:
     elif isinstance(data, list):
 
         res_list: list[dict] = []
+
         for item in data:
+
+            if not isinstance(item, dict):
+                raise ValidationError({
+                    "details": "Each item in booking data must be a dictionary."
+                })
+
             if "booking_date" not in item:
                 raise ValidationError({"details": "A booking 'date' is required."})
-            booking_date_str = item['booking_date']
+
 
             if "session_start_date_time" not in item:
                 raise ValidationError({"details": "A booking 'session_start_date_time' is required."})
             session_start_date_time_str = item['session_start_date_time']
-
-            # session_start_date_time = (datetime.fromisoformat(session_start_date_time_str
-            #                                                   ).replace(tzinfo=dt_timezone.utc
-            #                                                             ).astimezone(salon_timezone)
-            #                            )
 
             session_start_date_time = convert_utc_iso_to_salon_time(session_start_date_time_str, salon_timezone)
 
@@ -171,14 +173,7 @@ def booking_data_with_timezone(*, data: dict | list[dict]) -> dict | list[dict]:
                 raise ValidationError({"details": "A booking 'session_end_date_time' is required."})
             session_end_date_time_str = item['session_end_date_time']
 
-            # session_end_date_time = (datetime.fromisoformat(session_end_date_time_str
-            #                                                   ).replace(tzinfo=dt_timezone.utc
-            #                                                             ).astimezone(salon_timezone)
-            #                            )
-
             session_end_date_time = convert_utc_iso_to_salon_time(session_end_date_time_str, salon_timezone)
-
-
 
             item['start_time'] = session_start_date_time.time()
             item['end_time'] = session_end_date_time.time()
