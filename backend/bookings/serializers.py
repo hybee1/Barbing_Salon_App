@@ -170,7 +170,7 @@ class CreateBookingSerializer(serializers.ModelSerializer):
                                                        " is unexpectedly longer than 3 hours."})
 
         # the immediate line below is expected to be in utc as commented in the model
-        session_start_date_time_salon_time: datetime = attrs.get("session_start_date_time")
+        session_start_date_time_in_utc: datetime = attrs.get("session_start_date_time")
         salon_config, _ = BarberScheduler().get_salon_config()
         salon_tz = ZoneInfo(salon_config["time_zone"])
 
@@ -179,26 +179,28 @@ class CreateBookingSerializer(serializers.ModelSerializer):
 
         # Convert the supplied aware datetime to the salon's
         # local timezone for business-rule validation.
-        session_start_date_time_in_salon_tz = session_start_date_time_salon_time.astimezone(tz=salon_tz)
+        session_start_date_time_in_salon_tz = session_start_date_time_in_utc.astimezone(tz=salon_tz)
+        session_end_date_time_in_salon_tz = session_start_date_time_in_salon_tz + total_duration
 
-        if session_start_date_time_salon_time.time() < salon_open_time:
+        salon_open_time_in_salon_tz = datetime.combine(session_start_date_time_in_salon_tz.date(),
+                                                       salon_open_time, tzinfo=salon_tz)
+        salon_close_time_in_salon_tz = datetime.combine(session_start_date_time_in_salon_tz.date(),
+                                                        salon_close_time, tzinfo=salon_tz)
+
+
+        if session_start_date_time_in_salon_tz.time() < salon_open_time_in_salon_tz:
             raise serializers.ValidationError({"time": "Invalid time, selected time is before salon open time."})
 
-        if session_start_date_time_salon_time.time() > salon_close_time:
+        if session_start_date_time_in_salon_tz.time() > salon_close_time_in_salon_tz:
             raise serializers.ValidationError({"time": "Invalid duration time, session duration is "
                                                        "beyond salon close time."})
 
-        session_end_date_time_in_salon_tz = session_start_date_time_salon_time + total_duration
 
-        if session_end_date_time_in_salon_tz.time() < salon_open_time:
+        if session_end_date_time_in_salon_tz.time() < salon_open_time_in_salon_tz:
             raise serializers.ValidationError({"time": "Invalid time, session finish time time is before "
                                                        "salon open time."})
 
-        salon_close_datetime = datetime.combine(
-                                    session_start_date_time_salon_time.date(),
-                                    salon_close_time ).replace(tzinfo=salon_tz)
-
-        if session_end_date_time_in_salon_tz > salon_close_datetime:
+        if session_end_date_time_in_salon_tz > salon_close_time_in_salon_tz:
             raise serializers.ValidationError({"time": "Invalid duration time, session finish time time is after "
                                                        "salon close time."})
 

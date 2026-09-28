@@ -70,13 +70,13 @@ class BreakTimeAndOffDays(TimeStampedModel):
         selected_date: date = self.break_date
 
         # the immediate two lines below are expected to be in utc as commented in the model
-        break_start_date_time: datetime = self.break_start_date_time
-        break_end_date_time: datetime  = self.break_end_date_time
+        break_start_date_time_in_utc: datetime = self.break_start_date_time
+        break_end_date_time_in_utc: datetime = self.break_end_date_time
 
-        if timezone.is_naive(break_start_date_time):
+        if timezone.is_naive(break_start_date_time_in_utc):
             raise ValidationError({ "break_start_date_time": "Start datetime must be timezone-aware." })
 
-        if timezone.is_naive(break_end_date_time):
+        if timezone.is_naive(break_end_date_time_in_utc):
             raise ValidationError({ "break_end_date_time": "End datetime must be timezone-aware." })
 
 
