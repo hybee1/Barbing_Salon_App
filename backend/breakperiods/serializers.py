@@ -39,11 +39,10 @@ class BreakTimeAndOffDaysSerializer(serializers.ModelSerializer):
         break_start_date_time_in_salon_tz = break_start_date_time_utc.astimezone(salon_tz)
         break_end_date_time_in_salon_tz = break_end_date_time_utc.astimezone(salon_tz)
 
-        break_date_salon_time: date = break_start_date_time_in_salon_tz.date()
+        break_date_in_salon_tz: date = break_start_date_time_in_salon_tz.date()
 
-        salon_today_date_time = timezone.now().astimezone(salon_tz)
-        salon_today_date = salon_today_date_time.date()
-        salon_today_time = salon_today_date_time.time()
+        salon_today_date_time_in_salon_tz = timezone.now().astimezone(salon_tz)
+        salon_today_date_in_salon_tz = salon_today_date_time_in_salon_tz.date()
 
         salon_open_time_in_salon_tz = datetime.combine(break_start_date_time_in_salon_tz.date(),
                                                        salon_open_time, tzinfo=salon_tz)
@@ -61,9 +60,9 @@ class BreakTimeAndOffDaysSerializer(serializers.ModelSerializer):
 
         if break_status_enum == BreakTimeAndOffDays.BlockStatus.BREAK:
 
-            three_days_ahead = salon_today_date + timedelta(days=3)
+            three_days_ahead = salon_today_date_in_salon_tz + timedelta(days=3)
 
-            if break_date_salon_time > three_days_ahead:
+            if break_date_in_salon_tz > three_days_ahead:
                 raise ValidationError({"date": "Date cannot be more than three days ahead."})
 
             if ((break_start_date_time_in_salon_tz < salon_open_time_in_salon_tz) or
@@ -77,9 +76,9 @@ class BreakTimeAndOffDaysSerializer(serializers.ModelSerializer):
 
         # OFF_DAY is complete off from work for the entire day
         if break_status_enum == BreakTimeAndOffDays.BlockStatus.OFF_DAY:
-            three_days_ahead = salon_today_date + timedelta(days=3)
+            three_days_ahead = salon_today_date_in_salon_tz + timedelta(days=3)
 
-            if break_date_salon_time > three_days_ahead:
+            if break_date_in_salon_tz > three_days_ahead:
                 raise ValidationError({"date": "Date cannot be more than three days ahead."})
 
             if ((break_start_date_time_in_salon_tz < salon_open_time_in_salon_tz) or
@@ -116,11 +115,11 @@ class BreakTimeAndOffDaysSerializer(serializers.ModelSerializer):
 
         request = self.context["request"]
 
-        return create_break_period( staff_id=request.user.staffprofile.pk,
-                               break_start_date_time=validated_data["break_start_date_time"],
-                               break_end_date_time=validated_data["break_end_date_time"],
-                               status=validated_data["status"],
-                               reason=validated_data["reason"] )
+        return create_break_period(staff_id=request.user.staffprofile.pk,
+                                   break_start_date_time_in_salon_tz=validated_data["break_start_date_time"],
+                                   break_end_date_time_in_salon_tz=validated_data["break_end_date_time"],
+                                   status=validated_data["status"],
+                                   reason=validated_data["reason"])
 
 
 class ActiveBreakTimeSerializer(serializers.ModelSerializer):

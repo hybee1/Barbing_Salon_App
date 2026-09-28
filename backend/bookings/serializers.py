@@ -1,5 +1,5 @@
 
-from datetime import timedelta, datetime
+from datetime import timedelta, datetime, timezone as dt_timezone
 from zoneinfo import ZoneInfo
 
 from django.utils import timezone
@@ -188,15 +188,15 @@ class CreateBookingSerializer(serializers.ModelSerializer):
                                                         salon_close_time, tzinfo=salon_tz)
 
 
-        if session_start_date_time_in_salon_tz.time() < salon_open_time_in_salon_tz:
+        if session_start_date_time_in_salon_tz < salon_open_time_in_salon_tz:
             raise serializers.ValidationError({"time": "Invalid time, selected time is before salon open time."})
 
-        if session_start_date_time_in_salon_tz.time() > salon_close_time_in_salon_tz:
+        if session_start_date_time_in_salon_tz > salon_close_time_in_salon_tz:
             raise serializers.ValidationError({"time": "Invalid duration time, session duration is "
                                                        "beyond salon close time."})
 
 
-        if session_end_date_time_in_salon_tz.time() < salon_open_time_in_salon_tz:
+        if session_end_date_time_in_salon_tz < salon_open_time_in_salon_tz:
             raise serializers.ValidationError({"time": "Invalid time, session finish time time is before "
                                                        "salon open time."})
 
@@ -207,6 +207,9 @@ class CreateBookingSerializer(serializers.ModelSerializer):
 
         # manually attach price
         attrs["price"] = service_price + hairstyle_price + color_price
+
+        # the below is because session_end_date_time is not part of the attr and it is needed in the
+        # next method also not need to add 'session_start_date_time' to attr since it already part of it
         attrs["session_end_date_time"] = session_end_date_time_in_salon_tz
         attrs["salon_timezone"] = salon_tz
 
@@ -216,26 +219,26 @@ class CreateBookingSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
 
-        return create_booking( barber_id=validated_data["barber"].pk,
-                               service_id=validated_data["service"].pk,
-                               hairstyle_id=(
+        return create_booking(barber_id=validated_data["barber"].pk,
+                              service_id=validated_data["service"].pk,
+                              hairstyle_id=(
                                                 validated_data["hairstyle"].pk
                                                 if validated_data.get("hairstyle")
                                                 else None
                                             ),
-                               color_id=(
+                              color_id=(
                                             validated_data["color"].pk
                                             if validated_data.get("color")
                                             else None
                                         ),
-                               total_price=validated_data["price"],
-                               session_start_date_time_salon_time=validated_data["session_start_date_time"],
-                               session_end_date_time_salon_time=validated_data["session_end_date_time"],
-                               customer_name=validated_data["customer_name"],
-                               phone_number=validated_data["phone_number"],
-                               booking_source=validated_data["booking_source"],
-                               booked_by=validated_data["booked_by"],
-                               salon_timezone=validated_data["salon_timezone"])
+                              total_price=validated_data["price"],
+                              session_start_date_time_in_salon_tz=validated_data["session_start_date_time"],
+                              session_end_date_time_in_salon_tz=validated_data["session_end_date_time"],
+                              customer_name=validated_data["customer_name"],
+                              phone_number=validated_data["phone_number"],
+                              booking_source=validated_data["booking_source"],
+                              booked_by=validated_data["booked_by"],
+                              salon_timezone=validated_data["salon_timezone"])
 
 
 class UpdateBookingSerializer(serializers.ModelSerializer):

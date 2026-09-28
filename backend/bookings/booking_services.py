@@ -13,22 +13,22 @@ from backend.utils.services import BarberScheduler, convert_utc_iso_to_salon_tim
 
 
 @transaction.atomic
-def create_booking( *, barber_id: int, service_id: int, hairstyle_id: int, color_id: int,
-                    total_price: int, session_start_date_time_salon_time: datetime,
-                    session_end_date_time_salon_time: datetime,
-                    customer_name: str, phone_number, booking_source: str, booked_by: str,
-                    salon_timezone:ZoneInfo):
+def create_booking(*, barber_id: int, service_id: int, hairstyle_id: int, color_id: int,
+                   total_price: int, session_start_date_time_in_salon_tz: datetime,
+                   session_end_date_time_in_salon_tz: datetime,
+                   customer_name: str, phone_number, booking_source: str, booked_by: str,
+                   salon_timezone:ZoneInfo):
 
-    if timezone.is_naive( session_start_date_time_salon_time ):
+    if timezone.is_naive(session_start_date_time_in_salon_tz):
         raise ValueError( "session_start_date_time_salon_time must be timezone-aware." )
 
-    if timezone.is_naive( session_end_date_time_salon_time ):
+    if timezone.is_naive(session_end_date_time_in_salon_tz):
         raise ValueError( "session_end_date_time_salon_time must be timezone-aware." )
 
     # convert the start and end time to utc time
-    session_start_date_time_utc = session_start_date_time_salon_time.astimezone(dt_timezone.utc)
-    session_end_date_time_utc = session_end_date_time_salon_time.astimezone(dt_timezone.utc)
-    booking_date = session_start_date_time_salon_time.date()
+    session_start_date_time_utc = session_start_date_time_in_salon_tz.astimezone(dt_timezone.utc)
+    session_end_date_time_utc = session_end_date_time_in_salon_tz.astimezone(dt_timezone.utc)
+    booking_date_in_salon_tz = session_start_date_time_in_salon_tz.date()
 
     # Lock this barber for the duration of the transaction.
     # Any other booking attempt for this same barber must wait.
@@ -48,7 +48,7 @@ def create_booking( *, barber_id: int, service_id: int, hairstyle_id: int, color
     booking = Booking(
 
     booking_reference=None, service=service_id, hairstyle=hairstyle_id, color=color_id,
-    barber=barber, booking_date=booking_date, session_start_date_time=session_start_date_time_utc,
+    barber=barber, booking_date=booking_date_in_salon_tz, session_start_date_time=session_start_date_time_utc,
     session_end_date_time=session_end_date_time_utc, customer_name=customer_name,
     booking_source=booking_source, phone_number=phone_number, price=total_price, booked_by=booked_by
 
