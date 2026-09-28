@@ -34,8 +34,7 @@ class BreakTimeAndOffDays(TimeStampedModel):
     )
 
     # Salon-local calendar date on which this break/off-day will start.
-    # it purposely for query convenience. This is intentionally NOT UTC and
-    # does not represent the scheduled break date.
+    # it purposely for query convenience. This is intentionally NOT UTC
     break_date = models.DateField()
 
     # the actual break start time in utc
@@ -70,7 +69,7 @@ class BreakTimeAndOffDays(TimeStampedModel):
                 {"staff": "A valid staff member is required."}
             )
 
-        selected_date: date = self.break_creation_date
+        selected_date: date = self.break_date
         break_start_date_time: datetime = self.break_start_date_time
         break_end_date_time: datetime  = self.break_end_date_time
 

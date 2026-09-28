@@ -7,16 +7,17 @@ from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.db import models
 from django.db.models import Func, F, Q
-from django.utils.dateparse import parse_datetime, parse_date
 from phonenumber_field.modelfields import PhoneNumberField
 from phonenumbers import NumberParseException
+
+from backend.salon_settings.models import TimeStampedModel
 
 
 # class TsRange(Func):
 #     function = "TSRANGE"
 #     output_field = DateTimeRangeField()
 
-class Booking(models.Model):
+class Booking(TimeStampedModel):
 
     class STATUS(models.TextChoices):
         ARRIVED = "ARRIVED", "Arrived"
@@ -66,7 +67,6 @@ class Booking(models.Model):
 
     # Salon-local calendar date on which this session booking date will start.
     # it purposely for query convenience. This is intentionally NOT UTC
-    # and does not represent the scheduled booking date.
     booking_date = models.DateField()
 
     # this must be in utc date and time
