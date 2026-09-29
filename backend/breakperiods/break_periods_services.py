@@ -38,8 +38,8 @@ def create_break_period(*, staff_id, break_start_date_time_in_salon_tz,
     overlap = BreakTimeAndOffDays.objects.filter(
         staff=staff,
         # break_date=selected_date,
-        break_start_date_time__lt=break_end_date_time_in_salon_tz,
-        break_end_date_time__gt=break_start_date_time_in_salon_tz,
+        break_start_date_time__lt=break_start_date_time_utc,
+        break_end_date_time__gt=break_end_date_time_utc,
     )
 
     if overlap.exists():

@@ -208,11 +208,13 @@ class CreateBookingSerializer(serializers.ModelSerializer):
         # manually attach price
         attrs["price"] = service_price + hairstyle_price + color_price
 
-        # the below is because session_end_date_time is not part of the attr and it is needed in the
-        # next method also not need to add 'session_start_date_time' to attr since it already part of it
-        attrs["session_end_date_time"] = session_end_date_time_in_salon_tz
-        attrs["salon_timezone"] = salon_tz
+        # we needed to add the two immediate below lines to attrs because in the next method
+        # it expects the two newly added two line in attrs that is why they were added.
+        # not e we did not add the utc versions of the tow fields as they are already present in attrs
+        attrs["session_end_date_time_in_salon_tz"] = session_end_date_time_in_salon_tz
+        attrs["session_end_date_time_in_salon_tz"] = session_end_date_time_in_salon_tz
 
+        attrs["salon_timezone"] = salon_tz
 
 
         return attrs
@@ -232,8 +234,8 @@ class CreateBookingSerializer(serializers.ModelSerializer):
                                             else None
                                         ),
                               total_price=validated_data["price"],
-                              session_start_date_time_in_salon_tz=validated_data["session_start_date_time"],
-                              session_end_date_time_in_salon_tz=validated_data["session_end_date_time"],
+                              session_start_date_time_in_salon_tz=validated_data["session_start_date_time_in_salon_tz"],
+                              session_end_date_time_in_salon_tz=validated_data["session_end_date_time_in_salon_tz"],
                               customer_name=validated_data["customer_name"],
                               phone_number=validated_data["phone_number"],
                               booking_source=validated_data["booking_source"],

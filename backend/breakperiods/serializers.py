@@ -85,13 +85,12 @@ class BreakTimeAndOffDaysSerializer(serializers.ModelSerializer):
                     (break_start_date_time_in_salon_tz > salon_close_time_in_salon_tz)):
                 raise serializers.ValidationError({"details": "Break start time must be with "
                                                               "salon working hours."})
-
-            break_start_date_time = ( salon_open_time_in_salon_tz.astimezone(dt_timezone.utc) )
-
-            break_end_date_time = ( salon_close_time_in_salon_tz.astimezone(dt_timezone.utc) )
-
-            attrs["break_start_date_time"] = break_start_date_time
-            attrs["break_end_date_time"] = break_end_date_time
+            # we needed to add the two immediate below lines to attrs because in the next method
+            # it expects the two newly added two line in attrs that is why they were added.
+            # IMPORTANTLY WE NOTICE THE VALUES WE ADDED.
+            # not e we did not add the utc versions of the tow fields as they are already present in attrs
+            attrs["break_start_date_time_in_salon_tz"] = salon_open_time_in_salon_tz
+            attrs["break_end_date_time_in_salon_tz"] = salon_close_time_in_salon_tz
 
             return attrs
 
@@ -103,11 +102,11 @@ class BreakTimeAndOffDaysSerializer(serializers.ModelSerializer):
             if (break_end_date_time_in_salon_tz - break_start_date_time_in_salon_tz < timedelta(hours=6)):
                 raise serializers.ValidationError({"details": "duration can not be less than six hours."})
 
-        break_start_date_time = break_start_date_time_in_salon_tz.astimezone(dt_timezone.utc)
-        break_end_date_time = break_end_date_time_in_salon_tz.astimezone(dt_timezone.utc)
-
-        attrs["break_start_date_time"] = break_start_date_time
-        attrs["break_end_date_time"] = break_end_date_time
+        # we needed to add the two immediate below lines to attrs because in the next method
+        # it expects the two newly added two line in attrs that is why they were added.
+        # not e we did not add the utc versions of the tow fields as they are already present in attrs
+        attrs["break_start_date_time_in_salon_tz"] = break_start_date_time_in_salon_tz
+        attrs["break_end_date_time_in_salon_tz"] = break_end_date_time_in_salon_tz
 
         return attrs
 
@@ -116,8 +115,8 @@ class BreakTimeAndOffDaysSerializer(serializers.ModelSerializer):
         request = self.context["request"]
 
         return create_break_period(staff_id=request.user.staffprofile.pk,
-                                   break_start_date_time_in_salon_tz=validated_data["break_start_date_time"],
-                                   break_end_date_time_in_salon_tz=validated_data["break_end_date_time"],
+                                   break_start_date_time_in_salon_tz=validated_data["break_start_date_time_in_salon_tz"],
+                                   break_end_date_time_in_salon_tz=validated_data["break_end_date_time_in_salon_tz"],
                                    status=validated_data["status"],
                                    reason=validated_data["reason"])
 
