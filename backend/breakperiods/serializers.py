@@ -71,6 +71,11 @@ class BreakTimeAndOffDaysSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError({"details": "Break start time must be with "
                                                               "salon working hours."})
 
+            if break_end_date_time_in_salon_tz > salon_close_time_in_salon_tz:
+                raise serializers.ValidationError({
+                    "details": "Break end time must be within salon working hours."
+                })
+
             if (break_end_date_time_in_salon_tz - break_start_date_time_in_salon_tz > timedelta(hours=1)):
                 raise serializers.ValidationError({"details": "Break duration can not be more than one hour."})
 

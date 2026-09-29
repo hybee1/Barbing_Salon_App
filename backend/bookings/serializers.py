@@ -211,7 +211,7 @@ class CreateBookingSerializer(serializers.ModelSerializer):
         # we needed to add the two immediate below lines to attrs because in the next method
         # it expects the two newly added two line in attrs that is why they were added.
         # not e we did not add the utc versions of the tow fields as they are already present in attrs
-        attrs["session_end_date_time_in_salon_tz"] = session_end_date_time_in_salon_tz
+        attrs["session_start_date_time_in_salon_tz"] = session_start_date_time_in_salon_tz
         attrs["session_end_date_time_in_salon_tz"] = session_end_date_time_in_salon_tz
 
         attrs["salon_timezone"] = salon_tz
