@@ -295,18 +295,18 @@ async function loadBarbers() {
 
     box.innerHTML = barbers.map(barber => `
     <div class= "card barber-card"
-     onclick="selectBarber(this, ${barber.id}, '${barber.user.username}')">
+     onclick="selectBarber(this, ${barber.id}, '${barber.username}')">
 
-        ${barber.user.image
-          ? `<img class="barber-bg" src="${barber.user.image}" alt="${barber.user.username}">`
-          : `<div class="barber-bg barber-placeholder">${barber.user.username}</div>`
+        ${barber.image
+          ? `<img class="barber-bg" src="${barber.image}" alt="${barber.username}">`
+          : `<div class="barber-bg barber-placeholder">${barber.username}</div>`
         }
 
         <div class="barber-overlay"></div>
 
         <div class="barber-content">
-            <h3>${barber.user.username}</h3>
-            <p>${barber.user.role || "Barber"}</p>
+            <h3>${barber.username}</h3>
+            <p>${barber.role || "Barber"}</p>
             <span>★★★★★</span>
         </div>
 

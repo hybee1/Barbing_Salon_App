@@ -1,4 +1,5 @@
 from django.db.models import Q
+from datetime import timezone as dt_timezone
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.response import Response
@@ -15,22 +16,26 @@ class SalonManagerDashboardStatsView(APIView):
 
     def get(self, request):
 
-        timezome_date_time = timezone.localtime()
+        now_date_time_in_salon_tz = timezone.localtime()
 
-        date_today = timezome_date_time.date()
-        current_time = timezome_date_time.time()
+        date_today_in_salon_tz = now_date_time_in_salon_tz.date()
+        current_time_in_salon_tz = now_date_time_in_salon_tz.time()
 
-        today_bookings_count = Booking.objects.filter( booking_date=date_today).count()
+        today_bookings_count = Booking.objects.filter( booking_date=date_today_in_salon_tz).count()
 
         completed_bookings_today_count = Booking.objects.filter(
-                    booking_date=date_today, status__iexact='COMPLETED').count()
+                    booking_date=date_today_in_salon_tz, status=Booking.STATUS.COMPLETED).count()
+
+        breaktime_or_off_days__date_utc = now_date_time_in_salon_tz.astimezone(dt_timezone.utc)
 
         active_staffs = (
             StaffProfile.objects.filter(
                 status=StaffProfile.StaffStatus.ACTIVE,
             )
             .exclude(
-                breaktime_or_off_days__date=date_today,
+                Q(breaktime_or_off_days__break_date=date_today_in_salon_tz) |
+                Q(breaktime_or_off_days__break_start_date_time__range=(breaktime_or_off_days__date_utc,
+                                                                       breaktime_or_off_days__date_utc)),
                 breaktime_or_off_days__status__in=[
                     BreakTimeAndOffDays.BlockStatus.OFF_DAY,
                     BreakTimeAndOffDays.BlockStatus.ON_LEAVE,
@@ -46,7 +51,9 @@ class SalonManagerDashboardStatsView(APIView):
         active_break_count = BreakTimeAndOffDays.objects.filter(
             staff__status=StaffProfile.StaffStatus.ACTIVE,
             status=BreakTimeAndOffDays.BlockStatus.BREAK,
-            date=date_today, start_time__lte=current_time, end_time__gte=current_time
+            # break_date=date_today_in_salon_tz,
+            break_start_date_time__lte=breaktime_or_off_days__date_utc,
+            break_end_date_time__gte=breaktime_or_off_days__date_utc
         ).count()
 
         data = {

@@ -1,8 +1,7 @@
-from typing import Any
 
+from typing import Any
 from django.core.exceptions import ValidationError
 from django.db import transaction
-
 from backend.accounts.models import ( User, CustomerProfile, StaffProfile, )
 
 
@@ -59,7 +58,7 @@ def create_user(*, user_data, role):
     try:
         role = User.Role(role)
     except ValueError:
-        raise ValidationError({ "role": "Invalid user role." })
+        raise ValidationError({ "details": "Invalid user role." })
 
     # --------------------------------------------------------
     # Create User.
@@ -382,7 +381,7 @@ def update_staff(*, staff,
 
     if staff.user.role != User.Role.STAFF:
         raise ValidationError({
-            "role":
+            "details":
                 "Only STAFF users can be updated through "
                 "update_staff()."
         })

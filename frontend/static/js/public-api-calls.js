@@ -2,11 +2,11 @@
 // public-api-calls.js
 
 
-const BASE_URL = "http://127.0.0.1:8000/web";
-const IMAGE_BASE_URL = "http://127.0.0.1:8000/";
+//const BASE_URL = "http://127.0.0.1:8000/web";
+//const IMAGE_BASE_URL = "http://127.0.0.1:8000/";
 
-// const BASE_URL = "https://untyped-hippopotamic-rosa.ngrok-free.dev/web";
-// const IMAGE_BASE_URL = "https://untyped-hippopotamic-rosa.ngrok-free.dev/";
+ const BASE_URL = "https://untyped-hippopotamic-rosa.ngrok-free.dev/web";
+ const IMAGE_BASE_URL = "https://untyped-hippopotamic-rosa.ngrok-free.dev/";
 
 
 async function publicApiFetch(endpoint, method = "GET", body = null) {

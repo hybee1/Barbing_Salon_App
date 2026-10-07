@@ -8,8 +8,7 @@ urlpatterns = [
 
     path("create/", CreateBookingView.as_view(), name="create_booking"),
 
-    path("barber/availability/", BarberBookingAvailability_Api_View.as_view(),
-         name="available-barbers")
+    path("barber/availability/", BarberBookingAvailability_Api_View.as_view(), name="available-barbers")
 
 
 ]

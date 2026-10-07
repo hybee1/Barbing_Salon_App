@@ -1532,6 +1532,515 @@ TIMELINE
 }
 
 
+/* ==========================================================
+   MY BREAKS
+========================================================== */
+
+
+/* ----------------------------------------------------------
+   BREAK RECORD TABLE
+---------------------------------------------------------- */
+
+.break-records-table tbody tr.break-record-row {
+
+    cursor:pointer;
+
+}
+
+
+.break-records-table tbody tr.break-record-row:hover {
+
+    background:#242424;
+
+}
+
+
+.break-records-table tbody tr.break-record-row:focus {
+
+    outline:2px solid var(--gold);
+
+    outline-offset:-2px;
+
+}
+
+
+.break-status-badge {
+
+    display:inline-flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    min-width:80px;
+
+    padding:6px 12px;
+
+    border-radius:999px;
+
+    background:#211b0c;
+
+    color:var(--gold);
+
+    font-size:.8rem;
+
+    font-weight:700;
+
+}
+
+
+.break-empty-state {
+
+    text-align:center;
+
+    color:var(--muted);
+
+    padding:30px;
+
+}
+
+
+
+/* ==========================================================
+   BREAK DETAILS MODAL
+========================================================== */
+
+.break-details-modal {
+    position: fixed;
+
+    inset: 0;
+
+    width: 100%;
+    height: 100%;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    padding: 25px;
+
+    background: rgba(0, 0, 0, .78);
+
+    z-index: 9999;
+
+    overflow: hidden;
+}
+
+
+/* ==========================================================
+   IMPORTANT:
+   Hidden modal must never be rendered.
+========================================================== */
+
+.break-details-modal[hidden] {
+    display: none !important;
+}
+
+
+/* ==========================================================
+   MODAL CONTENT
+========================================================== */
+
+.break-details-modal-content {
+
+    width: min(700px, 100%);
+
+    max-height: 90vh;
+
+    overflow-y: auto;
+
+    background: var(--card);
+
+    border: 1px solid var(--border);
+
+    border-radius: var(--radius);
+
+    padding: 30px;
+
+    box-shadow:
+        0 30px 100px rgba(0, 0, 0, .75);
+
+}
+
+
+/* ==========================================================
+   MODAL HEADER
+========================================================== */
+
+.break-details-modal-header {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: flex-start;
+
+    gap: 20px;
+
+    padding-bottom: 25px;
+
+    margin-bottom: 25px;
+
+    border-bottom: 1px solid var(--border);
+
+}
+
+
+.break-modal-label {
+
+    display: block;
+
+    color: var(--gold);
+
+    font-size: .72rem;
+
+    font-weight: 800;
+
+    letter-spacing: .12em;
+
+    margin-bottom: 7px;
+
+}
+
+
+.break-details-modal-header h2 {
+
+    color: var(--white);
+
+    margin: 0 0 7px;
+
+    font-size: 1.5rem;
+
+}
+
+
+.break-details-modal-header p {
+
+    color: var(--muted);
+
+    font-size: .85rem;
+
+    margin: 0;
+
+}
+
+
+/* ==========================================================
+   CLOSE BUTTON
+========================================================== */
+
+.break-details-modal-close {
+
+    width: 40px;
+
+    height: 40px;
+
+    flex-shrink: 0;
+
+    border: none;
+
+    border-radius: 50%;
+
+    background: #101010;
+
+    color: #aaa;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    cursor: pointer;
+
+    font-size: 18px;
+
+    transition: .3s ease;
+
+}
+
+
+.break-details-modal-close:hover {
+
+    background: var(--gold);
+
+    color: #000;
+
+}
+
+
+/* ==========================================================
+   MODAL DETAILS GRID
+========================================================== */
+
+.break-details-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    gap: 16px;
+
+    width: 100%;
+
+}
+
+
+/* ==========================================================
+   DETAIL ITEM
+========================================================== */
+
+.break-detail-item {
+
+    min-width: 0;
+
+    background: #111111;
+
+    border: 1px solid var(--border);
+
+    border-radius: 14px;
+
+    padding: 17px;
+
+}
+
+
+.break-detail-item > span {
+
+    display: block;
+
+    color: var(--muted);
+
+    font-size: .75rem;
+
+    font-weight: 600;
+
+    margin-bottom: 7px;
+
+}
+
+
+.break-detail-item strong {
+
+    display: block;
+
+    color: var(--white);
+
+    font-size: .95rem;
+
+    line-height: 1.4;
+
+    word-break: break-word;
+
+}
+
+
+/* ==========================================================
+   FULL WIDTH REASON
+========================================================== */
+
+.break-detail-full {
+
+    grid-column: 1 / -1;
+
+}
+
+
+.break-detail-full p {
+
+    margin: 0;
+
+    color: #ddd;
+
+    line-height: 1.6;
+
+    white-space: pre-wrap;
+
+    word-break: break-word;
+
+}
+
+
+/* ==========================================================
+   STATUS
+========================================================== */
+
+.break-detail-status {
+
+    color: var(--gold) !important;
+
+}
+
+
+/* ==========================================================
+   BODY WHEN MODAL IS OPEN
+========================================================== */
+
+body.break-modal-open {
+
+    overflow: hidden;
+
+}
+
+
+/* ==========================================================
+   MOBILE
+========================================================== */
+
+@media (max-width: 600px) {
+
+    .break-details-modal {
+
+        padding: 15px;
+
+        align-items: flex-end;
+
+    }
+
+
+    .break-details-modal-content {
+
+        width: 100%;
+
+        max-height: 92vh;
+
+        padding: 22px;
+
+        border-radius: 20px 20px 0 0;
+
+    }
+
+
+    .break-details-grid {
+
+        grid-template-columns: 1fr;
+
+    }
+
+
+    .break-detail-full {
+
+        grid-column: auto;
+
+    }
+
+
+    .break-details-modal-header {
+
+        margin-bottom: 20px;
+
+        padding-bottom: 20px;
+
+    }
+
+}
+
+
+/* ==========================================================
+   BREAK FORM
+========================================================== */
+
+.schedule-break-time-form {
+
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
+}
+
+
+/*
+    The first five fields are:
+
+    Start Date
+    End Date
+    Start Time
+    End Time
+    Type
+
+    Reason remains full width.
+*/
+
+.schedule-break-time-form
+.form-group.full-width {
+
+    grid-column:1 / -1;
+
+}
+
+
+
+/* ==========================================================
+   BREAK RESPONSIVE
+========================================================== */
+
+@media(max-width:950px) {
+
+    .schedule-break-time-form {
+
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+
+    }
+
+}
+
+
+@media(max-width:600px) {
+
+    .schedule-break-time-form {
+
+        grid-template-columns:1fr;
+
+    }
+
+
+    .break-details-modal {
+
+        padding:15px;
+
+        align-items:flex-end;
+
+    }
+
+
+    .break-details-modal-content {
+
+        max-height:92vh;
+
+        padding:22px;
+
+        border-radius:20px 20px 0 0;
+
+    }
+
+
+    .break-details-grid {
+
+        grid-template-columns:1fr;
+
+    }
+
+
+    .break-detail-full {
+
+        grid-column:auto;
+
+    }
+
+
+    .break-details-modal-header {
+
+        margin-bottom:20px;
+
+        padding-bottom:20px;
+
+    }
+
+}
+
+
 
 
 /* ===========================

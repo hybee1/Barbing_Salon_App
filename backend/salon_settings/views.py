@@ -1,4 +1,4 @@
-
+from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -29,6 +29,8 @@ class SalonConfig_And_Info_View(APIView):
 
 
 class SalonInfoWebView(APIView):
+
+    permission_classes = (AllowAny,)
 
     def get(self, request):
         salon_info = SalonInfo.objects.all().first()

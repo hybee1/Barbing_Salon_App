@@ -2,6 +2,7 @@
 from datetime import timedelta, datetime, timezone as dt_timezone
 from zoneinfo import ZoneInfo
 
+from django.db.models import Q
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.response import Response
@@ -48,6 +49,8 @@ class CreateBarberBreakTimeAndOffDayAPIView(APIView):
         data['break_start_date_time'] = break_start_date_time_utc
         data['break_end_date_time'] = break_end_date_time_utc
 
+        print("status = ", data)
+
         serializer = BreakTimeAndOffDaysSerializer(data=data, context={"request": request},)
 
         serializer.is_valid(raise_exception=True)
@@ -65,14 +68,21 @@ class Last7daysAnd3DaysAheadBarberBreakTimeAndOffDayAPIView(APIView):
         salon_info = services_salon_config.get_salon_info_config()
         salon_tz = ZoneInfo(salon_info["time_zone"])
 
-        today_date_time_in_salon_tz = timezone.localtime().astimezone(salon_tz)
+        now_date_time_in_utc = timezone.now()
+
+        three_days_ahead_in_utc = now_date_time_in_utc + timedelta(days=3)
+        three_days_ago_in_utc = now_date_time_in_utc - timedelta(days=3)
+
+        today_date_time_in_salon_tz = now_date_time_in_utc.astimezone(salon_tz)
         today_date_in_salon_tz = today_date_time_in_salon_tz.date()
 
         three_days_ahead_in_salon_tz = today_date_in_salon_tz + timedelta(days=3)
-        seven_days_ago_in_salon_tz = today_date_in_salon_tz - timedelta(days=7)
+        seven_days_ago_in_salon_tz = today_date_in_salon_tz - timedelta(days=3)
 
         break_or_off = BreakTimeAndOffDays.objects.filter(
-                        break_date__range=(seven_days_ago_in_salon_tz, three_days_ahead_in_salon_tz))
+                        Q(break_date__range=(seven_days_ago_in_salon_tz, three_days_ahead_in_salon_tz)) |
+                        Q(break_start_date_time__range=(three_days_ago_in_utc, three_days_ahead_in_utc)),
+        )
 
         serializer = BreakTimeAndOffDaysSerializer(break_or_off, many=True)
 
@@ -114,20 +124,29 @@ class OneBarberBreakTimeAndOffDayAPIView(APIView):
         salon_info = services_salon_config.get_salon_info_config()
         salon_tz = ZoneInfo(salon_info["time_zone"])
 
-        today_date_time_in_salon_tz = timezone.localtime().astimezone(salon_tz)
+        now_date_time_in_utc = timezone.now()
+
+        three_days_ahead_in_utc  = now_date_time_in_utc + timedelta(days=3)
+        three_days_ago_in_utc  = now_date_time_in_utc - timedelta(days=3)
+
+        today_date_time_in_salon_tz = now_date_time_in_utc.astimezone(salon_tz)
         today_date_in_salon_tz = today_date_time_in_salon_tz.date()
 
         three_days_ahead_in_salon_tz = today_date_in_salon_tz + timedelta(days=3)
-        two_days_ago_in_salon_tz = today_date_in_salon_tz - timedelta(days=7)
+        three_days_ago_in_salon_tz = today_date_in_salon_tz - timedelta(days=3)
 
         break_or_off = BreakTimeAndOffDays.objects.filter(
-            break_date__range=(two_days_ago_in_salon_tz, three_days_ahead_in_salon_tz),
-            staff=request.user.staffprofile,)
+
+           Q( break_date__range=(three_days_ago_in_salon_tz, three_days_ahead_in_salon_tz) ) |
+           Q(break_start_date_time__range=(three_days_ago_in_utc, three_days_ahead_in_utc) ),
+           staff=request.user.staffprofile,
+        )
 
         serializer = BarberBreakTimeAndOffDaySerializer(break_or_off, many=True)
 
         res = break_time_and_offDays_data_with_timezone(data=serializer.data)
 
+        print("res = ", res)
         return Response(res, status=status.HTTP_200_OK)
 
 
@@ -137,14 +156,16 @@ class BarberBreakTimeAndOffDayStatusesAPIView(APIView):
 
     def get(self, request):
 
-        statuses = [
-            {
-                "value": choice.value,
-                "label": choice.label,
-            }
-            for choice in BreakTimeAndOffDays.BlockStatus
-        ]
+        # statuses = [
+        #     {
+        #         "value": choice.value,
+        #         "label": choice.label,
+        #     }
+        #     for choice in BreakTimeAndOffDays.BlockStatus
+        # ]
+        #
+        #
+        # return Response(statuses, status=HTTP_200_OK)
 
-
-        return Response(statuses, status=HTTP_200_OK)
+        return Response({"breaktype": BreakTimeAndOffDays.BlockStatus.values}, status=status.HTTP_200_OK)
 

@@ -4,6 +4,7 @@ from .models import ( User, CustomerProfile, StaffProfile,)
 
 from .services import (create_customer, create_staff, update_user, update_staff_profile,
                        update_customer_profile, update_my_account, update_staff, )
+from ..custom_serializer.custom_phone_number_serializer import SalonPhoneNumberFieldCustomSerializer
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -282,11 +283,13 @@ class StaffProfileSerializer_3(serializers.ModelSerializer):
 class PublicBarberSerializer(serializers.ModelSerializer):
     first_name = serializers.CharField( source="user.first_name", read_only=True, )
     last_name = serializers.CharField( source="user.last_name", read_only=True, )
-    image = serializers.CharField( source="user.image", read_only=True, )
+    image = serializers.ImageField( source="user.image", read_only=True, )
+    username = serializers.CharField(source="user.username", read_only=True, )
+    role = serializers.CharField(source="user.role", read_only=True, )
 
     class Meta:
         model = StaffProfile
-        fields = [ "id", "first_name", "last_name", "image", "department", "position",]
+        fields = [ "id", "first_name", "last_name", "username", "role", "image", "department", "position",]
 
 
 class StaffProfileUserDetailsSerializer(serializers.ModelSerializer):
@@ -326,7 +329,8 @@ class StaffWriteSerializer(serializers.Serializer):
 
     email = serializers.EmailField( required=False, )
 
-    phone_number = serializers.CharField( required=False, )
+    # phone_number = serializers.CharField( required=False, )
+    phone_number = SalonPhoneNumberFieldCustomSerializer(required=False, )
 
     password = serializers.CharField( write_only=True, required=False, )
 
@@ -357,7 +361,7 @@ class StaffWriteSerializer(serializers.Serializer):
             qs = qs.exclude( pk=self.instance.user.pk )
 
         if qs.exists():
-            raise serializers.ValidationError( "Phone number already exists." )
+            raise serializers.ValidationError( {"details": "Phone number already exists."} )
 
         return value
 
@@ -382,10 +386,10 @@ class StaffWriteSerializer(serializers.Serializer):
         if self.instance is None:
 
             if not password:
-                raise serializers.ValidationError({ "password": "Password is required." })
+                raise serializers.ValidationError({ "details": "Password is required." })
 
             if password != password2:
-                raise serializers.ValidationError({ "password2": "Passwords do not match." })
+                raise serializers.ValidationError({ "details": "Passwords do not match." })
 
         # Update
         elif password is not None:
@@ -418,16 +422,25 @@ class StaffWriteSerializer(serializers.Serializer):
         return staff
 
     def update(self, instance, validated_data):
-
         staff_data = {}
 
         for field in ( "department", "position", "employment_date", "status", ):
             if field in validated_data:
+                print(field, "=", validated_data[field])
                 staff_data[field] = validated_data.pop(field)
 
         user_data = validated_data
+        print(user_data)
+        print(instance.user.is_active)
 
-        user, staff = update_staff( staff=instance, user_data=user_data, staff_data=staff_data, )
+        if StaffProfile.StaffStatus(staff_data["status"]) != StaffProfile.StaffStatus.ACTIVE:
+            instance.user.is_active = False
+        elif StaffProfile.StaffStatus(staff_data["status"]) == StaffProfile.StaffStatus.ACTIVE:
+            instance.user.is_active = True
+
+        print(instance.user.is_active)
+
+        staff = update_staff( staff=instance, user_data=user_data, staff_data=staff_data, )
 
         return staff
 

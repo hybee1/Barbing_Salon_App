@@ -4,16 +4,15 @@ from rest_framework import status
 
 
 
-
 class BookingConflictException(APIException):
     status_code = status.HTTP_409_CONFLICT
     default_detail = "booking conflict"
 
     def __init__(self, start_time, end_time):
-        detail = (
+        detail = {"details": str(
             f"The selected period {start_time} - {end_time} "
             "conflicts with an existing booking."
-        )
+        )}
         super().__init__(detail)
 
 class BookingDateException(APIException):
@@ -21,33 +20,29 @@ class BookingDateException(APIException):
     default_detail = "booking date is in the past"
 
     def __init__(self, date_time):
-        detail = (
+        detail = {"details": str(
             f"The selected date {date_time}  "
             "was observed to be in the past."
-        )
+        )}
         super().__init__(detail)
 
 
-# class BookingTimeException(APIException):
-#     BUSINESS_OPEN_TIME, BUSINESS_CLOSE_TIME = SalonBusinessHour.business_hours()
-#
-#     status_code = status.HTTP_400_BAD_REQUEST
-#     default_detail = (f"Sorry our salon working hours is between "
-#                     f"{BUSINESS_OPEN_TIME} and {BUSINESS_CLOSE_TIME}")
-#
-#     def __init__(self):
-#
-#         detail = (f"Sorry our salon working hours is between "
-#                     f"{self.BUSINESS_OPEN_TIME} and {self.BUSINESS_CLOSE_TIME}"
-#         )
-#         super().__init__(detail)
+class BookingException(APIException):
+
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = (f"booking exception")
+
+    def __init__(self, msg):
+
+        detail = {"details":  str(msg)}
+        super().__init__(detail)
 
 class InvalidCountryError(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = "Invalid country."
 
     def __init__(self, country):
-        detail = f'"{country}" is not a valid country.'
+        detail = {"details": str(f'"{country}" is not a valid country.')}
         super().__init__(detail)
 
 class InvalidCurrencyError(APIException):
@@ -55,16 +50,16 @@ class InvalidCurrencyError(APIException):
     default_detail = "Invalid currency."
 
     def __init__(self, currency):
-        detail = f'"{currency}" is not a valid currency.'
+        detail = {"details": str(f'"{currency}" is not a valid currency.')}
         super().__init__(detail)
 
 class InvalidPhoneNumberError(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
-    default_detail = "Invalid phone number."
+    default_detail = {"details": "Invalid phone number."}
 
     def __init__(self, phone_number):
-        detail = (f'"{phone_number}" is not a valid phone number or '
-                  f'the phone number does not conform with selected country.')
+        detail = {"details": str(f'"{phone_number}" is not a valid phone number or '
+                  f'the phone number does not conform with selected country.')}
         super().__init__(detail)
 
 class InvalidTimezoneError(APIException):
@@ -72,7 +67,7 @@ class InvalidTimezoneError(APIException):
     default_detail = "Invalid time zone."
 
     def __init__(self, time_zone):
-        detail = (f'"{time_zone}" is not a valid for the selected country. ')
+        detail = {"details": str(f'"{time_zone}" is not a valid for the selected country. ')}
         super().__init__(detail)
 
 class RoleException(APIException):
@@ -80,7 +75,7 @@ class RoleException(APIException):
     default_detail = "Invalid role"
 
     def __init__(self):
-        detail = f"Invalid role for user"
+        detail = {"details": str(f"Invalid role for user")}
         super().__init__(detail)
 
 class UserNotFoundException(APIException):
@@ -88,7 +83,7 @@ class UserNotFoundException(APIException):
     default_detail = "user not found"
 
     def __init__(self):
-        detail = f"user not found."
+        detail = {"details": str(f"user not found.")}
         super().__init__(detail)
 
 class UserException(APIException):
@@ -96,5 +91,5 @@ class UserException(APIException):
     default_detail = "user exception"
 
     def __init__(self, text):
-        detail = f" {text}"
+        detail = {"details": str(f" {text}") }
         super().__init__(detail)

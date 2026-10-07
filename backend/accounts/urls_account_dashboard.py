@@ -6,7 +6,7 @@ from backend.accounts.views import AllStaffs_Api_View, StaffsWorkingToday_Api_Vi
 
 urlpatterns = [
 
-    path("api/working/today/", StaffsWorkingToday_Api_View.as_view(), name="staffs-working-today"),
+    path("working/today/", StaffsWorkingToday_Api_View.as_view(), name="staffs-working-today"),
 
     # path("", AllStaffs_Api_View.as_view(), name="all-staffs"),
 

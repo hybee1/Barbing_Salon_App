@@ -592,6 +592,8 @@ window.loadSettings = async function () {
             return;
         }
 
+        console.log(settings)
+
 
         /* ======================================================
            SALON INFORMATION
@@ -608,13 +610,13 @@ window.loadSettings = async function () {
 
         if (salonName) {
 
-            salonName.value = settings.salon_info?.salon_name || "";
+            salonName.value = settings.salon_info?.name || "";
 
         }
 
         if (salonPhone) {
 
-            salonPhone.value = settings.salon_info?.salon_phone_number || "";
+            salonPhone.value = settings.salon_info?.phone_number || "";
 
         }
 
@@ -626,7 +628,7 @@ window.loadSettings = async function () {
 
         if (salonAddress) {
 
-            salonAddress.value = settings.salon_info?.salon_address || "";
+            salonAddress.value = settings.salon_info?.address || "";
 
         }
 

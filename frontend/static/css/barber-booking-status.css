@@ -1,0 +1,842 @@
+/* ==========================================================
+   BARBER BOOKING STATUS
+   Levelz Cuts
+========================================================== */
+
+
+/* ==========================================================
+   TABLE ROW
+========================================================== */
+
+#todayBookingTable .booking-selectable-row {
+    cursor: pointer;
+
+    transition:
+        background-color 0.18s ease,
+        box-shadow 0.18s ease;
+}
+
+#todayBookingTable .booking-selectable-row:hover {
+    background: rgba(200, 155, 60, 0.055);
+}
+
+#todayBookingTable
+.booking-selectable-row.selected {
+    background: rgba(200, 155, 60, 0.085);
+
+    box-shadow:
+        inset 3px 0 0 #C89B3C;
+}
+
+#todayBookingTable
+.booking-selectable-row.selected td {
+    border-bottom-color: rgba(200, 155, 60, 0.25);
+}
+
+
+/* ==========================================================
+   CHECKBOX COLUMN
+========================================================== */
+
+.booking-checkbox-column {
+    width: 44px;
+    min-width: 44px;
+    max-width: 44px;
+
+    text-align: center !important;
+
+    padding-left: 12px !important;
+    padding-right: 8px !important;
+}
+
+
+/* ==========================================================
+   CHECKBOX
+========================================================== */
+
+.booking-row-checkbox {
+    position: relative;
+
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    width: 20px;
+    height: 20px;
+
+    cursor: pointer;
+}
+
+.booking-row-checkbox input {
+    position: absolute;
+
+    width: 1px;
+    height: 1px;
+
+    opacity: 0;
+    pointer-events: none;
+}
+
+.custom-booking-checkbox {
+    width: 16px;
+    height: 16px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid #606773;
+
+    border-radius: 4px;
+
+    background: #14161B;
+
+    transition:
+        background-color 0.16s ease,
+        border-color 0.16s ease,
+        box-shadow 0.16s ease;
+}
+
+.booking-row-checkbox:hover
+.custom-booking-checkbox {
+    border-color: #C89B3C;
+}
+
+.booking-row-checkbox
+input:checked
++ .custom-booking-checkbox {
+    background: #C89B3C;
+
+    border-color: #C89B3C;
+
+    box-shadow:
+        0 0 0 2px rgba(200, 155, 60, 0.10);
+}
+
+.booking-row-checkbox
+input:checked
++ .custom-booking-checkbox::after {
+    content: "";
+
+    width: 7px;
+    height: 4px;
+
+    border-left: 2px solid #111318;
+    border-bottom: 2px solid #111318;
+
+    transform:
+        rotate(-45deg)
+        translateY(-1px);
+}
+
+
+/* ==========================================================
+   BOOKING REFERENCE
+========================================================== */
+
+.booking-reference {
+    color: #D9B45B;
+
+    font-size: 12px;
+    font-weight: 600;
+
+    letter-spacing: 0.02em;
+
+    white-space: nowrap;
+}
+
+
+/* ==========================================================
+   STATUS BADGE
+========================================================== */
+
+.booking-status-badge {
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 8px;
+
+    min-width: max-content;
+
+    padding: 6px 12px;
+
+    border: 1px solid transparent;
+
+    border-radius: 999px;
+
+    font-size: 11px;
+    font-weight: 600;
+
+    line-height: 1;
+
+    white-space: nowrap;
+}
+
+.booking-status-dot {
+    width: 8px;
+    height: 8px;
+
+    border-radius: 50%;
+
+    flex: 0 0 8px;
+}
+
+
+/* ==========================================================
+   CONFIRMED
+========================================================== */
+
+.booking-status-badge.status-confirmed {
+    color: #C89B3C;
+
+    background: rgba(200, 155, 60, 0.11);
+
+    border-color: rgba(200, 155, 60, 0.32);
+}
+
+.booking-status-badge.status-confirmed
+.booking-status-dot {
+    background: #C89B3C;
+}
+
+
+/* ==========================================================
+   ARRIVED
+========================================================== */
+
+.booking-status-badge.status-arrived {
+    color: #5FA8FF;
+
+    background: rgba(95, 168, 255, 0.10);
+
+    border-color: rgba(95, 168, 255, 0.30);
+}
+
+.booking-status-badge.status-arrived
+.booking-status-dot {
+    background: #5FA8FF;
+}
+
+
+/* ==========================================================
+   COMPLETED
+========================================================== */
+
+.booking-status-badge.status-completed {
+    color: #42C98A;
+
+    background: rgba(66, 201, 138, 0.10);
+
+    border-color: rgba(66, 201, 138, 0.30);
+}
+
+.booking-status-badge.status-completed
+.booking-status-dot {
+    background: #42C98A;
+}
+
+
+/* ==========================================================
+   NO SHOW
+========================================================== */
+
+.booking-status-badge.status-no_show {
+    color: #FF6262;
+
+    background: rgba(255, 98, 98, 0.10);
+
+    border-color: rgba(255, 98, 98, 0.30);
+}
+
+.booking-status-badge.status-no_show
+.booking-status-dot {
+    background: #FF6262;
+}
+
+
+/* ==========================================================
+   CANCELLED
+========================================================== */
+
+.booking-status-badge.status-cancelled {
+    color: #B9C0CB;
+
+    background: rgba(185, 192, 203, 0.075);
+
+    border-color: rgba(185, 192, 203, 0.23);
+}
+
+.booking-status-badge.status-cancelled
+.booking-status-dot {
+    background: #B9C0CB;
+}
+
+
+/* ==========================================================
+   SELECTED BOOKING / UPDATE CARD
+========================================================== */
+
+.booking-status-card {
+    width: 100%;
+
+    margin-top: 20px;
+
+    /*
+       Explicitly reset anything that may be inherited
+       from generic dashboard card/form styles.
+    */
+    box-sizing: border-box;
+}
+
+
+/* ==========================================================
+   MAIN STATUS LAYOUT
+========================================================== */
+
+.booking-status-layout {
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 1.2fr)
+        minmax(360px, 0.8fr);
+
+    width: 100%;
+
+    gap: 0;
+
+    align-items: stretch;
+}
+
+
+/* ==========================================================
+   SELECTED BOOKING DETAILS
+========================================================== */
+
+.selected-booking-details {
+    min-width: 0;
+
+    padding-right: 34px;
+}
+
+.selected-booking-heading {
+    display: flex;
+
+    align-items: center;
+
+    gap: 14px;
+}
+
+.selected-booking-icon {
+    width: 48px;
+    height: 48px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    flex: 0 0 48px;
+
+    border:
+        1px solid
+        rgba(200, 155, 60, 0.45);
+
+    border-radius: 50%;
+
+    background:
+        rgba(200, 155, 60, 0.08);
+
+    color: #C89B3C;
+
+    font-size: 17px;
+}
+
+.section-label {
+    display: block;
+
+    margin-bottom: 4px;
+
+    color: #C89B3C;
+
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.selected-booking-heading h2 {
+    margin: 0;
+
+    color: #F3F3F3;
+
+    font-size: 18px;
+    font-weight: 600;
+
+    line-height: 1.25;
+}
+
+.selected-booking-heading p {
+    margin: 6px 0 0;
+
+    color: #9EA5B1;
+
+    font-size: 12px;
+
+    line-height: 1.4;
+}
+
+
+/* ==========================================================
+   CURRENT STATUS
+========================================================== */
+
+.selected-booking-current-status {
+    display: flex;
+
+    align-items: center;
+
+    gap: 14px;
+
+    margin-top: 23px;
+
+    padding-top: 17px;
+
+    border-top:
+        1px solid
+        rgba(255, 255, 255, 0.075);
+}
+
+.current-status-label {
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    color: #AEB4BE;
+
+    font-size: 12px;
+}
+
+.current-status-label i {
+    color: #C89B3C;
+}
+
+
+/* ==========================================================
+   UPDATE STATUS SIDE
+========================================================== */
+
+.update-booking-status {
+    min-width: 0;
+
+    padding-left: 34px;
+
+    border-left:
+        1px solid
+        rgba(255, 255, 255, 0.075);
+
+    /*
+       Important:
+       Everything inside this section is deliberately
+       arranged vertically.
+    */
+    display: flex;
+
+    flex-direction: column;
+}
+
+
+/* ==========================================================
+   UPDATE STATUS HEADING
+========================================================== */
+
+.update-status-heading {
+    display: flex;
+
+    align-items: flex-start;
+
+    gap: 10px;
+
+    margin-bottom: 14px;
+}
+
+.update-status-heading > i {
+    margin-top: 3px;
+
+    color: #C89B3C;
+
+    flex: 0 0 auto;
+}
+
+.update-status-heading label {
+    display: block;
+
+    margin: 0;
+
+    color: #AEB4BE;
+
+    font-size: 12px;
+    font-weight: 500;
+
+    line-height: 1.4;
+}
+
+.update-status-heading label strong,
+.update-status-heading label span {
+    display: block;
+}
+
+
+/* ==========================================================
+   STATUS ACTION ROW
+========================================================== */
+
+.booking-status-actions {
+    display: grid;
+
+    grid-template-columns: minmax(0, 1fr) auto;
+
+    align-items: stretch;
+
+    gap: 12px;
+
+    width: 100%;
+}
+
+
+/* ==========================================================
+   STATUS SELECT
+========================================================== */
+
+#bookingStatusSelect {
+    display: block;
+
+    width: 100%;
+    min-width: 0;
+
+    height: 42px;
+
+    padding: 0 13px;
+
+    border:
+        1px solid
+        rgba(200, 155, 60, 0.55);
+
+    border-radius: 8px;
+
+    background: #15171C;
+
+    color: #F0F0F0;
+
+    outline: none;
+
+    font-family: inherit;
+    font-size: 12px;
+
+    box-sizing: border-box;
+}
+
+#bookingStatusSelect:hover {
+    border-color: rgba(200, 155, 60, 0.75);
+}
+
+#bookingStatusSelect:focus {
+    border-color: #C89B3C;
+
+    box-shadow:
+        0 0 0 2px
+        rgba(200, 155, 60, 0.10);
+}
+
+#bookingStatusSelect option {
+    background: #17191E;
+
+    color: #F2F2F2;
+}
+
+
+/* ==========================================================
+   UPDATE BUTTON
+========================================================== */
+
+#updateBookingStatusBtn {
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    flex: 0 0 auto;
+
+    min-width: 140px;
+    min-height: 42px;
+
+    padding: 0 20px;
+
+    border-radius: 9px;
+
+    white-space: nowrap;
+
+    font-family: inherit;
+    font-size: 12px;
+
+    box-sizing: border-box;
+}
+
+#updateBookingStatusBtn:disabled {
+    opacity: 0.45;
+
+    cursor: not-allowed;
+}
+
+
+/* ==========================================================
+   CANCELLATION REASON
+========================================================== */
+
+/*
+   IMPORTANT FIX:
+
+   Force this section to be a normal vertical block.
+   This prevents generic dashboard form/label styles from
+   putting the label beside the textarea.
+*/
+
+.update-booking-status
+.cancellation-reason-group {
+    display: flex !important;
+
+    flex-direction: column !important;
+
+    align-items: stretch !important;
+
+    width: 100% !important;
+
+    min-width: 0;
+
+    margin-top: 16px;
+
+    padding-top: 16px;
+
+    border-top:
+        1px solid
+        rgba(255, 255, 255, 0.075);
+
+    box-sizing: border-box;
+}
+
+
+/* Cancellation label */
+
+.update-booking-status
+.cancellation-reason-group > label {
+    display: block !important;
+
+    width: 100% !important;
+
+    margin: 0 0 8px 0 !important;
+
+    padding: 0 !important;
+
+    color: #AEB4BE;
+
+    font-size: 12px;
+
+    font-weight: 500;
+
+    line-height: 1.4;
+
+    box-sizing: border-box;
+}
+
+
+/* Cancellation textarea */
+
+.update-booking-status
+#reasonCancellation {
+    display: block !important;
+
+    width: 100% !important;
+
+    min-width: 0 !important;
+
+    min-height: 88px;
+
+    margin: 0 !important;
+
+    padding: 11px 13px;
+
+    border:
+        1px solid
+        rgba(200, 155, 60, 0.40);
+
+    border-radius: 8px;
+
+    background: #15171C;
+
+    color: #F0F0F0;
+
+    outline: none;
+
+    resize: vertical;
+
+    font-family: inherit;
+
+    font-size: 12px;
+
+    line-height: 1.5;
+
+    box-sizing: border-box;
+}
+
+.update-booking-status
+#reasonCancellation::placeholder {
+    color: #666D78;
+}
+
+.update-booking-status
+#reasonCancellation:focus {
+    border-color: #C89B3C;
+
+    box-shadow:
+        0 0 0 2px
+        rgba(200, 155, 60, 0.10);
+}
+
+.update-booking-status
+#reasonCancellation:disabled {
+    opacity: 0.55;
+
+    cursor: not-allowed;
+}
+
+
+/* ==========================================================
+   CANCELLATION REASON HIDDEN STATE
+========================================================== */
+
+.update-booking-status
+.cancellation-reason-group.hidden {
+    display: none !important;
+}
+
+
+/* ==========================================================
+   RESPONSIVE
+========================================================== */
+
+@media (max-width: 1050px) {
+
+    .booking-status-layout {
+        grid-template-columns:
+            minmax(0, 1fr)
+            minmax(320px, 0.9fr);
+    }
+
+    .selected-booking-details {
+        padding-right: 26px;
+    }
+
+    .update-booking-status {
+        padding-left: 26px;
+    }
+
+}
+
+
+/* ==========================================================
+   TABLET
+========================================================== */
+
+@media (max-width: 900px) {
+
+    .booking-status-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .selected-booking-details {
+        padding-right: 0;
+
+        padding-bottom: 25px;
+    }
+
+    .update-booking-status {
+        padding-left: 0;
+
+        padding-top: 25px;
+
+        border-left: 0;
+
+        border-top:
+            1px solid
+            rgba(255, 255, 255, 0.075);
+    }
+
+}
+
+
+/* ==========================================================
+   SMALL TABLET / MOBILE
+========================================================== */
+
+@media (max-width: 600px) {
+
+    .booking-status-card {
+        margin-top: 15px;
+    }
+
+    .selected-booking-heading {
+        gap: 11px;
+    }
+
+    .selected-booking-icon {
+        width: 42px;
+        height: 42px;
+
+        flex-basis: 42px;
+
+        font-size: 15px;
+    }
+
+    .selected-booking-heading h2 {
+        font-size: 16px;
+    }
+
+    .booking-status-actions {
+        grid-template-columns: 1fr;
+    }
+
+    #updateBookingStatusBtn {
+        width: 100%;
+
+        min-width: 0;
+    }
+
+}
+
+
+/* ==========================================================
+   VERY SMALL MOBILE
+========================================================== */
+
+@media (max-width: 400px) {
+
+    .selected-booking-heading {
+        align-items: flex-start;
+    }
+
+    .selected-booking-heading p {
+        font-size: 11px;
+    }
+
+    .selected-booking-current-status {
+        align-items: flex-start;
+
+        flex-direction: column;
+
+        gap: 9px;
+    }
+
+}

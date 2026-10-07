@@ -16,6 +16,7 @@ from core_config import settings_base
 
 
 def get_photo_upload_path(obj, filename):
+
     extension = Path(filename).suffix.lower()
     filename = f"{uuid4().hex}{extension}"
 
@@ -100,10 +101,10 @@ class User(AbstractUser):
                 )
 
             except NumberParseException:
-                raise ValidationError({"phone_number": "Invalid phone number."})
+                raise ValidationError({"details": "Invalid phone number."})
 
             except InvalidPhoneNumberError:
-                raise ValidationError({"phone_number": "Phone number must match the salon's country."})
+                raise ValidationError({"details": "Phone number must match the salon's country."})
 
     class Meta:
         verbose_name = "User"
@@ -112,7 +113,7 @@ class User(AbstractUser):
 
         ordering = ["date_joined"]
 
-    REQUIRED_FIELDS = ["email", "role", "phone_number"]
+    REQUIRED_FIELDS = ["email", "role"]
 
 
 class CustomerProfile(models.Model):
@@ -184,7 +185,7 @@ class StaffProfile(models.Model):
 
     position = models.CharField(max_length=35, choices=Position.choices, default=Position.LEVEL_ONE,)
 
-    employment_date = models.DateField()
+    employment_date = models.DateField(null=False, blank=False)
 
     status = models.CharField(max_length=35, choices=StaffStatus.choices,)
 

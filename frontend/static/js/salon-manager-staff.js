@@ -1012,7 +1012,29 @@ window.showStaffForm = async function (staff = null) {
 
                 console.error(  "Unable to save staff:", error  );
 
-                alert( "Unable to save staff." );
+                alert(
+                    error?.message ||
+                    error?.[0] ||
+
+                    error?.details ||
+                    error?.details?.[0] ||
+                    error?.error?.details ||
+                    error?.error?.details?.[0] ||
+
+                    error?.detail ||
+                    error?.error?.detail ||
+                    error?.error?.detail?.[0] ||
+
+                    error?.phone_number ||
+                    error?.error?.phone_number ||
+                    error?.phone_number?.[0] ||
+                    error?.error?.phone_number?.[0] ||
+
+                    error?.employment_date ||
+                    error?.error?.employment_date ||
+                    error?.employment_date?.[0] ||
+                    error?.error?.employment_date?.[0] ||
+                    "Unable to save staff." );
 
             }
 

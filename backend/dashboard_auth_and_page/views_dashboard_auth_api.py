@@ -60,10 +60,11 @@ def staff_dashboard_login_api(request):
     username_or_phone = request.data.get("username")
     password = request.data.get("password")
 
-    user = Auth_Using_UsernameOrPhone.authenticate(
+    user = Auth_Using_UsernameOrPhone().authenticate(
         request=request, username_or_phone=username_or_phone, password=password, )
 
     if user is None:
+        print("user not found")
         return Response(
             {"message": "Invalid login credentials."},
             status=status.HTTP_401_UNAUTHORIZED,
@@ -119,7 +120,8 @@ def staff_dashboard_login_api(request):
     # Normal access token lifetime is 15 minutes,
     # but it must not exceed the session lifetime.
     # access_lifetime = min( 60 * 15, remaining_seconds )
-    access_lifetime = min(60 * int(settings.SIMPLE_JWT["ACCESS_TOKEN_LIFETIME"]), remaining_seconds)
+    # access_lifetime = min(60 * int(settings.SIMPLE_JWT["ACCESS_TOKEN_LIFETIME"]), remaining_seconds)
+    access_lifetime = min( int(settings.SIMPLE_JWT["ACCESS_TOKEN_LIFETIME"].total_seconds()), remaining_seconds )
 
     # Override the access token expiry
     access_token["exp"] = now_timestamp + access_lifetime

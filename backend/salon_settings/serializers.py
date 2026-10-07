@@ -106,7 +106,7 @@ class SalonInfoWriteSerializer(serializers.ModelSerializer):
                     country=country,
                 )
             except ( InvalidCountryError, InvalidPhoneNumberError, ) as exc:
-                raise serializers.ValidationError({ "phone_number": str(exc) })
+                raise serializers.ValidationError({ "details": str(exc) })
 
         open_time = attrs.get("salon_open_time")
 

@@ -67,9 +67,7 @@ class SalonInfo(TimeStampedModel):
             and self.salon_close_time is not None
             and self.salon_close_time <= self.salon_open_time
         ):
-            errors["salon_close_time"] = (
-                "Close time must be after open time."
-            )
+            errors["salon_close_time"] = ( "Close time must be after open time." )
 
         if errors:
             raise ValidationError(errors)
@@ -102,6 +100,10 @@ class SalonInfo(TimeStampedModel):
     @property
     def currency(self):
         return self.salon_currency
+
+    @property
+    def name(self):
+        return self.salon_name
 
     @property
     def email(self):

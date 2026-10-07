@@ -13,11 +13,11 @@ API BASE
 // const API_BASE = "http://localhost:8000/web";
 // const BASE_URL = "http://localhost:8000";
 
- const API_BASE = "http://127.0.0.1:8000/web";
- const BASE_URL = "http://127.0.0.1:8000";
+// const API_BASE = "http://127.0.0.1:8000/web";
+// const BASE_URL = "http://127.0.0.1:8000";
 
-// const API_BASE = "https://untyped-hippopotamic-rosa.ngrok-free.dev/web";
-// const BASE_URL = "https://untyped-hippopotamic-rosa.ngrok-free.dev";
+ const API_BASE = "https://untyped-hippopotamic-rosa.ngrok-free.dev/web";
+ const BASE_URL = "https://untyped-hippopotamic-rosa.ngrok-free.dev";
 
 /* ==========================================
 MOBILE MENU
@@ -103,6 +103,9 @@ async function loadServices() {
 
     const services = services_result.results;
 
+    console.log("services 1")
+    console.log(services)
+
     // Homepage preview only
 
     container.innerHTML = services.map(service => `
@@ -118,7 +121,7 @@ async function loadServices() {
 
                     <p>${service.duration_minutes} mins</p>
 
-                    <span>₦${service.price}</span>
+                    <span>${services_result.currency}${service.price}</span>
 
                     <a href="#booking">Book Now</a>
                 </div>
@@ -140,21 +143,24 @@ async function loadBarbers() {
 
     const barbers = await fetchData("/staffs/barbers/");
 
+    console.log("barber 1")
+    console.log(barbers)
+
     const featuredBarbers = barbers.slice(0,4);
 
     container.innerHTML = featuredBarbers.map(barber => `
     <div class="barber-card">
 
-        ${barber.user.image
-        ? `<img class="barber-bg" src="${barber.user.image}" alt="${barber.user.username}">`
-        : `<div class="barber-bg barber-placeholder">${barber.user.username}</div>`
+        ${barber.image
+        ? `<img class="barber-bg" src="${barber.image}" alt="${barber.username}">`
+        : `<div class="barber-bg barber-placeholder">${barber.username}</div>`
         }
 
         <div class="barber-overlay"></div>
 
         <div class="barber-content">
-            <h3>${barber.user.username}</h3>
-            <p>${barber.user.role || "Barber"}</p>
+            <h3>${barber.username}</h3>
+            <p>${barber.role || "Barber"}</p>
             <span>★★★★★</span>
         </div>
 

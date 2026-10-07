@@ -422,11 +422,14 @@ class StaffsWorkingToday_Api_View(APIView):
 
     def get(self, request):
 
-        today_date = timezone.localdate()
+        now_date_time_in_salon_tz = timezone.localtime()
+
+        date_today_in_salon_tz = now_date_time_in_salon_tz.date()
+        current_time_in_salon_tz = now_date_time_in_salon_tz.time()
 
         blocked_today = BreakTimeAndOffDays.objects.filter(
             staff=OuterRef("pk"),
-            date=today_date,
+            break_date=date_today_in_salon_tz,
         ).exclude(
             status=BreakTimeAndOffDays.BlockStatus.BREAK
         )

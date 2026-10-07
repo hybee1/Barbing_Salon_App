@@ -1,6 +1,3 @@
-
-# backend/accounts/authentication.py
-
 from django.contrib.auth import get_user_model
 from django.contrib.auth.backends import ModelBackend
 from django.db.models import Q
@@ -9,19 +6,24 @@ from django.db.models import Q
 User = get_user_model()
 
 
-
 class Auth_Using_UsernameOrPhone(ModelBackend):
 
-    def authenticate( self, request, username_or_phone=None, password=None, **kwargs):
-        if not username_or_phone or not password:
+    def authenticate( self, request, username=None, password=None, username_or_phone=None, **kwargs ):
+
+        identifier = username_or_phone or username
+
+        print("username_or_phone =", username_or_phone, ", ", "username =", username, ", ",
+              "password = ", password)
+
+        if not identifier or not password:
             return None
 
         user = (
-            User.objects.filter(
-                Q(username__iexact=username_or_phone) | Q(phone_number=username_or_phone) ).first()
+            User.objects .filter( Q(username__iexact=identifier) | Q(phone_number=identifier) ).first()
         )
 
         if user is None:
+            print("user is None")
             return None
 
         if not user.check_password(password):

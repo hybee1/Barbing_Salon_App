@@ -16,6 +16,9 @@ from backend.salon_settings.models import TimeStampedModel
 #     function = "TSRANGE"
 #     output_field = DateTimeRangeField()
 
+def generate_booking_reference():
+    return f"BK-{uuid.uuid4().hex[:10].upper()}"
+
 class Booking(TimeStampedModel):
 
     class STATUS(models.TextChoices):
@@ -31,7 +34,7 @@ class Booking(TimeStampedModel):
         ONLINE = "ONLINE", "Online"
         WALK_IN = "WALK_IN", "Walk In"
 
-    booking_reference = models.CharField( max_length=30, unique=True, )
+    booking_reference = models.CharField( max_length=30, unique=True, default=generate_booking_reference)
 
     barber = models.ForeignKey(
         "accounts.StaffProfile", on_delete=models.CASCADE, related_name="bookings",
@@ -134,13 +137,8 @@ class Booking(TimeStampedModel):
                 "session_end_date_time": "End datetime must be after start datetime."
             })
 
-        if not self.booking_reference:
-            self.booking_reference = f"BK-{uuid.uuid4().hex[:10].upper()}"
-
         if self.status == self.STATUS.CANCELLED and not self.reason_for_cancellation:
-            raise ValidationError(
-                "A cancellation reason is required when a booking is cancelled."
-            )
+            raise ValidationError( "A cancellation reason is required when a booking is cancelled." )
 
         from backend.accounts.models import User
 
@@ -170,15 +168,15 @@ class Booking(TimeStampedModel):
                 phone = phonenumbers.parse( str(self.phone_number), country_code, )
 
             except NumberParseException:
-                raise ValidationError({"phone_number": "Invalid phone number."})
+                raise ValidationError({"details": "Invalid phone number."})
 
             if not phonenumbers.is_valid_number(phone):
-                raise ValidationError({ "phone_number": "Invalid phone number." })
+                raise ValidationError({ "details": "Invalid phone number." })
 
             phone_country = phonenumbers.region_code_for_number(phone)
 
             if phone_country != country_code:
-                raise ValidationError({ "phone_number": f"Phone number {self.phone_number} must "
+                raise ValidationError({ "details": f"Phone number {self.phone_number} must "
                                                                 f"match the salon's country." }
                 )
 
@@ -187,4 +185,6 @@ class Booking(TimeStampedModel):
 
         self.full_clean()
         return super().save(*args, **kwargs)
+
+
 

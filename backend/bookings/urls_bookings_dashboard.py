@@ -2,14 +2,14 @@
 from django.urls import path
 from backend.bookings.views import (BookingForLast7Days_Api_View, TodayBooking_Api_View,
                                     BarberUpcomingBookingsToday, ManageBooking_Api_View,
-                                    OneBarberBookingForLast7Days_Api_View, OneBarberBookingsToday)
+                                    OneBarberBookingForLast7Days_Api_View, OneBarberBookingsToday, BookingsStatuses)
 
 
 urlpatterns = [
 
     path("", ManageBooking_Api_View.as_view(), name="manage-booking"),
 
-    path( "<str:booking_reference>/", ManageBooking_Api_View.as_view(), name="update-booking", ),
+    path( "<str:booking_id>/update-status/", ManageBooking_Api_View.as_view(), name="update-booking", ),
 
     # ONLY THOSE WHO CAN RECEIVE BOOKING CAN VIEW THIS ENDPOINT
     path("barber/last7days/", OneBarberBookingForLast7Days_Api_View.as_view(), name="one-barber-bookings-last-7-days"),
@@ -29,5 +29,8 @@ urlpatterns = [
     # ONLY SALON MANAGER AND RECEPTIONIST
     path("upcoming/today/", BarberUpcomingBookingsToday.as_view(),
                         name="admin-view-barber-upcoming-booking-today"),
+
+    # BOOKING STATUSES
+    path("statuses/", BookingsStatuses.as_view(), name="bookings_statuses"),
 
 ]

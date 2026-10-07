@@ -12,6 +12,7 @@
     <title>Barber Dashboard | Levelz Cuts</title>
 
     <link rel="stylesheet" href="{% static 'css/depending-on-the-staff-dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'css/barber-booking-status.css' %}">
 
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
@@ -47,9 +48,7 @@
 
             <!-- Dashboard -->
 
-            <a href="#dashboard"
-               class="nav-link active"
-               data-page="dashboard">
+            <a href="#dashboard" class="nav-link active" data-page="dashboard">
 
                 <i class="fa-solid fa-chart-line"></i>
 
@@ -60,9 +59,7 @@
 
             <!-- Today's Bookings -->
 
-            <a href="#bookings"
-               class="nav-link"
-               data-page="bookings">
+            <a href="#bookings" class="nav-link" data-page="bookings">
 
                 <i class="fa-solid fa-calendar-days"></i>
 
@@ -81,15 +78,19 @@
 
             </a>
 
+
             <!-- Settings -->
+
             <a href="#settings" class="nav-link" data-page="settings">
 
                 <i class="fa-solid fa-gear"></i>
+
                 <span>Settings</span>
 
             </a>
 
         </nav>
+
 
         <div class="sidebar-footer">
 
@@ -121,7 +122,9 @@
 
             <div>
 
-                <h1 id="pageTitle">Welcome</h1>
+                <h1 id="pageTitle">
+                    Welcome
+                </h1>
 
                 <p id="userName"></p>
 
@@ -130,9 +133,11 @@
 
             <div class="topbar-right">
 
-                <div id="clock" class="clock"></div>
+                <div id="clock"
+                     class="clock"></div>
 
-                <div id="avatar" class="avatar"></div>
+                <div id="avatar"
+                     class="avatar"></div>
 
             </div>
 
@@ -141,11 +146,10 @@
 
         <!-- =====================================================
              EXISTING DASHBOARD
-
-             DO NOT MODIFY THE CONTENT INSIDE THIS SECTION
         ====================================================== -->
 
-        <section id="dashboardPage" class="page-section">
+        <section id="dashboardPage"
+                 class="page-section">
 
 
             <!-- =================================================
@@ -158,7 +162,7 @@
 
                     <div>
 
-                        <small> Today's Clients </small>
+                        <small>  Today's Clients   </small>
 
                         <h2 id="todayBookings"> 0 </h2>
 
@@ -232,15 +236,13 @@
                 </button>
 
 
-                <button class="gold-btn"
-                        id="createBreakBtn">
+                <button class="gold-btn" id="createBreakBtn">
 
                     <i class="fa-solid fa-mug-hot"></i>
 
                     Schedule Break Time
 
                 </button>
-
 
             </section>
 
@@ -249,7 +251,7 @@
                  EXISTING TODAY'S BOOKINGS
             ================================================== -->
 
-            <section id="bookings" class="card dashboard-section">
+            <section id="bookings"  class="card dashboard-section">
 
                 <div class="card-header">
 
@@ -264,17 +266,17 @@
 
                     <tr>
 
-                        <th> Time</th>
+                        <th> Time </th>
 
-                        <th> Customer</th>
+                        <th> Customer </th>
 
-                        <th> Service</th>
+                        <th> Service </th>
 
-                        <th> Hairstyle</th>
+                        <th> Hairstyle </th>
 
-                        <th> Color</th>
+                        <th> Color </th>
 
-                        <th> Status</th>
+                        <th> Status </th>
 
                     </tr>
 
@@ -299,6 +301,7 @@
 
         <section id="bookingsPage" class="page-section" hidden>
 
+
             <!-- =================================================
                  BOOKING LIST
             ================================================== -->
@@ -309,19 +312,14 @@
 
                     <div>
 
-                        <h2>
-                            Today's Bookings
-                        </h2>
+                        <h2> Today's Bookings </h2>
 
-                        <p>
-                            View and manage your bookings for today.
-                        </p>
+                        <p> View and manage your bookings for today. </p>
 
                     </div>
 
 
-                    <button class="gold-btn"
-                            id="todayCreateBookingBtn">
+                    <button class="gold-btn" id="todayCreateBookingBtn">
 
                         <i class="fa-solid fa-calendar-plus"></i>
 
@@ -340,40 +338,33 @@
 
                         <tr>
 
-                            <th>
-                                Time
+                            <th class="booking-checkbox-column">
+                                <span class="visually-hidden"> Select </span>
                             </th>
 
-                            <th>
-                                Customer
-                            </th>
+                            <th> Booking Reference </th>
 
-                            <th>
-                                Service
-                            </th>
+                            <th> Time </th>
 
-                            <th>
-                                Hairstyle
-                            </th>
+                            <th> Customer </th>
 
-                            <th>
-                                Color
-                            </th>
+                            <th> Service </th>
 
-                            <th>
-                                Status
-                            </th>
+                            <th> Hairstyle </th>
+
+                            <th> Color </th>
+
+                            <th> Status </th>
 
                         </tr>
 
                         </thead>
 
 
-                        <tbody id="todayBookingTable">
-
-                        </tbody>
+                        <tbody id="todayBookingTable"> </tbody>
 
                     </table>
+
 
                 </div>
 
@@ -381,70 +372,155 @@
 
 
             <!-- =================================================
-                 MARK BOOKING COMPLETED
+                 SELECTED BOOKING / UPDATE STATUS
             ================================================== -->
 
-            <div class="card">
+            <div class="card booking-status-card"
+                 id="bookingStatusCard"
+                 hidden>
 
-                <div class="card-header">
+                <div class="booking-status-layout">
 
-                    <div>
 
-                        <h2>
-                            Mark Booking Completed
-                        </h2>
+                    <!-- =================================================
+                         SELECTED BOOKING
+                    ================================================== -->
 
-                        <p>
-                            Select a booking that you have finished.
-                        </p>
+                    <div class="selected-booking-details">
+
+                        <div class="selected-booking-heading">
+
+                            <div class="selected-booking-icon">
+
+                                <i class="fa-solid fa-user"></i>
+
+                            </div>
+
+
+                            <div>
+
+                                <span class="section-label">
+                                    Selected Booking
+                                </span>
+
+
+                                <h2 id="selectedBookingCustomer">
+                                    -
+                                </h2>
+
+
+                                <p id="selectedBookingDetails">
+                                    -
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- Current Status -->
+
+                        <div class="selected-booking-current-status">
+
+                            <div class="current-status-label">
+
+                                <i class="fa-solid fa-rotate"></i>
+
+                                <span>
+                                    Current Status
+                                </span>
+
+                            </div>
+
+
+                            <span id="selectedBookingCurrentStatus"
+                                  class="booking-status-badge">
+
+                                -
+
+                            </span>
+
+                        </div>
 
                     </div>
+
+
+                    <!-- =================================================
+                         UPDATE STATUS
+                    ================================================== -->
+
+                    <div class="update-booking-status">
+
+                        <div class="update-status-heading">
+
+                            <i class="fa-solid fa-rotate"></i>
+
+                            <div>
+
+                                <span class="section-label">
+                                    Update Status
+                                </span>
+
+                                <label for="bookingStatusSelect">
+                                    New Status
+                                </label>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="booking-status-actions">
+
+                            <select id="bookingStatusSelect">
+
+                                <option value="">
+                                    Select status
+                                </option>
+
+                            </select>
+
+
+                            <button type="button"
+                                    class="gold-btn"
+                                    id="updateBookingStatusBtn"
+                                    disabled>
+
+                                <i class="fa-solid fa-check"></i>
+
+                                Update Status
+
+                            </button>
+
+                        </div>
+
+
+                        <!-- =====================================================
+                             CANCELLATION REASON
+                        ====================================================== -->
+
+                        <div class="cancellation-reason-group"
+                             id="cancellationReasonGroup"
+                             hidden>
+
+                            <label for="reasonCancellation">
+                                Cancellation Reason
+                            </label>
+
+                            <textarea
+                                id="reasonCancellation"
+                                name="reason_cancellation"
+                                rows="3"
+                                placeholder="Enter the reason for cancelling this booking..."
+                            ></textarea>
+
+                        </div>
+
+                    </div>
+
+
 
                 </div>
-
-
-                <form id="completeBookingForm"
-                      class="schedule-break-time-form">
-
-
-                    <div class="form-group">
-
-                        <label for="completeBookingSelect">
-
-                            Booking
-
-                        </label>
-
-
-                        <select id="completeBookingSelect"
-                                required>
-
-                            <option value="">
-
-                                Select booking
-
-                            </option>
-
-                        </select>
-
-                    </div>
-
-
-                    <div class="form-actions">
-
-                        <button type="submit"
-                                class="gold-btn"
-                                id="completeBookingBtn">
-
-                            <i class="fa-solid fa-circle-check"></i>
-
-                            Mark Completed
-
-                        </button>
-
-                    </div>
-
-                </form>
 
             </div>
 
@@ -468,13 +544,9 @@
 
                     <div>
 
-                        <h2>
-                            My Break Records
-                        </h2>
+                        <h2> My Break Records </h2>
 
-                        <p>
-                            View your scheduled and previous breaks.
-                        </p>
+                        <p> View your scheduled and previous breaks. </p>
 
                     </div>
 
@@ -483,31 +555,21 @@
 
                 <div class="table-scroll">
 
-                    <table>
+                    <table class="break-records-table">
 
                         <thead>
 
                         <tr>
 
-                            <th>
-                                Date
-                            </th>
+                            <th> Start Date </th>
 
-                            <th>
-                                Start Time
-                            </th>
+                            <th> Start Time </th>
 
-                            <th>
-                                End Time
-                            </th>
+                            <th> End Date </th>
 
-                            <th>
-                                Status
-                            </th>
+                            <th> End Time </th>
 
-                            <th>
-                                Reason
-                            </th>
+                            <th> Status </th>
 
                         </tr>
 
@@ -525,6 +587,7 @@
             </div>
 
 
+
             <!-- =================================================
                  SCHEDULE BREAK
             ================================================== -->
@@ -535,101 +598,93 @@
 
                     <div>
 
-                        <h2>
-                            Schedule Break
-                        </h2>
+                        <h2> Schedule Break </h2>
 
-                        <p>
-                            Schedule a break during your working time.
-                        </p>
+                        <p> Schedule a break during your working time. </p>
 
                     </div>
 
                 </div>
 
 
-                <form id="myBreakForm"
-                      class="schedule-break-time-form">
+                <form id="myBreakForm" class="schedule-break-time-form">
 
+
+                    <!-- START DATE -->
 
                     <div class="form-group">
 
-                        <label for="myBreakDate">
-                            Date
-                        </label>
+                        <label for="myBreakStartDate"> Start Date </label>
 
-                        <input type="date"
-                               id="myBreakDate"
-                               required>
+                        <input type="date" id="myBreakStartDate" required >
 
                     </div>
 
 
+                    <!-- END DATE -->
+
                     <div class="form-group">
 
-                        <label for="myBreakStartTime">
-                            Start Time
-                        </label>
+                        <label for="myBreakEndDate"> End Date </label>
 
-                        <input type="time"
-                               id="myBreakStartTime"
-                               required>
+                        <input type="date" id="myBreakEndDate" required >
 
                     </div>
 
 
+                    <!-- START TIME -->
+
                     <div class="form-group">
 
-                        <label for="myBreakEndTime">
-                            End Time
-                        </label>
+                        <label for="myBreakStartTime"> Start Time </label>
 
-                        <input type="time"
-                               id="myBreakEndTime"
-                               required>
+                        <input type="time" id="myBreakStartTime" required >
 
                     </div>
 
 
+                    <!-- END TIME -->
+
                     <div class="form-group">
 
-                        <label for="myBreakStatusSelect">
-                            Type
-                        </label>
+                        <label for="myBreakEndTime"> End Time </label>
 
-                        <select id="myBreakStatusSelect"
-                                required>
+                        <input type="time" id="myBreakEndTime" required >
 
-                            <option value="">
-                                Select type
-                            </option>
+                    </div>
 
-                            <option value="break">
-                                Break
-                            </option>
+
+                    <!-- BREAK TYPE -->
+
+                    <div class="form-group">
+
+                        <label for="myBreakStatusSelect"> Type </label>
+
+                        <select id="myBreakStatusSelect" required >
+
+                            <option value=""> Loading break types... </option>
 
                         </select>
 
                     </div>
 
 
+                    <!-- REASON -->
+
                     <div class="form-group full-width">
 
-                        <label for="myBreakReason">
-                            Reason
-                        </label>
+                        <label for="myBreakReason"> Reason </label>
 
-                        <textarea id="myBreakReason"
-                                  placeholder="Reason for this break..."></textarea>
+                        <textarea id="myBreakReason" placeholder="Reason for this break..." ></textarea>
 
                     </div>
 
 
+                    <!-- ACTIONS -->
+
                     <div class="form-actions">
 
-                        <button type="submit"
-                                class="gold-btn"
-                                id="saveMyBreakBtn">
+                        <button type="submit" class="gold-btn" id="saveMyBreakBtn" >
 
                             <i class="fa-solid fa-mug-hot"></i>
 
@@ -646,21 +701,171 @@
         </section>
 
 
+
         <!-- =====================================================
-                            SETTINGS PAGE
+             BREAK DETAILS MODAL
+        ====================================================== -->
+
+        <div id="breakDetailsModal" class="break-details-modal" aria-hidden="true" hidden>
+
+
+            <div class="break-details-modal-content" role="dialog"
+                aria-modal="true" aria-labelledby="breakDetailsModalTitle" >
+
+                <!-- MODAL HEADER -->
+
+                <div class="break-details-modal-header">
+
+                    <div>
+
+                        <span class="break-modal-label"> BREAK RECORD </span>
+
+                        <h2 id="breakDetailsModalTitle"> Break Details </h2>
+
+                        <p> Detailed information about this break. </p>
+
+                    </div>
+
+
+                    <button type="button" class="break-details-modal-close"
+                        id="closeBreakDetailsModal" aria-label="Close break details" >
+
+                        <i class="fa-solid fa-xmark"></i>
+
+                    </button>
+
+                </div>
+
+
+
+                <!-- MODAL BODY -->
+
+                <div class="break-details-grid">
+
+                    <!-- START DATE -->
+
+                    <div class="break-detail-item">
+
+                        <span> Start Date </span>
+
+                        <strong id="breakDetailStartDate"> - </strong>
+
+                    </div>
+
+
+                    <!-- END DATE -->
+
+                    <div class="break-detail-item">
+
+                        <span> End Date </span>
+
+                        <strong id="breakDetailEndDate"> - </strong>
+
+                    </div>
+
+
+                    <!-- START TIME -->
+
+                    <div class="break-detail-item">
+
+                        <span> Start Time </span>
+
+                        <strong id="breakDetailStartTime"> - </strong>
+
+                    </div>
+
+
+                    <!-- END TIME -->
+
+                    <div class="break-detail-item">
+
+                        <span> End Time </span>
+
+                        <strong id="breakDetailEndTime"> - </strong>
+
+                    </div>
+
+
+                    <!-- TYPE -->
+
+                    <div class="break-detail-item">
+
+                        <span> Type </span>
+
+                        <strong id="breakDetailType"> - </strong>
+
+                    </div>
+
+
+                    <!-- STATUS -->
+
+                    <div class="break-detail-item">
+
+                        <span> Status </span>
+
+                        <strong id="breakDetailStatus" class="break-detail-status" > - </strong>
+
+                    </div>
+
+
+                    <!-- REASON -->
+
+                    <div class="break-detail-item break-detail-full">
+
+                        <span> Reason </span>
+
+                        <p id="breakDetailReason"> - </p>
+
+                    </div>
+
+
+                    <!-- CREATED -->
+
+                    <div class="break-detail-item">
+
+                        <span> Created </span>
+
+                        <strong id="breakDetailCreatedAt"> - </strong>
+
+                    </div>
+
+
+                    <!-- UPDATED -->
+
+                    <div class="break-detail-item">
+
+                        <span> Last Updated </span>
+
+                        <strong id="breakDetailUpdatedAt"> - </strong>
+
+                    </div>
+
+
+                </div>
+
+
+            </div>
+
+        </div>
+
+
+
+        <!-- =====================================================
+             SETTINGS PAGE
         ====================================================== -->
 
         <section id="settingsPage" class="page-section" hidden>
 
             <div class="card">
 
-                <h2>Settings</h2>
+                <h2> Settings </h2>
 
                 <div id="settingsContainer"></div>
 
             </div>
 
         </section>
+
 
     </main>
 

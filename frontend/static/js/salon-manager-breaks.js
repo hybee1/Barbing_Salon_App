@@ -50,29 +50,21 @@ window.initBreakPage = function(){
     breakPageInitialized = true;
 
 
-    const previousButton =
-        document.getElementById("prevBreakPage");
+    const previousButton = document.getElementById("prevBreakPage");
 
-    const nextButton =
-        document.getElementById("nextBreakPage");
+    const nextButton = document.getElementById("nextBreakPage");
 
 
     if(previousButton){
 
-        previousButton.addEventListener(
-            "click",
-            previousBreakPage
-        );
+        previousButton.addEventListener( "click", previousBreakPage );
 
     }
 
 
     if(nextButton){
 
-        nextButton.addEventListener(
-            "click",
-            nextBreakPage
-        );
+        nextButton.addEventListener( "click", nextBreakPage );
 
     }
 
@@ -95,7 +87,6 @@ window.loadBreakManagement = async function(){
 
         const breaks = await apiRequest( "/break-periods/" );
 
-
         /*
            Support both normal arrays and
            DRF paginated responses.
@@ -115,9 +106,7 @@ window.loadBreakManagement = async function(){
 
         table.innerHTML = `
             <tr>
-                <td colspan="5">
-                    Unable to load breaks.
-                </td>
+                <td colspan="5"> Unable to load breaks. </td>
             </tr>
         `;
 
@@ -149,9 +138,7 @@ function renderBreakManagement(breaks){
 
             <tr>
 
-                <td colspan="5">
-                    No breaks found.
-                </td>
+                <td colspan="5"> No breaks found. </td>
 
             </tr>
 
@@ -174,7 +161,6 @@ function renderBreakManagement(breaks){
 
     }
 
-
     const startIndex = (breakCurrentPage - 1) * breakPageSize;
 
 
@@ -188,21 +174,13 @@ function renderBreakManagement(breaks){
 
             <tr>
 
-                <td>
-                    ${item.staff_name || "-"}
-                </td>
+                <td> ${item.staff_name || "-"} </td>
 
-                <td>
-                    ${item.status || "On Break"}
-                </td>
+                <td> ${item.status || "On Break"} </td>
 
-                <td>
-                    ${item.start_time || "-"}
-                </td>
+                <td> ${item.start_time || "-"} </td>
 
-                <td>
-                    ${item.end_time || "-"}
-                </td>
+                <td> ${item.end_time || "-"} </td>
 
                 <td>
 
@@ -227,10 +205,7 @@ function renderBreakManagement(breaks){
 
     });
 
-
-    updateBreakPagination(
-        breaks.length
-    );
+    updateBreakPagination( breaks.length );
 
 }
 

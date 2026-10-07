@@ -8,6 +8,7 @@ from rest_framework.views import APIView
 
 from backend.custom_permissions.permissions import Is_Authenticated_Staff_User, Is_SalonManager
 from backend.pagination.pagination import StandardResultsSetPagination
+from backend.salon_settings.services_salon_config import get_salon_info_config
 from backend.services.models import Service, Hairstyle, Color
 
 from backend.services.serializers import (
@@ -91,6 +92,8 @@ class ServicesView(APIView):
         # service_is_active
         if service_is_active is not None:
 
+            is_active = None
+
             if not isinstance(service_is_active, str) and not isinstance(service_is_active, bool):
                 raise serializers.ValidationError()
 
@@ -100,6 +103,11 @@ class ServicesView(APIView):
 
                 elif service_is_active.lower() == "false":
                     is_active = False
+
+                else:
+                    raise serializers.ValidationError({
+                        "is_active": "Must be either true or false."
+                    })
 
             if isinstance(service_is_active, bool) :
                 is_active = service_is_active
@@ -111,7 +119,10 @@ class ServicesView(APIView):
 
         serializer = ServiceSerializer(page, many=True)
 
-        return paginator.get_paginated_response(serializer.data)
+        salon_info = get_salon_info_config()
+        currency = salon_info["currency"]
+
+        return paginator.get_paginated_response(serializer.data, currency)
 
 
     def post(self, request):

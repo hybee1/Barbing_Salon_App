@@ -6,10 +6,12 @@ from django.utils import timezone
 from rest_framework import serializers
 
 from backend.accounts.models import User, StaffProfile
-from backend.bookings.booking_services import create_booking, update_booking
+from backend.bookings.booking_services import create_booking, update_booking, allowable_status_change
 from backend.bookings.models import Booking
+from backend.custom_serializer.custom_phone_number_serializer import SalonPhoneNumberFieldCustomSerializer
 from backend.services.models import Service, Hairstyle, Color
 from backend.utils.services import BarberScheduler
+
 
 
 class BookingSerializer(serializers.ModelSerializer):
@@ -99,6 +101,8 @@ class CreateBookingSerializer(serializers.ModelSerializer):
         allow_null=True,
     )
 
+    phone_number = SalonPhoneNumberFieldCustomSerializer()
+
     class Meta:
         model = Booking
         fields = [
@@ -175,7 +179,10 @@ class CreateBookingSerializer(serializers.ModelSerializer):
         salon_tz = ZoneInfo(salon_config["time_zone"])
 
         salon_open_time = salon_config["open_time"]
+        salon_open_time = datetime.strptime( salon_open_time, "%H:%M:%S" ).time()
+
         salon_close_time = salon_config["close_time"]
+        salon_close_time = datetime.strptime(salon_close_time, "%H:%M:%S").time()
 
         # Convert the supplied aware datetime to the salon's
         # local timezone for business-rule validation.
@@ -222,14 +229,13 @@ class CreateBookingSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
 
         return create_booking(barber_id=validated_data["barber"].pk,
-                              service_id=validated_data["service"].pk,
-                              hairstyle_id=(
-                                                validated_data["hairstyle"].pk
+                              service=validated_data["service"],
+                              hairstyle=(
+                                                validated_data["hairstyle"]
                                                 if validated_data.get("hairstyle")
                                                 else None
                                             ),
-                              color_id=(
-                                            validated_data["color"].pk
+                              color=( validated_data["color"]
                                             if validated_data.get("color")
                                             else None
                                         ),
@@ -251,24 +257,46 @@ class UpdateBookingSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Booking
-        fields = [ "status", "reason_for_cancellation", ]
+        fields = [ "session_start_date_time", "session_end_date_time", "status", "reason_for_cancellation", ]
 
     def validate(self, attrs):
 
+        session_start_date_time_utc = attrs.get( "session_start_date_time" )
+        session_end_date_time_utc = attrs.get( "session_end_date_time",  )
+
         status = attrs.get("status")
-        reason = attrs.get("reason_for_cancellation")
+        reason = attrs.get("reason_for_cancellation" )
+
+        now_date_time_utc = timezone.now()
+
+
+        if (session_start_date_time_utc < now_date_time_utc and
+                session_end_date_time_utc > now_date_time_utc ):
+            raise serializers.ValidationError({
+                "details": "this booking is still on-going, wait till the session end before you can edit "
+                           "this booking ."
+            })
+
+
+        if (session_start_date_time_utc > now_date_time_utc and
+                session_start_date_time_utc - now_date_time_utc >= timedelta(minutes=15)):
+
+            raise serializers.ValidationError({
+                "details": "you need to wait at most 15 minutes to this booking start time before"
+                           "you can update the status to 'arrived'."
+            })
 
         # Cancellation requires a reason
         if status == Booking.STATUS.CANCELLED and not reason:
             raise serializers.ValidationError({
-                "reason_for_cancellation":
+                "details":
                     "A cancellation reason is required when cancelling a booking."
             })
 
         # Reason only makes sense for cancelled bookings
         if status != Booking.STATUS.CANCELLED and reason:
             raise serializers.ValidationError({
-                "reason_for_cancellation":
+                "details":
                     "A cancellation reason can only be provided "
                     "when cancelling a booking."
             })
@@ -276,15 +304,12 @@ class UpdateBookingSerializer(serializers.ModelSerializer):
         return attrs
 
     def update(self, instance, validated_data):
-
+        new_status = Booking.STATUS( validated_data.get("status") )
         return update_booking(
             booking_reference=instance.booking_reference,
-            status=validated_data["status"],
-            reason_for_cancellation=validated_data.get(
-                "reason_for_cancellation"
-            ),
+            status=new_status,
+            reason_for_cancellation=validated_data.get("reason_for_cancellation" ),
         )
-
 
 
 class BookingSuccessFullyCreatedReadSerializer(serializers.ModelSerializer):
@@ -340,11 +365,13 @@ class BarberBookingsTodaySerializer(serializers.ModelSerializer):
 
     service = serializers.CharField(source="service.name", read_only=True)
     hairstyle = serializers.CharField(source="hairstyle.name", read_only=True)
+    color = serializers.CharField(source="color.name", read_only=True)
 
     class Meta:
         model = Booking
-        fields = ["session_start_date_time", "session_end_date_time", "customer_name",
-                  "service", "hairstyle", "status",]
+        fields = ["id", "booking_reference", "booking_date", "session_start_date_time",
+                  "session_end_date_time", "customer_name", "service", "hairstyle",
+                  "color", "status", ]
 
 
 

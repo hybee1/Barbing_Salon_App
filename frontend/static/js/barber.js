@@ -1,6 +1,6 @@
 
- const API = "http://127.0.0.1:8000/api";
-// const API_BASE = "https://untyped-hippopotamic-rosa.ngrok-free.dev/api"
+// const API = "http://127.0.0.1:8000/api";
+const API_BASE = "https://untyped-hippopotamic-rosa.ngrok-free.dev/api"
 
 /* CLOCK */
 setInterval(() => {

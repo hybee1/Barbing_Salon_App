@@ -13,7 +13,7 @@ from backend.utils.services import BarberScheduler
 
 
 class BreakTimeAndOffDaysSerializer(serializers.ModelSerializer):
-    staff = StaffProfileSerializer(read_only=True)
+    staff_name = serializers.CharField(source="staff.user.username", read_only=True)
 
     # staff = serializers.PrimaryKeyRelatedField(
     #     queryset=StaffProfile.objects.all(),
@@ -33,8 +33,12 @@ class BreakTimeAndOffDaysSerializer(serializers.ModelSerializer):
 
         salon_config, _ = BarberScheduler().get_salon_config()
         salon_tz = ZoneInfo(salon_config["time_zone"])
+
         salon_open_time = salon_config["open_time"]
+        salon_open_time = datetime.strptime(salon_open_time, "%H:%M:%S").time()
+
         salon_close_time = salon_config["close_time"]
+        salon_close_time = datetime.strptime(salon_close_time, "%H:%M:%S").time()
 
         break_start_date_time_in_salon_tz = break_start_date_time_utc.astimezone(salon_tz)
         break_end_date_time_in_salon_tz = break_end_date_time_utc.astimezone(salon_tz)

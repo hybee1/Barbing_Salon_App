@@ -9,7 +9,7 @@ class ServiceAdmin(admin.ModelAdmin):
     Controls how the Service model appears inside the Django Admin.
     """
 
-    list_display = ( "name", "image", "duration_minutes", "price", "description",
+    list_display = ( "id", "name", "image", "duration_minutes", "price", "description",
                      "is_active", )
 
     search_fields = ( "name", "price", "duration_minutes", "is_active",)
@@ -25,8 +25,8 @@ class HairstyleAdmin(admin.ModelAdmin):
     Controls how the Hairstyle model appears inside the Django Admin.
     """
 
-    list_display = ( "service__name", "name",
-                     "image", "price",
+    list_display = ( "id", "service__name", "name",
+                     "image", "price", "duration_minutes",
                      "description",  "is_active", )
 
     search_fields = ( "name", "price", "duration_minutes", "is_active",)
@@ -42,7 +42,7 @@ class ColorAdmin(admin.ModelAdmin):
     Controls how the Color model appears inside the Django Admin.
     """
 
-    list_display = ("service__name", "name", "description", "is_active",)
+    list_display = ("id", "service__name", "name", "description", "duration_minutes", "is_active",)
 
     search_fields = ("name", "is_active",)
 

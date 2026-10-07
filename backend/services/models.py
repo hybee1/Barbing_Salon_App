@@ -49,7 +49,7 @@ class Hairstyle(TimeStampedModel):
 
     service = models.ForeignKey(Service, on_delete=models.CASCADE, related_name="hairstyles")
 
-    name = models.CharField(max_length=100, unique=True)
+    name = models.CharField(max_length=100)
 
     image = models.ImageField(upload_to="hairstyles_image/", blank=True, null=True)
 
@@ -82,7 +82,7 @@ class Color(TimeStampedModel):
 
     service = models.ForeignKey(Service, on_delete=models.CASCADE, related_name="colors")
 
-    name = models.CharField(max_length=10, unique=True)
+    name = models.CharField(max_length=10, )
 
     description = models.TextField(blank=True)
 
