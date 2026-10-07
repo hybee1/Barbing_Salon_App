@@ -261,8 +261,8 @@ class UpdateBookingSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
 
-        session_start_date_time_utc = attrs.get( "session_start_date_time" )
-        session_end_date_time_utc = attrs.get( "session_end_date_time",  )
+        session_start_date_time_utc = attrs.get( "session_start_date_time", self.instance.session_start_date_time)
+        session_end_date_time_utc = attrs.get( "session_end_date_time", self.instance.session_end_date_time)
 
         status = attrs.get("status")
         reason = attrs.get("reason_for_cancellation" )

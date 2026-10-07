@@ -15,31 +15,25 @@ from backend.utils.services import BarberScheduler, convert_utc_iso_to_salon_tim
 
 
 ALLOWABLE_BOOKING_STATUS_CHANGES = {
-    Booking.STATUS.ARRIVED.value: (Booking.STATUS.COMPLETED.value, Booking.STATUS.CANCELLED.value,),
+
+    Booking.STATUS.ARRIVED.value: (Booking.STATUS.COMPLETED.value, Booking.STATUS.CANCELLED.value,
+                                   Booking.STATUS.IN_PROGRESS.value,),
+
     Booking.STATUS.IN_PROGRESS.value: (Booking.STATUS.COMPLETED.value, Booking.STATUS.CANCELLED.value,),
+
     Booking.STATUS.CANCELLED.value: (),
+
     Booking.STATUS.COMPLETED.value: (),
+
     Booking.STATUS.CONFIRMED.value: (Booking.STATUS.COMPLETED.value, Booking.STATUS.NO_SHOW.value,
-                                     Booking.STATUS.CANCELLED.value,),
+                                     Booking.STATUS.CANCELLED.value, Booking.STATUS.IN_PROGRESS.value,
+                                     Booking.STATUS.ARRIVED.value),
     Booking.STATUS.NO_SHOW.value: (),
-    Booking.STATUS.PENDING.value: (Booking.STATUS.CONFIRMED.value, Booking.STATUS.COMPLETED.value,
-                                   Booking.STATUS.CANCELLED.value),
+    Booking.STATUS.PENDING.value: (Booking.STATUS.CONFIRMED.value, Booking.STATUS.CANCELLED.value),
 }
 
 
 def allowable_status_change(*, old_status: Booking.STATUS, new_status: Booking.STATUS ):
-    print("old_status =", old_status)
-    print("old_status.value =", old_status.value)
-    print("new_status =", new_status)
-    print("new_status.value =", new_status.value)
-    print(
-        "allowed =",
-        ALLOWABLE_BOOKING_STATUS_CHANGES[old_status.value]
-    )
-    print(
-        "is allowed =",
-        new_status.value in ALLOWABLE_BOOKING_STATUS_CHANGES[old_status.value]
-    )
 
     if new_status.value in ALLOWABLE_BOOKING_STATUS_CHANGES[old_status.value]:
         return new_status

@@ -3,14 +3,14 @@ from django.urls import path
 from backend.breakperiods.views import (BarberBreakTimeAndOffDayStatusesAPIView,
                                         OneBarberBreakTimeAndOffDayAPIView,
                                         CreateBarberBreakTimeAndOffDayAPIView,
-                                        Last7daysAnd3DaysAheadBarberBreakTimeAndOffDayAPIView,
+                                        Last3daysAnd3DaysAheadBarberBreakTimeAndOffDayAPIView,
                                         ActiveBreakTimeAndOffDayAPIView)
 
 urlpatterns = [
 
     # ONLY SALON MANGER CAN ACCESS THIS ENDPOINT
-    path("", Last7daysAnd3DaysAheadBarberBreakTimeAndOffDayAPIView.as_view(),
-                          name="last-7-days-and-3-days-ahead-break-time-and-off-day-api"),
+    path("", Last3daysAnd3DaysAheadBarberBreakTimeAndOffDayAPIView.as_view(),
+         name="last-7-days-and-3-days-ahead-break-time-and-off-day-api"),
 
     # STAFFS CAN ACCESS THIS ENDPOINT
     path("break/statuses/", BarberBreakTimeAndOffDayStatusesAPIView.as_view(),

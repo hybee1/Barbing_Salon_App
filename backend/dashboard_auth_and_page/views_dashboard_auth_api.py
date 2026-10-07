@@ -64,7 +64,6 @@ def staff_dashboard_login_api(request):
         request=request, username_or_phone=username_or_phone, password=password, )
 
     if user is None:
-        print("user not found")
         return Response(
             {"message": "Invalid login credentials."},
             status=status.HTTP_401_UNAUTHORIZED,

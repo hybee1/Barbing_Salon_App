@@ -12,9 +12,6 @@ class Auth_Using_UsernameOrPhone(ModelBackend):
 
         identifier = username_or_phone or username
 
-        print("username_or_phone =", username_or_phone, ", ", "username =", username, ", ",
-              "password = ", password)
-
         if not identifier or not password:
             return None
 
@@ -23,7 +20,7 @@ class Auth_Using_UsernameOrPhone(ModelBackend):
         )
 
         if user is None:
-            print("user is None")
+
             return None
 
         if not user.check_password(password):

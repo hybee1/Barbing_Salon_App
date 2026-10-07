@@ -1,3 +1,4 @@
+from zoneinfo import ZoneInfo
 
 from django.db.models import Q, OuterRef, Exists
 from django.utils import timezone
@@ -19,6 +20,7 @@ from rest_framework_simplejwt.views import TokenRefreshView
 
 from backend.custom_permissions.permissions import Is_Authenticated_Staff_User, Is_SalonManager
 from backend.pagination.pagination import StandardResultsSetPagination
+from backend.salon_settings import services_salon_config
 
 
 class Barbers_Web_View(APIView):
@@ -422,7 +424,12 @@ class StaffsWorkingToday_Api_View(APIView):
 
     def get(self, request):
 
-        now_date_time_in_salon_tz = timezone.localtime()
+        salon_info = services_salon_config.get_salon_info_config()
+        salon_tz = ZoneInfo(salon_info["time_zone"])
+
+        now_date_time_in_utc = timezone.now()
+
+        now_date_time_in_salon_tz = now_date_time_in_utc.astimezone(salon_tz)
 
         date_today_in_salon_tz = now_date_time_in_salon_tz.date()
         current_time_in_salon_tz = now_date_time_in_salon_tz.time()

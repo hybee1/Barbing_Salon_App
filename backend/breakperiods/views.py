@@ -49,8 +49,6 @@ class CreateBarberBreakTimeAndOffDayAPIView(APIView):
         data['break_start_date_time'] = break_start_date_time_utc
         data['break_end_date_time'] = break_end_date_time_utc
 
-        print("status = ", data)
-
         serializer = BreakTimeAndOffDaysSerializer(data=data, context={"request": request},)
 
         serializer.is_valid(raise_exception=True)
@@ -60,7 +58,7 @@ class CreateBarberBreakTimeAndOffDayAPIView(APIView):
         return Response("successful", status=status.HTTP_200_OK)
 
 
-class Last7daysAnd3DaysAheadBarberBreakTimeAndOffDayAPIView(APIView):
+class Last3daysAnd3DaysAheadBarberBreakTimeAndOffDayAPIView(APIView):
     permission_classes = [Is_SalonManager]  # only salon manager
 
     def get(self, request):
@@ -77,10 +75,10 @@ class Last7daysAnd3DaysAheadBarberBreakTimeAndOffDayAPIView(APIView):
         today_date_in_salon_tz = today_date_time_in_salon_tz.date()
 
         three_days_ahead_in_salon_tz = today_date_in_salon_tz + timedelta(days=3)
-        seven_days_ago_in_salon_tz = today_date_in_salon_tz - timedelta(days=3)
+        three_days_ago_in_salon_tz = today_date_in_salon_tz - timedelta(days=3)
 
         break_or_off = BreakTimeAndOffDays.objects.filter(
-                        Q(break_date__range=(seven_days_ago_in_salon_tz, three_days_ahead_in_salon_tz)) |
+                        Q(break_date__range=(three_days_ago_in_salon_tz, three_days_ahead_in_salon_tz)) |
                         Q(break_start_date_time__range=(three_days_ago_in_utc, three_days_ahead_in_utc)),
         )
 
@@ -146,7 +144,6 @@ class OneBarberBreakTimeAndOffDayAPIView(APIView):
 
         res = break_time_and_offDays_data_with_timezone(data=serializer.data)
 
-        print("res = ", res)
         return Response(res, status=status.HTTP_200_OK)
 
 

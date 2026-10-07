@@ -56,14 +56,10 @@ class ManageBooking_Api_View(APIView):
 
     def get(self, request):
 
-        print(request.query_params)
-
         bookings = ( Booking.objects.select_related( "barber__user", "service", "hairstyle", "color", )
                    )
 
         booking_id = request.query_params.get("booking_id")
-
-        print("booking_id = ", booking_id)
 
         start_date = request.query_params.get("start_date")
         end_date = request.query_params.get("end_date")
@@ -73,7 +69,6 @@ class ManageBooking_Api_View(APIView):
         # booking id
         if booking_id:
             bookings = bookings.filter(id=booking_id)
-            print(" 1 bookings = ", bookings)
 
         if start_date and end_date:
 
@@ -87,7 +82,6 @@ class ManageBooking_Api_View(APIView):
 
                 if start_date:
                     bookings = bookings.filter( booking_date__gte=start_date )
-                    print(" 2 bookings = ", bookings)
 
             if end_date:
 
@@ -95,34 +89,24 @@ class ManageBooking_Api_View(APIView):
 
                 if end_date:
                     bookings = bookings.filter( booking_date__lte=end_date )
-                    print(" 3 bookings = ", bookings)
 
         # Staff filter
         if staff:
             bookings = bookings.filter( barber_id=staff )
-            print(" 4 bookings = ", bookings)
 
         # Status filter
         if status1 and status1.upper() != "ALL STATUS":
-            bookings = bookings.filter( status=status )
-            print(" 5 bookings = ", bookings)
+            bookings = bookings.filter( status=status1 )
 
         bookings = bookings.order_by( "-booking_date", "-session_start_date_time" )
-
-        print(" 6 bookings = ", bookings)
 
         serializer = BookingReadSerializer( bookings, many=True )
 
         res = booking_data_with_timezone(data=serializer.data)
 
-        print(" serializer.data = ", serializer.data)
-
         return Response(res, status=status.HTTP_200_OK)
 
     def patch(self, request, booking_id):
-
-        print("request data")
-        print(request.data)
 
         try:
             booking = Booking.objects.get( id=booking_id)
@@ -149,9 +133,6 @@ class CreateBookingView(APIView):
     throttle_classes = [BookingCreateThrottle]
 
     def post(self, request):
-
-        print("booking data")
-        print(request.data)
 
         # means the customer walked-in and a staff (reception, barber..) help booked a barbing session
         # for the customer or the staff his/her self booked a barbing session for their self
@@ -387,9 +368,8 @@ class BarberBookingStatsView(APIView):
         )
 
         break_or_off_days = list( BreakTimeAndOffDays.objects.filter(
-                                                staff=barber, break_date=today_date_in_salon_tz)[:7] )
+                                        staff=barber, break_date=today_date_in_salon_tz)[:7] )
 
-        print( "break_or_off_days = ", len(break_or_off_days) )
 
         break_status = "AVAILABLE"
 
@@ -409,8 +389,6 @@ class BarberBookingStatsView(APIView):
                                         "upcoming_count": stats["upcoming_count"],
                                         "break_status": break_status
                                     })
-
-        print( "serializer.data = ", serializer.data )
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 
