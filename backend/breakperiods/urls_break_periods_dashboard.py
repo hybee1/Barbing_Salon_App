@@ -10,7 +10,7 @@ urlpatterns = [
 
     # ONLY SALON MANGER CAN ACCESS THIS ENDPOINT
     path("", Last3daysAnd3DaysAheadBarberBreakTimeAndOffDayAPIView.as_view(),
-         name="last-7-days-and-3-days-ahead-break-time-and-off-day-api"),
+         name="last-3-days-and-3-days-ahead-break-time-and-off-day-api"),
 
     # STAFFS CAN ACCESS THIS ENDPOINT
     path("break/statuses/", BarberBreakTimeAndOffDayStatusesAPIView.as_view(),

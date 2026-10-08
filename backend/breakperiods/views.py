@@ -93,17 +93,19 @@ class ActiveBreakTimeAndOffDayAPIView(APIView):
     permission_classes = [Is_SalonManager] # only salon manager
 
     def get(self, request):
-        today_date_time_utc = timezone.localtime()
+        # today_date_time_utc = timezone.localtime()
 
         salon_info = services_salon_config.get_salon_info_config()
         salon_tz = ZoneInfo(salon_info["time_zone"])
 
-        today_date_time_in_salon_tz = timezone.localtime().astimezone(salon_tz)
+        now_date_time_in_utc = timezone.now()
+
+        today_date_time_in_salon_tz = now_date_time_in_utc.astimezone(salon_tz)
         today_date_in_salon_tz = today_date_time_in_salon_tz.date()
 
         active_break = BreakTimeAndOffDays.objects.filter( break_date=today_date_in_salon_tz,
-                               break_start_date_time__lte=today_date_time_utc,
-                               break_end_date_time__gte=today_date_time_utc )
+                               break_start_date_time__lte=now_date_time_in_utc,
+                               break_end_date_time__gte=now_date_time_in_utc )
 
         serializer = ActiveBreakTimeSerializer(active_break, many=True)
 

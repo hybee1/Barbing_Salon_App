@@ -261,8 +261,11 @@ class UpdateBookingSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
 
-        session_start_date_time_utc = attrs.get( "session_start_date_time", self.instance.session_start_date_time)
-        session_end_date_time_utc = attrs.get( "session_end_date_time", self.instance.session_end_date_time)
+        # session_start_date_time_utc = attrs.get( "session_start_date_time", self.instance.session_start_date_time)
+        # session_end_date_time_utc = attrs.get( "session_end_date_time", self.instance.session_end_date_time)
+
+        session_start_date_time_utc = self.instance.session_start_date_time
+        session_end_date_time_utc =  self.instance.session_end_date_time
 
         status = attrs.get("status")
         reason = attrs.get("reason_for_cancellation" )
@@ -284,6 +287,15 @@ class UpdateBookingSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({
                 "details": "you need to wait at most 15 minutes to this booking start time before"
                            "you can update the status to 'arrived'."
+            })
+
+        if (session_start_date_time_utc > now_date_time_utc and
+                status in (Booking.STATUS.NO_SHOW, Booking.STATUS.IN_PROGRESS)):
+
+            raise serializers.ValidationError({
+                "details": "you can not change this booking status to 'COMPLETED/IN PROGRESS/NO SHOW' "
+                           " while the booking is yet to start(for 'COMPLETED/IN PROGRESS) or "
+                           "end (for 'NO SHOW)."
             })
 
         # Cancellation requires a reason
