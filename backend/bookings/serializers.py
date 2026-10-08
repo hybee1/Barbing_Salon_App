@@ -257,7 +257,7 @@ class UpdateBookingSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Booking
-        fields = [ "session_start_date_time", "session_end_date_time", "status", "reason_for_cancellation", ]
+        fields = [ "status", "reason_for_cancellation", ]
 
     def validate(self, attrs):
 
@@ -290,7 +290,7 @@ class UpdateBookingSerializer(serializers.ModelSerializer):
             })
 
         if (session_start_date_time_utc > now_date_time_utc and
-                status in (Booking.STATUS.NO_SHOW, Booking.STATUS.IN_PROGRESS)):
+                status in (Booking.STATUS.COMPLETED, Booking.STATUS.NO_SHOW, Booking.STATUS.IN_PROGRESS)):
 
             raise serializers.ValidationError({
                 "details": "you can not change this booking status to 'COMPLETED/IN PROGRESS/NO SHOW' "
