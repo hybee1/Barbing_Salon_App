@@ -96,17 +96,19 @@ def create_booking(*, barber_id: int, service: Service, hairstyle: Hairstyle, co
             "booking_id": booking.pk,
             "booking_reference": booking.booking_reference,
             "booking_source": booking.booking_source,
-            "booking_date": booking.booking_date,
-            "booking_price": booking.price,
-            "customer_name": booking.customer_name,
-            "service_renderer":booking.barber,
+            # "booking_date": booking.booking_date,
+            # "booking_price": booking.price,
+            # "customer_name": booking.customer_name,
+            "barber_id": booking.barber.id,
             "booking_status": booking.status,
             "TimeStamp_Salon_tz": convert_utc_iso_to_salon_time(
                 value=timezone.now(), salon_timezone=salon_timezone),
         },
     )
 
-    BOOKINGS_CREATED.inc()
+    transaction.on_commit(
+        lambda: BOOKINGS_CREATED.inc()
+    )
 
     return booking
 
@@ -162,7 +164,7 @@ def update_booking(*, booking_reference:str, new_status:Booking.STATUS, reason_f
             "booking_date": booking.booking_date,
             "booking_price": booking.price,
             "customer_name": booking.customer_name,
-            "booking_old_status": booking.status,
+            "booking_old_status": old_status,
             "booking_new_status": new_status,
             "updated_by": booking.barber.pk,
             "staff_department": booking.barber.department,
@@ -173,7 +175,9 @@ def update_booking(*, booking_reference:str, new_status:Booking.STATUS, reason_f
         },
     )
 
-    BOOKING_STATUS_CHANGED.labels( old_status=old_status, new_status=new_status, ).inc()
+    transaction.on_commit(
+        lambda: BOOKING_STATUS_CHANGED.labels( old_status=old_status, new_status=new_status, ).inc()
+    )
 
     return booking
 
