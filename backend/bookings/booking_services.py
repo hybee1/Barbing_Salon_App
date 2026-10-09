@@ -1,4 +1,5 @@
 
+import logging
 from datetime import datetime, timezone as dt_timezone, date
 from zoneinfo import ZoneInfo
 
@@ -12,7 +13,9 @@ from backend.exceptions.exceptions import BookingException
 from backend.salon_settings.services_salon_config import get_salon_info_config
 from backend.services.models import Service, Hairstyle, Color
 from backend.utils.services import BarberScheduler, convert_utc_iso_to_salon_time
+from observability.metrics.metrics import BOOKINGS_CREATED, BOOKING_STATUS_CHANGED
 
+logger = logging.getLogger(__name__)
 
 ALLOWABLE_BOOKING_STATUS_CHANGES = {
 
@@ -57,7 +60,10 @@ def create_booking(*, barber_id: int, service: Service, hairstyle: Hairstyle, co
     # convert the start and end time to utc time
     session_start_date_time_utc = session_start_date_time_in_salon_tz.astimezone(dt_timezone.utc)
     session_end_date_time_utc = session_end_date_time_in_salon_tz.astimezone(dt_timezone.utc)
-    booking_date_in_salon_tz = session_start_date_time_in_salon_tz.date()
+    # booking_date_in_salon_tz = session_start_date_time_in_salon_tz.date()
+
+    # the date the booking was made by the customer not the session start date
+    booking_date_in_salon_tz = timezone.now().astimezone(salon_timezone).date()
 
     # Lock this barber for the duration of the transaction.
     # Any other booking attempt for this same barber must wait.
@@ -84,12 +90,31 @@ def create_booking(*, barber_id: int, service: Service, hairstyle: Hairstyle, co
 
     # booking.full_clean()
     booking.save()
+    logger.info(
+        "Booking created",
+        extra={
+            "booking_id": booking.pk,
+            "booking_reference": booking.booking_reference,
+            "booking_source": booking.booking_source,
+            "booking_date": booking.booking_date,
+            "booking_price": booking.price,
+            "customer_name": booking.customer_name,
+            "service_renderer":booking.barber,
+            "booking_status": booking.status,
+            "TimeStamp_Salon_tz": convert_utc_iso_to_salon_time(
+                value=timezone.now(), salon_timezone=salon_timezone),
+        },
+    )
+
+    BOOKINGS_CREATED.inc()
+
     return booking
 
 
 
 @transaction.atomic
-def update_booking( *, booking_reference:str, status:Booking.STATUS,  reason_for_cancellation=None, ):
+def update_booking(*, booking_reference:str, new_status:Booking.STATUS, reason_for_cancellation=None,
+                   salon_timezone: ZoneInfo, ):
 
     booking = ( Booking.objects.select_for_update().get(booking_reference=booking_reference) )
 
@@ -114,19 +139,41 @@ def update_booking( *, booking_reference:str, status:Booking.STATUS,  reason_for
 
 
     # Do not allow a cancellation reason for a non-cancelled booking
-    if status != Booking.STATUS.CANCELLED:
+    if new_status != Booking.STATUS.CANCELLED:
         reason_for_cancellation = booking.reason_for_cancellation
 
     old_status = Booking.STATUS(booking.status)
 
-    allowable_status_change(old_status=old_status, new_status=status)
-    booking.status = status
+    allowable_status_change(old_status=old_status, new_status=new_status)
+    booking.status = new_status
     booking.reason_for_cancellation = reason_for_cancellation
 
     # Run model validation before saving
     booking.full_clean()
 
     booking.save( update_fields=[ "status", "reason_for_cancellation", ] )
+
+    logger.info(
+        "Booking status updated",
+        extra={
+            "booking_id": booking.pk,
+            "booking_reference": booking.booking_reference,
+            "booking_source": booking.booking_source,
+            "booking_date": booking.booking_date,
+            "booking_price": booking.price,
+            "customer_name": booking.customer_name,
+            "booking_old_status": booking.status,
+            "booking_new_status": new_status,
+            "updated_by": booking.barber.pk,
+            "staff_department": booking.barber.department,
+            "staff_rank": booking.barber.position,
+            "staff_name": booking.barber.user.username,
+            "TimeStamp_Salon_tz": convert_utc_iso_to_salon_time(value=timezone.now(),
+                                                                salon_timezone=salon_timezone),
+        },
+    )
+
+    BOOKING_STATUS_CHANGED.labels( old_status=old_status, new_status=new_status, ).inc()
 
     return booking
 

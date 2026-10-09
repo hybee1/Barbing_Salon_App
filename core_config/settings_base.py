@@ -61,6 +61,9 @@ INSTALLED_APPS = [
     "corsheaders",
     "rest_framework_simplejwt.token_blacklist",
 
+    'observability',
+    'django_prometheus',
+
     'backend.accounts',
     'backend.bookings',
     'backend.breakperiods',

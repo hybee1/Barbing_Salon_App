@@ -23,6 +23,9 @@ from django.urls import path, include
 urlpatterns = [
 
     path('admin/', admin.site.urls),
+    #  PROMETHEUS ENDPOINTS LIKE /metrics
+    path("", include("django_prometheus.urls")),
+    path("health/", include("observability.urls"), ),
 
     # all api and web endpoints for all django/drf apps
     path("api/", include('backend.api.urls_api')),

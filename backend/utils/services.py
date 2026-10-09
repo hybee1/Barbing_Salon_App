@@ -16,9 +16,18 @@ from django.utils import timezone
 from zoneinfo import ZoneInfo
 
 
-def convert_utc_iso_to_salon_time( value: str, salon_timezone: ZoneInfo,) -> datetime:
+def convert_utc_iso_to_salon_time( value: str | date | datetime, salon_timezone: ZoneInfo,) -> datetime:
 
-    dt = datetime.fromisoformat( value.replace("Z", "+00:00") )
+    if isinstance(value, str):
+        dt = datetime.fromisoformat(value.replace("Z", "+00:00"))
+
+    elif isinstance(value, datetime):
+        dt = value
+
+    elif isinstance(value, date):
+        dt = datetime.combine(value, datetime.min.time())
+    else:
+        raise TypeError(f"Unsupported type: {type(value).__name__}")
 
     if timezone.is_naive(dt):
         dt = dt.replace(tzinfo=dt_timezone.utc)

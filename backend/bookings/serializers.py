@@ -11,7 +11,7 @@ from backend.bookings.models import Booking
 from backend.custom_serializer.custom_phone_number_serializer import SalonPhoneNumberFieldCustomSerializer
 from backend.services.models import Service, Hairstyle, Color
 from backend.utils.services import BarberScheduler
-
+from observability.metrics.metrics import BOOKING_STATUS_CHANGE_REJECTED
 
 
 class BookingSerializer(serializers.ModelSerializer):
@@ -275,6 +275,10 @@ class UpdateBookingSerializer(serializers.ModelSerializer):
 
         if (session_start_date_time_utc < now_date_time_utc and
                 session_end_date_time_utc > now_date_time_utc ):
+
+            BOOKING_STATUS_CHANGE_REJECTED.labels(
+                reason="booking_in_progress", requested_status=status, ).inc()
+
             raise serializers.ValidationError({
                 "details": "this booking is still on-going, wait till the session end before you can edit "
                            "this booking ."
@@ -284,6 +288,9 @@ class UpdateBookingSerializer(serializers.ModelSerializer):
         if (session_start_date_time_utc > now_date_time_utc and
                 session_start_date_time_utc - now_date_time_utc >= timedelta(minutes=15)):
 
+            BOOKING_STATUS_CHANGE_REJECTED.labels(
+                reason="outside_arrival_window", requested_status=status, ).inc()
+
             raise serializers.ValidationError({
                 "details": "you need to wait at most 15 minutes to this booking start time before"
                            "you can update the status to 'arrived'."
@@ -291,6 +298,9 @@ class UpdateBookingSerializer(serializers.ModelSerializer):
 
         if (session_start_date_time_utc > now_date_time_utc and
                 status in (Booking.STATUS.COMPLETED, Booking.STATUS.NO_SHOW, Booking.STATUS.IN_PROGRESS)):
+
+            BOOKING_STATUS_CHANGE_REJECTED.labels(
+                reason="booking_not_started", requested_status=status, ).inc()
 
             raise serializers.ValidationError({
                 "details": "you can not change this booking status to 'COMPLETED/IN PROGRESS/NO SHOW' "
@@ -319,7 +329,7 @@ class UpdateBookingSerializer(serializers.ModelSerializer):
         new_status = Booking.STATUS( validated_data.get("status") )
         return update_booking(
             booking_reference=instance.booking_reference,
-            status=new_status,
+            new_status=new_status,
             reason_for_cancellation=validated_data.get("reason_for_cancellation" ),
         )
 

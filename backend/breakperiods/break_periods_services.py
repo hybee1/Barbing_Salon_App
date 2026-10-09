@@ -1,8 +1,9 @@
-
+import logging
 from datetime import timezone as dt_timezone, datetime
 from zoneinfo import ZoneInfo
 
 from django.db import transaction
+from django.utils import timezone
 from rest_framework.exceptions import ValidationError
 
 from backend.accounts.models import StaffProfile
@@ -10,6 +11,8 @@ from backend.breakperiods.models import BreakTimeAndOffDays
 from backend.salon_settings.services_salon_config import get_salon_info_config
 from backend.utils.services import convert_utc_iso_to_salon_time
 
+
+logger = logging.getLogger(__name__)
 
 @transaction.atomic
 def create_break_period(*, staff_id, break_start_date_time_in_salon_tz,
@@ -33,7 +36,11 @@ def create_break_period(*, staff_id, break_start_date_time_in_salon_tz,
     # convert the start and end time to utc time
     break_start_date_time_utc = break_start_date_time_in_salon_tz.astimezone(dt_timezone.utc)
     break_end_date_time_utc = break_end_date_time_in_salon_tz.astimezone(dt_timezone.utc)
-    break_date_in_salon_tz = break_start_date_time_in_salon_tz.date()
+    # break_date_in_salon_tz = break_start_date_time_in_salon_tz.date()
+
+    # the date the break was created/made by the staff not the break start date
+    salon_timezone = break_end_date_time_in_salon_tz.tzinfo
+    break_date_in_salon_tz = timezone.now().astimezone(salon_timezone).date()
 
     # Lock this staff for the duration of the transaction.
     # Any other booking attempt for this same barber must wait.
@@ -59,6 +66,18 @@ def create_break_period(*, staff_id, break_start_date_time_in_salon_tz,
 
     # break_period.full_clean()
     break_period.save()
+
+    logger.info(
+        "Break_Time_And_Off_Days Created",
+        extra={
+            "break_id": break_period.pk,
+            "staff_name": staff.user.username,
+            "break_status": break_period.status,
+            "TimeStamp_Salon_tz": convert_utc_iso_to_salon_time(
+                value=timezone.now(), salon_timezone=break_start_date_time_in_salon_tz.tzinfo),
+        },
+    )
+
     return break_period
 
 # @transaction.atomic
