@@ -74,11 +74,11 @@ def create_booking(*, barber_id: int, service: Service, hairstyle: Hairstyle, co
                     session_end_utc=session_end_date_time_utc,
                     salon_timezone=salon_timezone,
                 )
+
     BarberScheduler().validate_no_overlap_with_barber_breaktime_or_off_days(
         barber=barber, session_start_utc=session_start_date_time_utc,
         session_end_utc=session_end_date_time_utc, salon_timezone=salon_timezone,
     )
-
 
     booking = Booking(service=service, hairstyle=hairstyle, color=color, barber=barber,
     booking_date=booking_date_in_salon_tz, session_start_date_time=session_start_date_time_utc,

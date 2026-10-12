@@ -9,6 +9,7 @@ from backend.accounts.models import User, StaffProfile
 from backend.bookings.booking_services import create_booking, update_booking, allowable_status_change
 from backend.bookings.models import Booking
 from backend.custom_serializer.custom_phone_number_serializer import SalonPhoneNumberFieldCustomSerializer
+from backend.salon_settings.services_salon_config import get_salon_info_config
 from backend.services.models import Service, Hairstyle, Color
 from backend.utils.services import BarberScheduler
 from observability.metrics.metrics import BOOKING_STATUS_CHANGE_REJECTED
@@ -175,7 +176,7 @@ class CreateBookingSerializer(serializers.ModelSerializer):
 
         # the immediate line below is expected to be in utc as commented in the model
         session_start_date_time_in_utc: datetime = attrs.get("session_start_date_time")
-        salon_config, _ = BarberScheduler().get_salon_config()
+        salon_config = get_salon_info_config()
         salon_tz = ZoneInfo(salon_config["time_zone"])
 
         salon_open_time = salon_config["open_time"]
@@ -326,11 +327,14 @@ class UpdateBookingSerializer(serializers.ModelSerializer):
         return attrs
 
     def update(self, instance, validated_data):
+        salon_config = get_salon_info_config()
+        salon_tz = ZoneInfo(salon_config["time_zone"])
         new_status = Booking.STATUS( validated_data.get("status") )
         return update_booking(
             booking_reference=instance.booking_reference,
             new_status=new_status,
             reason_for_cancellation=validated_data.get("reason_for_cancellation" ),
+            salon_timezone=salon_tz
         )
 
 

@@ -67,8 +67,8 @@ class Booking(TimeStampedModel):
 
     phone_number = PhoneNumberField()
 
-    # Salon-local calendar date on which this session booking date will start.
-    # it purposely for query convenience. This is intentionally NOT UTC
+    # the 'booking_date' is the Salon-local calendar date on which this booking or barbing session was
+    # made. it purposely for query convenience. This is intentionally NOT UTC
     booking_date = models.DateField()
 
     # this must be in utc date and time
