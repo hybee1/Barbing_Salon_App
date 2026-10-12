@@ -78,7 +78,7 @@ class Last3daysAnd3DaysAheadBarberBreakTimeAndOffDayAPIView(APIView):
         three_days_ago_in_salon_tz = today_date_in_salon_tz - timedelta(days=3)
 
         break_or_off = BreakTimeAndOffDays.objects.filter(
-                        Q(break_date__range=(three_days_ago_in_salon_tz, three_days_ahead_in_salon_tz)) |
+                        # Q(break_date__range=(three_days_ago_in_salon_tz, three_days_ahead_in_salon_tz)) |
                         Q(break_start_date_time__range=(three_days_ago_in_utc, three_days_ahead_in_utc)),
         )
 
@@ -103,7 +103,8 @@ class ActiveBreakTimeAndOffDayAPIView(APIView):
         today_date_time_in_salon_tz = now_date_time_in_utc.astimezone(salon_tz)
         today_date_in_salon_tz = today_date_time_in_salon_tz.date()
 
-        active_break = BreakTimeAndOffDays.objects.filter( break_date=today_date_in_salon_tz,
+        active_break = BreakTimeAndOffDays.objects.filter(
+            # break_date=today_date_in_salon_tz,
                                break_start_date_time__lte=now_date_time_in_utc,
                                break_end_date_time__gte=now_date_time_in_utc )
 
@@ -137,7 +138,7 @@ class OneBarberBreakTimeAndOffDayAPIView(APIView):
 
         break_or_off = BreakTimeAndOffDays.objects.filter(
 
-           Q( break_date__range=(three_days_ago_in_salon_tz, three_days_ahead_in_salon_tz) ) |
+           # Q( break_date__range=(three_days_ago_in_salon_tz, three_days_ahead_in_salon_tz) ) |
            Q(break_start_date_time__range=(three_days_ago_in_utc, three_days_ahead_in_utc) ),
            staff=request.user.staffprofile,
         )

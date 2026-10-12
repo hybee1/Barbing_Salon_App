@@ -70,25 +70,43 @@ class ManageBooking_Api_View(APIView):
         if booking_id:
             bookings = bookings.filter(id=booking_id)
 
+        if (start_date and not end_date) or (not start_date and end_date):
+            raise ValidationError({"details": "Start date and end date are required"})
+
         if start_date and end_date:
+
+            salon_info = services_salon_config.get_salon_info_config()
+            salon_open_time = salon_info["open_time"]
+            salon_close_time = salon_info["close_time"]
+            salon_tz = ZoneInfo(salon_info["time_zone"])
 
             if(end_date < start_date):
                 raise BookingDateException(end_date)
 
             # Date range filter
-            if start_date:
 
-                start_date = parse_date(start_date)
+            start_date = parse_date(start_date)
 
-                if start_date:
-                    bookings = bookings.filter( booking_date__gte=start_date )
+            if start_date is None:
+                raise ValidationError({"details": "Invalid Start date"})
 
-            if end_date:
+            converted_start_date_time_in_utc = datetime.combine(start_date, salon_open_time,
+                                                         tzinfo=salon_tz).astimezone(dt_timezone.utc)
 
-                end_date = parse_date(end_date)
+            end_date = parse_date(end_date)
 
-                if end_date:
-                    bookings = bookings.filter( booking_date__lte=end_date )
+            if end_date is None:
+                raise ValidationError({"details": "Invalid End date"})
+
+            converted_end_date_time_in_utc = datetime.combine(start_date, salon_close_time,
+                                                         tzinfo=salon_tz).astimezone(dt_timezone.utc)
+
+            # bookings = bookings.filter(session_start_date_time__gte=converted_start_date_time_in_utc)
+
+            # bookings = bookings.filter( session_start_date_time__lte=converted_end_date_time_in_utc )
+
+            bookings = bookings.filter(session_start_date_time__range=(
+                converted_start_date_time_in_utc, converted_start_date_time_in_utc) )
 
         # Staff filter
         if staff:
@@ -210,15 +228,25 @@ class TodayBooking_Api_View(APIView):
 
         salon_info = services_salon_config.get_salon_info_config()
         salon_tz = ZoneInfo(salon_info["time_zone"])
+        salon_open_time = salon_info["open_time"]
+        salon_close_time = salon_info["close_time"]
 
         now_utc = timezone.now()
 
         today_date_time_in_salon_tz = now_utc.astimezone(salon_tz)
         today_date_in_salon_tz = today_date_time_in_salon_tz.date()
 
+        today_start_date_time_in_utc = datetime.combine(today_date_in_salon_tz, salon_open_time,
+                                                            tzinfo=salon_tz).astimezone(dt_timezone.utc)
+
+        today_end_date_time_in_utc = datetime.combine(today_date_in_salon_tz, salon_close_time,
+                                                          tzinfo=salon_tz).astimezone(dt_timezone.utc)
+
         bookings_for_today = (
-            Booking.objects.select_related( "barber__user", "service","hairstyle", "color",
-                        ).filter( booking_date=today_date_in_salon_tz )
+            Booking.objects.select_related( "barber__user", "service", "hairstyle", "color",
+                        ).filter( session_start_date_time__range=(
+                                today_start_date_time_in_utc, today_end_date_time_in_utc )
+            )
         )
 
         serializer = BookingReadSerializer( bookings_for_today, many=True )
@@ -237,6 +265,8 @@ class OneBarberBookingForLast7Days_Api_View(APIView):
         user = request.user.staffprofile
         salon_info = services_salon_config.get_salon_info_config()
         salon_tz = ZoneInfo(salon_info["time_zone"])
+        salon_open_time = salon_info["open_time"]
+        salon_close_time = salon_info["close_time"]
 
         now_utc = timezone.now()
 
@@ -244,6 +274,10 @@ class OneBarberBookingForLast7Days_Api_View(APIView):
         today_date_in_salon_tz = today_date_time_in_salon_tz.date()
 
         last_7_days_in_salon_tz = today_date_in_salon_tz - timedelta(days=7)
+
+        today_date_time_in_utc = datetime.combine(today_date_in_salon_tz, salon_open_time,
+                                                        tzinfo=salon_tz).astimezone(dt_timezone.utc)
+        last_7_days_in_utc = today_date_time_in_utc - timedelta(days=7)
 
         if not BarberScheduler().can_receive_bookings(staff=user):
             return Response(
@@ -255,7 +289,8 @@ class OneBarberBookingForLast7Days_Api_View(APIView):
                             "barber__user", "service", "hairstyle", "color",
                         ).filter(
                                 barber=request.user.staffprofile,
-                                booking_date__range=(last_7_days_in_salon_tz, today_date_in_salon_tz),
+                                session_start_date_time__range=(
+                                    last_7_days_in_utc, today_date_time_in_utc),
                         ).order_by("booking_date", "-session_start_date_time")
         )
 
@@ -273,6 +308,8 @@ class BookingForLast7Days_Api_View(APIView):
     def get(self, request):
         salon_info = services_salon_config.get_salon_info_config()
         salon_tz = ZoneInfo(salon_info["time_zone"])
+        salon_open_time = salon_info["open_time"]
+        salon_close_time = salon_info["close_time"]
 
         now_utc = timezone.now()
 
@@ -281,11 +318,16 @@ class BookingForLast7Days_Api_View(APIView):
 
         last_7_days_in_salon_tz = today_date_in_salon_tz - timedelta(days=7)
 
+        today_date_time_in_utc = datetime.combine(today_date_in_salon_tz, salon_open_time,
+                                                  tzinfo=salon_tz).astimezone(dt_timezone.utc)
+        last_7_days_in_utc = today_date_time_in_utc - timedelta(days=7)
+
         booking_obj = ( Booking.objects .select_related(
                         "barber__user", "service", "hairstyle",
                         "color",
                     ).filter(
-                        booking_date__range=(last_7_days_in_salon_tz, today_date_in_salon_tz),
+                        session_start_date_time__range=(
+                            last_7_days_in_utc, today_date_time_in_utc),
                     )
                     .order_by("booking_date", "-session_start_date_time")
         )
@@ -327,7 +369,7 @@ class BarberBookingAvailability_Api_View(APIView):
         booking_slot_interval = salon_booking_config["booking_slot_interval"]
 
         available_start_time = barber_scheduler.check_schedule(
-                                                 staffProfile_id=barber_id, booking_date_in_salon_tz=date1,
+                                                 staffProfile_id=barber_id, session_date_in_salon_tz=date1,
                                                  total_service_duration=total_service_duration,
                                                  salon_opening_time=salon_opening_time,
                                                  salon_closing_time=salon_closing_time,
@@ -403,11 +445,19 @@ class OneBarberBookingsToday(APIView):
 
         salon_info = services_salon_config.get_salon_info_config()
         salon_tz = ZoneInfo(salon_info["time_zone"])
+        salon_open_time = salon_info["open_time"]
+        salon_close_time = salon_info["close_time"]
 
         now_utc = timezone.now()
 
         today_date_time_in_salon_tz = now_utc.astimezone(salon_tz)
         today_date_in_salon_tz = today_date_time_in_salon_tz.date()
+
+        today_start_date_time_in_utc = datetime.combine(today_date_in_salon_tz, salon_open_time,
+                                                        tzinfo=salon_tz).astimezone(dt_timezone.utc)
+
+        today_end_date_time_in_utc = datetime.combine(today_date_in_salon_tz, salon_close_time,
+                                                      tzinfo=salon_tz).astimezone(dt_timezone.utc)
 
         if not BarberScheduler().can_receive_bookings(staff=request.user.staffprofile):
             return Response(
@@ -418,8 +468,9 @@ class OneBarberBookingsToday(APIView):
         #                     booking_date=today_date_in_salon_tz, barber=barber,
         #                     status=Booking.STATUS.CONFIRMED)
 
-        barber_bookings_stats_for_today = Booking.objects.filter(
-            booking_date=today_date_in_salon_tz, barber=barber)
+        barber_bookings_stats_for_today = Booking.objects.filter(barber=barber,
+            session_start_date_time__range=( today_start_date_time_in_utc, today_end_date_time_in_utc)
+        )
 
         serializer = BarberBookingsTodaySerializer(barber_bookings_stats_for_today, many=True)
 
@@ -438,6 +489,8 @@ class OneBarberUpcomingBookingsToday(APIView):
 
         salon_info = services_salon_config.get_salon_info_config()
         salon_tz = ZoneInfo(salon_info["time_zone"])
+        salon_open_time = salon_info["open_time"]
+        salon_close_time = salon_info["close_time"]
 
         now_utc = timezone.now()
 
@@ -453,9 +506,9 @@ class OneBarberUpcomingBookingsToday(APIView):
                                                         .select_related( "service", "hairstyle", )
                                                         .filter(
                                                                 barber=barber,
-                                                                booking_date=today_date_in_salon_tz,
+                                                                # booking_date=today_date_in_salon_tz,
                                                                 session_start_date_time__gte=now_utc,
-                                                                 status=Booking.STATUS.CONFIRMED,
+                                                                status=Booking.STATUS.CONFIRMED,
                                                          )
                                            )
 
@@ -487,7 +540,7 @@ class BarberUpcomingBookingsToday(APIView):
                                                         "barber__user", "service", "hairstyle",
                                                     )
                                                     .filter(
-                                                        booking_date=today_date_in_salon_tz,
+                                                        # booking_date=today_date_in_salon_tz,
                                                         session_start_date_time__gte=now_utc,
                                                         status=Booking.STATUS.CONFIRMED,
                                                     )

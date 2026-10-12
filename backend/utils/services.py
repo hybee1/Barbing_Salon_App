@@ -72,11 +72,15 @@ class BarberScheduler:
 
     def get_this_barber_bookings_for_this_date( self, *, barber: StaffProfile,
                                                 session_date_in_salon_tz: date, salon_opening_time: time,
-                                                salon_closing_time: time,) -> list[Booking]:
+                                                salon_closing_time: time,
+                                                salon_timezone: ZoneInfo,) -> list[Booking]:
+
 
         # the below is use as date_time range for selecting for selecting a barber's booking for that
-        start_date_time_in_utc = datetime.combine(session_date_in_salon_tz, salon_opening_time)
-        end_date_time_in_utc = datetime.combine(session_date_in_salon_tz, salon_closing_time)
+        start_date_time_in_utc = datetime.combine(session_date_in_salon_tz, salon_opening_time,
+                                                  tzinfo=salon_timezone).astimezone(dt_timezone.utc)
+        end_date_time_in_utc = datetime.combine(session_date_in_salon_tz, salon_closing_time,
+                                                tzinfo=salon_timezone).astimezone(dt_timezone.utc)
 
         if not self.can_receive_bookings(staff=barber):
             raise UserException("Not a barber or stylist")
