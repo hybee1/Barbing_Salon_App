@@ -71,7 +71,12 @@ class BarberScheduler:
     # =========================================================
 
     def get_this_barber_bookings_for_this_date( self, *, barber: StaffProfile,
-                                                date_in_salon_tz: date, ) -> list[Booking]:
+                                                session_date_in_salon_tz: date, salon_opening_time: time,
+                                                salon_closing_time: time,) -> list[Booking]:
+
+        # the below is use as date_time range for selecting for selecting a barber's booking for that
+        start_date_time_in_utc = datetime.combine(session_date_in_salon_tz, salon_opening_time)
+        end_date_time_in_utc = datetime.combine(session_date_in_salon_tz, salon_closing_time)
 
         if not self.can_receive_bookings(staff=barber):
             raise UserException("Not a barber or stylist")
@@ -81,7 +86,8 @@ class BarberScheduler:
         )
 
         return (
-            Booking.objects.filter(  barber=barber,  booking_date=date_in_salon_tz,
+            Booking.objects.filter(  barber=barber,  session_start_date_time__range=(
+                start_date_time_in_utc, end_date_time_in_utc),
                                      status__in=ACTIVE_BOOKING_STATUSES
             )
             .order_by("session_start_date_time")
@@ -93,21 +99,21 @@ class BarberScheduler:
     # =========================================================
 
     def determine_start(
-                        self, *, booking_date_in_salon_tz: date, salon_opening_time: time,
+                        self, *, session_date_in_salon_tz: date, salon_opening_time: time,
                         salon_timezone: ZoneInfo, booking_slot_interval: int, ) -> datetime:
 
         now_utc = timezone.now()
         now_salon_tz = now_utc.astimezone(salon_timezone)
 
-        if booking_date_in_salon_tz < now_salon_tz.date():
-            raise BookingDateException(booking_date_in_salon_tz)
+        if session_date_in_salon_tz < now_salon_tz.date():
+            raise BookingDateException(session_date_in_salon_tz)
 
         opening_salon_dt = datetime.combine(
-            booking_date_in_salon_tz, salon_opening_time,
+            session_date_in_salon_tz, salon_opening_time,
         ).replace(tzinfo=salon_timezone)
 
         # Future date.
-        if booking_date_in_salon_tz > now_salon_tz.date():
+        if session_date_in_salon_tz > now_salon_tz.date():
             return opening_salon_dt
 
         # Today.
@@ -121,10 +127,10 @@ class BarberScheduler:
     # =========================================================
 
     def determine_close(
-                        self, *, booking_date_in_salon_tz: date, salon_closing_time: time,
+                        self, *, session_date_in_salon_tz: date, salon_closing_time: time,
                         salon_timezone: ZoneInfo, ) -> datetime:
 
-        return datetime.combine( booking_date_in_salon_tz, salon_closing_time, ).replace(tzinfo=salon_timezone)
+        return datetime.combine( session_date_in_salon_tz, salon_closing_time, ).replace(tzinfo=salon_timezone)
 
     # =========================================================
     # STEP 3
@@ -284,7 +290,7 @@ class BarberScheduler:
     # =========================================================
 
     def determine_free_period_for_barber(
-            self, *, staffProfile_id: int, booking_date_in_salon_tz: date,
+            self, *, staffProfile_id: int, session_date_in_salon_tz: date,
             salon_opening_time: time, salon_closing_time: time,
             salon_timezone: ZoneInfo, booking_slot_interval: int, ) -> list[tuple[datetime, datetime]]:
 
@@ -301,19 +307,19 @@ class BarberScheduler:
         # -----------------------------------------------------
 
         start_salon = self.determine_start(
-            booking_date_in_salon_tz=booking_date_in_salon_tz,
+            session_date_in_salon_tz=session_date_in_salon_tz,
             salon_opening_time=salon_opening_time,
             salon_timezone=salon_timezone,
             booking_slot_interval=booking_slot_interval,
         )
 
         closing_salon = self.determine_close(
-            booking_date_in_salon_tz=booking_date_in_salon_tz,
+            session_date_in_salon_tz=session_date_in_salon_tz,
             salon_closing_time=salon_closing_time,
             salon_timezone=salon_timezone,
         )
 
-        opening_salon = datetime.combine( booking_date_in_salon_tz, salon_opening_time, ).replace( tzinfo=salon_timezone )
+        opening_salon = datetime.combine( session_date_in_salon_tz, salon_opening_time, ).replace( tzinfo=salon_timezone )
 
         if closing_salon <= opening_salon:
             raise ValueError( "Salon closing time must be later than opening time."  )
@@ -336,7 +342,9 @@ class BarberScheduler:
         bookings_for_the_barber = (
             self.get_this_barber_bookings_for_this_date(
                 barber=barber,
-                date_in_salon_tz=booking_date_in_salon_tz,
+                session_date_in_salon_tz=session_date_in_salon_tz,
+                salon_opening_time=salon_opening_time,
+                salon_closing_time=salon_closing_time
             )
         )
 
@@ -577,14 +585,14 @@ class BarberScheduler:
     # MAIN PUBLIC SCHEDULER
     # =========================================================
 
-    def check_schedule( self, *, staffProfile_id: int, booking_date_in_salon_tz: date,
+    def check_schedule( self, *, staffProfile_id: int, session_date_in_salon_tz: date,
                         total_service_duration: int, salon_opening_time: time, salon_closing_time: time,
                         salon_timezone: ZoneInfo, booking_slot_interval: int, ) -> list[time] | None:
 
         barber_free_periods = (
             self.determine_free_period_for_barber(
                 staffProfile_id=staffProfile_id,
-                booking_date_in_salon_tz=( booking_date_in_salon_tz ),
+                session_date_in_salon_tz=( session_date_in_salon_tz ),
                 salon_opening_time=( salon_opening_time ),
                 salon_closing_time=( salon_closing_time ),
                 salon_timezone=salon_timezone,
