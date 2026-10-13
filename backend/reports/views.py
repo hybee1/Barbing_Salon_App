@@ -23,12 +23,26 @@ from backend.bookings.models import Booking
 from backend.custom_permissions.permissions import Is_SalonManager
 from backend.inventory.models import InventoryItem
 from backend.salon_settings import services_salon_config
+import re
 
 # ==========================================================
 # HELPERS
 # ==========================================================
 
 MONEY_FIELD = DecimalField( max_digits=12, decimal_places=2, )
+
+def parse_report_date(value, field_name):
+    if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", value):
+        raise ValueError(
+            f"{field_name} must use YYYY-MM-DD format."
+        )
+
+    try:
+        return date.fromisoformat(value)
+    except ValueError as exc:
+        raise ValueError(
+            f"{field_name} must be a valid calendar date."
+        ) from exc
 
 
 def get_completed_bookings():
@@ -72,11 +86,8 @@ def get_booking_summary(queryset):
 def get_low_stock_count():
 
     return InventoryItem.objects.filter(
-
         status=InventoryItem.Status.ACTIVE,
-
         quantity__lte=F("reorder_level")
-
     ).count()
 
 
@@ -303,7 +314,7 @@ def build_weekly_trend( bookings: Booking, start_date_in_salon_tz: date, end_dat
     current_week_start_day = get_week_start( start_date_in_salon_tz )
 
     # the last_week_start_day is either monday which is the start of that week
-    last_week_start_day = get_week_start(  end_date_in_salon_tz  )
+    last_week_start_day = get_week_start( end_date_in_salon_tz  )
 
     while current_week_start_day <= last_week_start_day:
 
@@ -560,7 +571,8 @@ class ManagerDateRangeReportView(APIView):
         # START DATE
         # --------------------------------------------------
         try:
-            start_date = ( date.fromisoformat(start_date_param) if start_date_param else today_date_in_salon_tz
+            start_date = ( parse_report_date(start_date_param, "start_date")
+                           if start_date_param else today_date_in_salon_tz
             )
         except ValueError:
             return Response( {"detail": "start_date must use YYYY-MM-DD format."},
@@ -571,10 +583,12 @@ class ManagerDateRangeReportView(APIView):
         # END DATE
         # --------------------------------------------------
         try:
-            end_date = ( date.fromisoformat(end_date_param) if end_date_param else today_date_in_salon_tz
+            end_date = ( parse_report_date(end_date_param, "end_date")
+                         if end_date_param else today_date_in_salon_tz
             )
         except ValueError:
-            return Response( {"detail": "end_date must use YYYY-MM-DD format."},
+            return Response(
+                {"detail": "end_date must use YYYY-MM-DD format."},
                 status=400,
             )
 
@@ -603,7 +617,7 @@ class ManagerDateRangeReportView(APIView):
         # --------------------------------------------------
         bookings = Booking.objects.filter(
             session_start_date_time__gte=start_date_utc,
-            session_start_date_time__lte=end_date_utc,
+            session_start_date_time__lt=end_date_utc,
         )
 
         completed_bookings = bookings.filter( status=Booking.STATUS.COMPLETED )
