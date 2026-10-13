@@ -80,33 +80,30 @@ class ManageBooking_Api_View(APIView):
             salon_close_time = salon_info["close_time"]
             salon_tz = ZoneInfo(salon_info["time_zone"])
 
-            if(end_date < start_date):
-                raise BookingDateException(end_date)
-
-            # Date range filter
-
+            # parse start_date to date
             start_date = parse_date(start_date)
 
             if start_date is None:
                 raise ValidationError({"details": "Invalid Start date"})
 
-            converted_start_date_time_in_utc = datetime.combine(start_date, salon_open_time,
-                                                         tzinfo=salon_tz).astimezone(dt_timezone.utc)
-
+            # parse end_date to date
             end_date = parse_date(end_date)
 
             if end_date is None:
                 raise ValidationError({"details": "Invalid End date"})
 
+            if(end_date < start_date):
+                raise BookingDateException(end_date)
+
+            # Date range filter
+            converted_start_date_time_in_utc = datetime.combine(start_date, salon_open_time,
+                                                         tzinfo=salon_tz).astimezone(dt_timezone.utc)
+
             converted_end_date_time_in_utc = datetime.combine(start_date, salon_close_time,
                                                          tzinfo=salon_tz).astimezone(dt_timezone.utc)
 
-            # bookings = bookings.filter(session_start_date_time__gte=converted_start_date_time_in_utc)
-
-            # bookings = bookings.filter( session_start_date_time__lte=converted_end_date_time_in_utc )
-
             bookings = bookings.filter(session_start_date_time__range=(
-                converted_start_date_time_in_utc, converted_start_date_time_in_utc) )
+                converted_start_date_time_in_utc, converted_end_date_time_in_utc) )
 
         # Staff filter
         if staff:

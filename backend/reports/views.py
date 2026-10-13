@@ -3,8 +3,9 @@
 # Levelz Cuts - Manager Reports
 # ==========================================================
 
-from datetime import timedelta
+from datetime import timedelta, datetime, timezone as dt_timezone, date
 from decimal import Decimal
+from zoneinfo import ZoneInfo
 
 from django.db.models import (
     Count,
@@ -21,7 +22,7 @@ from rest_framework.response import Response
 from backend.bookings.models import Booking
 from backend.custom_permissions.permissions import Is_Authenticated_Staff_User, Is_SalonManager
 from backend.inventory.models import InventoryItem
-
+from backend.salon_settings import services_salon_config
 
 # ==========================================================
 # HELPERS
@@ -231,26 +232,41 @@ def determine_report_grouping(
 # WEEK START
 # ==========================================================
 
-def get_week_start(date):
+def get_week_start(date) -> date:
 
-    return date - timedelta(
-        days=date.weekday()
-    )
+    return date - timedelta( days=date.weekday() )
 
 
 # ==========================================================
 # TREND DATA
 # ==========================================================
 
-def build_daily_trend( bookings, start_date, end_date ):
+def build_daily_trend( bookings: Booking, start_date_in_salon_tz: date, end_date_in_salon_tz: date ):
+
+    if start_date_in_salon_tz > end_date_in_salon_tz:
+        raise ValueError("Start date must not be after end date.")
+
+    salon_info = services_salon_config.get_salon_info_config()
+    salon_open_time = salon_info["open_time"]
+    salon_close_time = salon_info["close_time"]
+    salon_tz = ZoneInfo(salon_info["time_zone"])
 
     trend = []
 
-    current_date = start_date
+    current_date = start_date_in_salon_tz
 
-    while current_date <= end_date:
+    # salon open hours
+    current_date_time_open_hours_in_utc = datetime.combine(current_date, salon_open_time,
+                                         tzinfo=salon_tz).astimezone(dt_timezone.utc)
 
-        day_bookings = bookings.filter( booking_date=current_date )
+    # salon close hours
+    current_date_time_close_hours_in_utc = datetime.combine(current_date, salon_close_time,
+                                                           tzinfo=salon_tz).astimezone(dt_timezone.utc)
+
+    while current_date <= end_date_in_salon_tz:
+
+        day_bookings = bookings.filter(session_start_date_time__gte=current_date_time_open_hours_in_utc,
+            session_start_date_time__lte=current_date_time_close_hours_in_utc,)
 
         completed = day_bookings.filter( status=Booking.STATUS.COMPLETED )
 
@@ -284,30 +300,51 @@ def build_daily_trend( bookings, start_date, end_date ):
 
         })
 
-
         current_date += timedelta( days=1 )
-
 
     return trend
 
 
-def build_weekly_trend( bookings, start_date, end_date ):
+def build_weekly_trend( bookings: Booking, start_date_in_salon_tz: date, end_date_in_salon_tz: date ):
+
+    if start_date_in_salon_tz > end_date_in_salon_tz:
+        raise ValueError("Start date must not be after end date.")
+
+    salon_info = services_salon_config.get_salon_info_config()
+    salon_open_time = salon_info["open_time"]
+    salon_close_time = salon_info["close_time"]
+    salon_tz = ZoneInfo(salon_info["time_zone"])
 
     trend = []
 
-    current_week = get_week_start( start_date )
+    # the current_week_start_day is either sunday/monday which is the start of that week
+    current_week_start_day = get_week_start( start_date_in_salon_tz )
 
-    last_week = get_week_start(  end_date  )
+    # the last_week_start_day is either sunday/monday which is the start of that week
+    last_week_start_day = get_week_start(  end_date_in_salon_tz  )
 
-    while current_week <= last_week:
+    while current_week_start_day <= last_week_start_day:
 
-        week_end = current_week + timedelta( days=6 )
+        week_end = current_week_start_day + timedelta( days=6 )
 
-        range_start = max( current_week, start_date )
+        range_start = max( current_week_start_day, start_date_in_salon_tz )
 
-        range_end = min( week_end, end_date )
+        range_end = min( week_end, end_date_in_salon_tz )
 
-        week_bookings = bookings.filter( booking_date__range=( range_start, range_end ) )
+        # salon open hours
+        range_start_date_time_open_hours_in_utc = datetime.combine(range_start, salon_open_time,
+                                                               tzinfo=salon_tz).astimezone(dt_timezone.utc)
+
+        # salon close hours
+        range_end_date_time_close_hours_in_utc = datetime.combine(range_end + timedelta(days=1),
+                                                                  salon_close_time,
+                                                                tzinfo=salon_tz).astimezone(dt_timezone.utc)
+
+        week_bookings = bookings.filter(
+            session_start_date_time__gte=range_start_date_time_open_hours_in_utc,
+            session_start_date_time__lt=range_end_date_time_close_hours_in_utc,
+        )
+
 
         completed = week_bookings.filter( status=Booking.STATUS.COMPLETED  )
 
@@ -324,7 +361,7 @@ def build_weekly_trend( bookings, start_date, end_date ):
 
         trend.append({
 
-            "period": current_week.isoformat(),
+            "period": current_week_start_day.isoformat(),
 
             "period_label":
                 (
@@ -343,76 +380,75 @@ def build_weekly_trend( bookings, start_date, end_date ):
 
         })
 
-        current_week += timedelta( days=7 )
+        current_week_start_day += timedelta( days=7 )
 
     return trend
 
 
-def build_monthly_trend( bookings, start_date, end_date ):
+def build_monthly_trend( bookings: Booking, start_date_in_salon_tz: date, end_date_in_salon_tz: date  ):
+
+    if start_date_in_salon_tz > end_date_in_salon_tz:
+        raise ValueError({"details": "Start date must not be after end date."})
+
+    salon_info = services_salon_config.get_salon_info_config()
+    salon_tz = ZoneInfo(salon_info["time_zone"])
+    salon_open_time = salon_info["open_time"]
+    salon_close_time = salon_info["close_time"]
 
     trend = []
 
-    current_date = start_date.replace( day=1 )
+    current_date = start_date_in_salon_tz.replace(day=1)
 
-    while current_date <= end_date:
+    while current_date <= end_date_in_salon_tz:
 
+        # Calculate the first day of the next month.
         if current_date.month == 12:
-
-            next_month = current_date.replace(
-                year=current_date.year + 1,
-                month=1,
-                day=1
-            )
-
+            next_month = current_date.replace( year=current_date.year + 1, month=1, day=1, )
         else:
+            next_month = current_date.replace( month=current_date.month + 1, day=1, )
 
-            next_month = current_date.replace(
-                month=current_date.month + 1,
-                day=1
-            )
+        # Last calendar day of the current month.
+        month_end = next_month - timedelta(days=1)
 
-        month_end = next_month - timedelta(  days=1 )
+        # Restrict the first and last months to the requested date range.
+        range_start = max(current_date, start_date_in_salon_tz)
+        range_end = min(month_end, end_date_in_salon_tz)
 
-        range_start = max( current_date, start_date )
+        # Convert salon-local calendar boundaries to UTC.
+        start_local = datetime.combine( range_start, salon_open_time, tzinfo=salon_tz, )
 
-        range_end = min( month_end, end_date )
+        end_local = datetime.combine( range_end + timedelta(days=1), salon_close_time, tzinfo=salon_tz, )
+
+        start_utc = start_local.astimezone(dt_timezone.utc)
+        end_utc = end_local.astimezone(dt_timezone.utc)
 
         month_bookings = bookings.filter(
-                booking_date__range=( range_start, range_end )
-            )
+            session_start_date_time__gte=start_utc,
+            session_start_date_time__lt=end_utc,
+        )
 
-        completed = month_bookings.filter( status=Booking.STATUS.COMPLETED )
+        completed = month_bookings.filter( status=Booking.STATUS.COMPLETED, )
 
         revenue = completed.aggregate(
-
             total=Coalesce(
                 Sum("price"),
                 Decimal("0.00"),
                 output_field=MONEY_FIELD,
             )
-
         )["total"]
 
-        total =  month_bookings.count()
-
+        total = month_bookings.count()
         completed_count = completed.count()
 
-        completion_rate = ( ( completed_count / total  ) * 100 if total else 0 )
+        completion_rate = ( completed_count / total * 100 if total else 0 )
 
         trend.append({
-
-            "period": current_date.strftime( "%Y-%m"  ),
-
-            "period_label": current_date.strftime( "%b %Y" ),
-
+            "period": current_date.strftime("%Y-%m"),
+            "period_label": current_date.strftime("%b %Y"),
             "bookings": total,
-
             "completed": completed_count,
-
             "revenue": revenue,
-
-            "completion_rate": round( completion_rate, 2 ),
-
+            "completion_rate": round(completion_rate, 2),
         })
 
         current_date = next_month
