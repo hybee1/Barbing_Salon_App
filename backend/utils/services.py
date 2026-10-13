@@ -21,7 +21,11 @@ from zoneinfo import ZoneInfo
 def convert_utc_iso_to_salon_time( value: str | date | datetime, salon_timezone: ZoneInfo,) -> datetime:
 
     if isinstance(value, str):
-        dt = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        try:
+            dt = datetime.fromisoformat( value.replace("Z", "+00:00") )
+        except ValueError as exc:
+            raise ValidationError( {"detail": "Invalid ISO date/time value."}
+            ) from exc
 
     elif isinstance(value, datetime):
         dt = value
