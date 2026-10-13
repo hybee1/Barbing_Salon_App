@@ -221,7 +221,7 @@ class TodayBookingApiView(APIView):
 
     permission_classes = [Is_SalonManager]
 
-    def get(self,):
+    def get(self, request):
 
         salon_info = services_salon_config.get_salon_info_config()
         salon_tz = ZoneInfo(salon_info["time_zone"])
@@ -517,7 +517,7 @@ class BarberUpcomingBookingsToday(APIView):
 
     permission_classes = [SalonManager_Or_Barber_Or_Stylist_Or_Is_Barber_Stylist]
 
-    def get(self,):
+    def get(self, request):
 
         now_utc = timezone.now()
 
@@ -541,5 +541,5 @@ class BarberUpcomingBookingsToday(APIView):
 class BookingsStatuses(APIView):
     permission_classes = [Is_Authenticated_Staff_User]
 
-    def get(self,):
+    def get(self, request):
         return Response({"statuses": Booking.STATUS.values}, status=status.HTTP_200_OK)

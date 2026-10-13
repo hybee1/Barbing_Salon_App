@@ -1,5 +1,6 @@
 from django.db.models import QuerySet
 from django.shortcuts import get_object_or_404
+from rest_framework.exceptions import ValidationError
 
 from backend.bookings.models import Booking
 from backend.accounts.models import StaffProfile, User
@@ -27,6 +28,9 @@ def convert_utc_iso_to_salon_time( value: str | date | datetime, salon_timezone:
 
     elif isinstance(value, date):
         dt = datetime.combine(value, datetime.min.time())
+
+    else:
+        raise ValidationError({"detail": "Invalid value"})
 
 
     if timezone.is_naive(dt):

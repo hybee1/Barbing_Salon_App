@@ -464,7 +464,7 @@ class ManagerReportView(APIView):
 
     permission_classes = [ Is_SalonManager  ]
 
-    def get( self ):
+    def get( self, request):
 
         salon_info = services_salon_config.get_salon_info_config()
         salon_tz = ZoneInfo(salon_info["time_zone"])
@@ -678,7 +678,7 @@ class ManagerDateRangeReportView(APIView):
         # TREND
         # --------------------------------------------------
 
-        trend = build_report_trend( bookings, start_date_utc, end_date_utc, grouping )
+        trend = build_report_trend( bookings, start_date, end_date, grouping )
 
         # --------------------------------------------------
         # INVENTORY
