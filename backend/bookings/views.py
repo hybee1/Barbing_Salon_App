@@ -99,7 +99,7 @@ class ManageBooking_Api_View(APIView):
             converted_start_date_time_in_utc = datetime.combine(start_date, salon_open_time,
                                                          tzinfo=salon_tz).astimezone(dt_timezone.utc)
 
-            converted_end_date_time_in_utc = datetime.combine(start_date, salon_close_time,
+            converted_end_date_time_in_utc = datetime.combine(end_date, salon_close_time,
                                                          tzinfo=salon_tz).astimezone(dt_timezone.utc)
 
             bookings = bookings.filter(session_start_date_time__range=(

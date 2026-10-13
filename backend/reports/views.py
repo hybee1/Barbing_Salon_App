@@ -255,15 +255,14 @@ def build_daily_trend( bookings: Booking, start_date_in_salon_tz: date, end_date
 
     current_date = start_date_in_salon_tz
 
-    # salon open hours
-    current_date_time_open_hours_in_utc = datetime.combine(current_date, salon_open_time,
-                                         tzinfo=salon_tz).astimezone(dt_timezone.utc)
-
-    # salon close hours
-    current_date_time_close_hours_in_utc = datetime.combine(current_date, salon_close_time,
-                                                           tzinfo=salon_tz).astimezone(dt_timezone.utc)
-
     while current_date <= end_date_in_salon_tz:
+        # salon open hours
+        current_date_time_open_hours_in_utc = datetime.combine(current_date, salon_open_time,
+                                                               tzinfo=salon_tz).astimezone(dt_timezone.utc)
+
+        # salon close hours
+        current_date_time_close_hours_in_utc = datetime.combine(current_date, salon_close_time,
+                                                                tzinfo=salon_tz).astimezone(dt_timezone.utc)
 
         day_bookings = bookings.filter(session_start_date_time__gte=current_date_time_open_hours_in_utc,
             session_start_date_time__lte=current_date_time_close_hours_in_utc,)
@@ -336,9 +335,13 @@ def build_weekly_trend( bookings: Booking, start_date_in_salon_tz: date, end_dat
                                                                tzinfo=salon_tz).astimezone(dt_timezone.utc)
 
         # salon close hours
-        range_end_date_time_close_hours_in_utc = datetime.combine(range_end + timedelta(days=1),
+        # range_end_date_time_close_hours_in_utc = datetime.combine(range_end + timedelta(days=1),
+        #                                                           salon_close_time,
+        #                                                         tzinfo=salon_tz).astimezone(dt_timezone.utc)
+
+        range_end_date_time_close_hours_in_utc = datetime.combine(range_end,
                                                                   salon_close_time,
-                                                                tzinfo=salon_tz).astimezone(dt_timezone.utc)
+                                                                  tzinfo=salon_tz).astimezone(dt_timezone.utc)
 
         week_bookings = bookings.filter(
             session_start_date_time__gte=range_start_date_time_open_hours_in_utc,
@@ -417,7 +420,8 @@ def build_monthly_trend( bookings: Booking, start_date_in_salon_tz: date, end_da
         # Convert salon-local calendar boundaries to UTC.
         start_local = datetime.combine( range_start, salon_open_time, tzinfo=salon_tz, )
 
-        end_local = datetime.combine( range_end + timedelta(days=1), salon_close_time, tzinfo=salon_tz, )
+        # end_local = datetime.combine( range_end + timedelta(days=1), salon_close_time, tzinfo=salon_tz, )
+        end_local = datetime.combine(range_end, salon_close_time, tzinfo=salon_tz, )
 
         start_utc = start_local.astimezone(dt_timezone.utc)
         end_utc = end_local.astimezone(dt_timezone.utc)
@@ -534,7 +538,7 @@ class ManagerDateRangeReportView(APIView):
 
     def get( self, request, *args, **kwargs ):
 
-        today = timezone.localdate()
+        today_date_time_in_utc = timezone.now()
 
         # --------------------------------------------------
         # QUERY PARAMETERS
@@ -544,6 +548,11 @@ class ManagerDateRangeReportView(APIView):
 
         end_date_param = request.query_params.get( "end_date" )
 
+        salon_info = services_salon_config.get_salon_info_config()
+        salon_open_time = salon_info["open_time"]
+        salon_close_time = salon_info["close_time"]
+        salon_tz = ZoneInfo(salon_info["time_zone"])
+
 
         # --------------------------------------------------
         # START DATE
@@ -551,14 +560,16 @@ class ManagerDateRangeReportView(APIView):
 
         if not start_date_param:
 
-            start_date = today
+            start_date_utc = today_date_time_in_utc
 
         else:
 
             try:
 
-                start_date = timezone.datetime.strptime(
-                    start_date_param, "%Y-%m-%d" ).date()
+                start_date = timezone.datetime.strptime( start_date_param, "%Y-%m-%d" ).date()
+
+                start_date_utc = datetime.combine(start_date, datetime.min.time(), tzinfo=salon_tz,
+                                                ).astimezone(dt_timezone.utc)
 
             except ValueError:
 
@@ -574,13 +585,16 @@ class ManagerDateRangeReportView(APIView):
 
         if not end_date_param:
 
-            end_date = today
+            end_date_utc = today_date_time_in_utc
 
         else:
 
             try:
 
-                end_date = timezone.datetime.strptime( end_date_param, "%Y-%m-%d" ).date()
+                end_date = (timezone.datetime.strptime( end_date_param, "%Y-%m-%d" ).date())
+
+                end_date_utc = datetime.combine( end_date, datetime.min.time(), tzinfo=salon_tz,
+                                                                            ).astimezone(dt_timezone.utc)
 
             except ValueError:
 
@@ -593,7 +607,7 @@ class ManagerDateRangeReportView(APIView):
         # VALIDATE
         # --------------------------------------------------
 
-        if start_date > end_date:
+        if start_date_utc > end_date_utc:
 
             return Response(
                 { "detail": "start_date cannot be after end_date." },
@@ -605,7 +619,7 @@ class ManagerDateRangeReportView(APIView):
         # BOOKINGS
         # --------------------------------------------------
 
-        bookings = Booking.objects.filter( booking_date__range=( start_date, end_date ) )
+        bookings = Booking.objects.filter( session_start_date_time__range=( start_date_utc, end_date_utc ) )
 
 
         completed_bookings = bookings.filter( status=Booking.STATUS.COMPLETED )
