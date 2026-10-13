@@ -388,12 +388,23 @@ class BarberBookingStatsView(APIView):
 
         salon_info = services_salon_config.get_salon_info_config()
         salon_tz = ZoneInfo(salon_info["time_zone"])
+        salon_open_time = salon_info["open_time"]
+        salon_close_time = salon_info["close_time"]
 
         today_date_time_in_salon_tz = now_utc.astimezone(salon_tz)
         today_date_in_salon_tz = today_date_time_in_salon_tz.date()
 
+        start_today_date_time_in_salon_tz = datetime.combine(
+            today_date_in_salon_tz, salon_open_time, tzinfo=salon_tz, )
+
+        end_today_date_time_in_salon_tz = datetime.combine(
+            today_date_in_salon_tz, salon_close_time, tzinfo=salon_tz, )
+
         barber_bookings_stats_for_today = Booking.objects.filter(
-                                        booking_date=today_date_in_salon_tz, barber=barber)
+                                        session_start_date_time__range=(
+                                            start_today_date_time_in_salon_tz,
+                                            end_today_date_time_in_salon_tz),
+                                        barber=barber)
 
         stats = barber_bookings_stats_for_today.aggregate(
             today_count=Count("id"),

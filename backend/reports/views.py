@@ -244,7 +244,7 @@ def get_week_start(date) -> date:
 def build_daily_trend( bookings: Booking, start_date_in_salon_tz: date, end_date_in_salon_tz: date ):
 
     if start_date_in_salon_tz > end_date_in_salon_tz:
-        raise ValueError("Start date must not be after end date.")
+        raise ValueError({ "detail": "Start date must not be after end date."})
 
     salon_info = services_salon_config.get_salon_info_config()
     salon_open_time = salon_info["open_time"]
@@ -307,7 +307,7 @@ def build_daily_trend( bookings: Booking, start_date_in_salon_tz: date, end_date
 def build_weekly_trend( bookings: Booking, start_date_in_salon_tz: date, end_date_in_salon_tz: date ):
 
     if start_date_in_salon_tz > end_date_in_salon_tz:
-        raise ValueError("Start date must not be after end date.")
+        raise ValueError({ "detail": "Start date must not be after end date."})
 
     salon_info = services_salon_config.get_salon_info_config()
     salon_open_time = salon_info["open_time"]
@@ -483,7 +483,25 @@ class ManagerReportView(APIView):
 
     def get( self, request, *args, **kwargs ):
 
-        today = timezone.localdate()
+        salon_info = services_salon_config.get_salon_info_config()
+        salon_tz = ZoneInfo(salon_info["time_zone"])
+        salon_open_time = salon_info["open_time"]
+        salon_close_time = salon_info["close_time"]
+
+        today_date_time_utc = timezone.now()
+
+        start_today_date_time_in_salon_tz = today_date_time_utc.astimezone(salon_tz)
+        today_date_in_salon_tz = start_today_date_time_in_salon_tz.date()
+
+        start_today_date_time_in_salon_tz = datetime.combine(
+                            today_date_in_salon_tz, salon_open_time, tzinfo=salon_tz, )
+
+        end_today_date_time_in_salon_tz = datetime.combine(
+                            today_date_in_salon_tz, salon_close_time, tzinfo=salon_tz, )
+
+        start_today_date_time_in_utc = start_today_date_time_in_salon_tz.astimezone((dt_timezone.utc))
+
+        end_today_date_time_in_utc = end_today_date_time_in_salon_tz.astimezone((dt_timezone.utc))
 
         bookings = Booking.objects.all()
 
@@ -492,9 +510,9 @@ class ManagerReportView(APIView):
 
         booking_summary = get_booking_summary( bookings )
 
-        today_revenue = ( completed_bookings .filter( booking_date=today )
-
-            .aggregate(
+        today_revenue = ( completed_bookings .filter( session_start_date_time__range=(
+                                start_today_date_time_in_utc, end_today_date_time_in_utc)
+        ).aggregate(
 
                 total=Coalesce(
                     Sum("price"),
