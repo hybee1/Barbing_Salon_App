@@ -1,6 +1,6 @@
 
 import logging
-from datetime import datetime, timezone as dt_timezone, date
+from datetime import datetime, timezone as dt_timezone
 from zoneinfo import ZoneInfo
 
 from django.core.exceptions import ValidationError
@@ -118,27 +118,7 @@ def create_booking(*, barber_id: int, service: Service, hairstyle: Hairstyle, co
 def update_booking(*, booking_reference:str, new_status:Booking.STATUS, reason_for_cancellation=None,
                    salon_timezone: ZoneInfo, ):
 
-    booking = ( Booking.objects.select_for_update().get(booking_reference=booking_reference) )
-
-    # # Cancellation requires a reason
-    # if ( status == Booking.STATUS.CANCELLED ):
-    #
-    #     if ( not reason_for_cancellation ):
-    #         raise ValidationError({
-    #             "reason_for_cancellation": "A cancellation reason is required when cancelling a booking."
-    #         })
-    #
-    #     if (booking.status == Booking.STATUS.COMPLETED):
-    #         raise ValidationError({
-    #             "details": "This booking was already cancelled and cannot be completed "
-    #                        "please place another service session."
-    #         })
-    #
-    #     if ( booking.status==Booking.STATUS.CANCELLED ):
-    #         raise ValidationError({
-    #             "details": "This booking was already cancelled."
-    #         })
-
+    booking: Booking = ( Booking.objects.select_for_update().get(booking_reference=booking_reference) )
 
     # Do not allow a cancellation reason for a non-cancelled booking
     if new_status != Booking.STATUS.CANCELLED:

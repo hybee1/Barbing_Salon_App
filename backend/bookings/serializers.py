@@ -1,17 +1,16 @@
 
-from datetime import timedelta, datetime, timezone as dt_timezone
+from datetime import timedelta, datetime
 from zoneinfo import ZoneInfo
 
 from django.utils import timezone
 from rest_framework import serializers
 
 from backend.accounts.models import User, StaffProfile
-from backend.bookings.booking_services import create_booking, update_booking, allowable_status_change
+from backend.bookings.booking_services import create_booking, update_booking
 from backend.bookings.models import Booking
 from backend.custom_serializer.custom_phone_number_serializer import SalonPhoneNumberFieldCustomSerializer
 from backend.salon_settings.services_salon_config import get_salon_info_config
 from backend.services.models import Service, Hairstyle, Color
-from backend.utils.services import BarberScheduler
 from observability.metrics.metrics import BOOKING_STATUS_CHANGE_REJECTED
 
 
@@ -70,7 +69,7 @@ class BookingSerializer(serializers.ModelSerializer):
         return value
 
     def validate(self, attrs):
-        if ( attrs.get("status") == Booking.STATUS.CANCELLED and not attrs.get("reason_for_cancellation")  ):
+        if attrs.get("status") == Booking.STATUS.CANCELLED and not attrs.get("reason_for_cancellation"):
             raise serializers.ValidationError(
                 { "reason_for_cancellation": "A cancellation reason is required." }
             )
@@ -140,7 +139,7 @@ class CreateBookingSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
 
-        barber= attrs.get("barber")
+
         service = attrs.get("service")
         hairstyle = attrs.get("hairstyle")
         color = attrs.get("color")
@@ -218,7 +217,7 @@ class CreateBookingSerializer(serializers.ModelSerializer):
 
         # we needed to add the two immediate below lines to attrs because in the next method
         # it expects the two newly added two line in attrs that is why they were added.
-        # not e we did not add the utc versions of the tow fields as they are already present in attrs
+        # not e we did not add the utc versions of the two fields as they are already present in attrs
         attrs["session_start_date_time_in_salon_tz"] = session_start_date_time_in_salon_tz
         attrs["session_end_date_time_in_salon_tz"] = session_end_date_time_in_salon_tz
 
@@ -274,8 +273,7 @@ class UpdateBookingSerializer(serializers.ModelSerializer):
         now_date_time_utc = timezone.now()
 
 
-        if (session_start_date_time_utc < now_date_time_utc and
-                session_end_date_time_utc > now_date_time_utc ):
+        if session_start_date_time_utc < now_date_time_utc < session_end_date_time_utc:
 
             BOOKING_STATUS_CHANGE_REJECTED.labels(
                 reason="booking_in_progress", requested_status=status, ).inc()

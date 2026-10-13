@@ -1,3 +1,4 @@
+from django.db.models import QuerySet
 from django.shortcuts import get_object_or_404
 
 from backend.bookings.models import Booking
@@ -26,8 +27,7 @@ def convert_utc_iso_to_salon_time( value: str | date | datetime, salon_timezone:
 
     elif isinstance(value, date):
         dt = datetime.combine(value, datetime.min.time())
-    else:
-        raise TypeError(f"Unsupported type: {type(value).__name__}")
+
 
     if timezone.is_naive(dt):
         dt = dt.replace(tzinfo=dt_timezone.utc)
@@ -73,10 +73,10 @@ class BarberScheduler:
     def get_this_barber_bookings_for_this_date( self, *, barber: StaffProfile,
                                                 session_date_in_salon_tz: date, salon_opening_time: time,
                                                 salon_closing_time: time,
-                                                salon_timezone: ZoneInfo,) -> list[Booking]:
+                                                salon_timezone: ZoneInfo,) -> QuerySet[Booking]:
 
 
-        # the below is use as date_time range for selecting for selecting a barber's booking for that
+        # the below is use as date_time range for selecting a barber's booking for that day
         start_date_time_in_utc = datetime.combine(session_date_in_salon_tz, salon_opening_time,
                                                   tzinfo=salon_timezone).astimezone(dt_timezone.utc)
         end_date_time_in_utc = datetime.combine(session_date_in_salon_tz, salon_closing_time,
@@ -90,7 +90,7 @@ class BarberScheduler:
         )
 
         return (
-            Booking.objects.filter(  barber=barber,  session_start_date_time__range=(
+            Booking.objects.filter( barber=barber,  session_start_date_time__range=(
                 start_date_time_in_utc, end_date_time_in_utc),
                                      status__in=ACTIVE_BOOKING_STATUSES
             )
@@ -196,7 +196,7 @@ class BarberScheduler:
         if schedule_start_utc >= schedule_end_utc:
             raise ValueError( "schedule_start_utc must be before schedule_end_utc." )
 
-        blocks = (
+        blocks: QuerySet[BreakTimeAndOffDays] = (
             BreakTimeAndOffDays.objects
             .filter(
                 staff=barber,
@@ -294,11 +294,11 @@ class BarberScheduler:
     # =========================================================
 
     def determine_free_period_for_barber(
-            self, *, staffProfile_id: int, session_date_in_salon_tz: date,
+            self, *, staff_profile_id: int, session_date_in_salon_tz: date,
             salon_opening_time: time, salon_closing_time: time,
             salon_timezone: ZoneInfo, booking_slot_interval: int, ) -> list[tuple[datetime, datetime]]:
 
-        barber = get_object_or_404(  StaffProfile,  id=staffProfile_id, )
+        barber = get_object_or_404(  StaffProfile,  id=staff_profile_id, )
 
         if barber.user.role != User.Role.STAFF:
             raise RoleException()
@@ -348,7 +348,8 @@ class BarberScheduler:
                 barber=barber,
                 session_date_in_salon_tz=session_date_in_salon_tz,
                 salon_opening_time=salon_opening_time,
-                salon_closing_time=salon_closing_time
+                salon_closing_time=salon_closing_time,
+                salon_timezone=salon_timezone,
             )
         )
 
@@ -356,9 +357,9 @@ class BarberScheduler:
 
         for booking in bookings_for_the_barber:
 
-            booking_start_utc = ( booking.session_start_date_time  )
+            booking_start_utc = booking.session_start_date_time
 
-            booking_end_utc = (  booking.session_end_date_time )
+            booking_end_utc = booking.session_end_date_time
 
             if timezone.is_naive( booking_start_utc ):
                 raise ValueError( "Booking session_start_date_time must be timezone-aware." )
@@ -473,7 +474,7 @@ class BarberScheduler:
 
             slot_utc = free_start_utc
 
-            while ( slot_utc + duration <= free_end_utc ):
+            while slot_utc + duration <= free_end_utc:
 
                 slot_salon = slot_utc.astimezone( salon_timezone )
 
@@ -589,27 +590,27 @@ class BarberScheduler:
     # MAIN PUBLIC SCHEDULER
     # =========================================================
 
-    def check_schedule( self, *, staffProfile_id: int, session_date_in_salon_tz: date,
+    def check_schedule( self, *, staff_profile_id: int, session_date_in_salon_tz: date,
                         total_service_duration: int, salon_opening_time: time, salon_closing_time: time,
                         salon_timezone: ZoneInfo, booking_slot_interval: int, ) -> list[time] | None:
 
         barber_free_periods = (
             self.determine_free_period_for_barber(
-                staffProfile_id=staffProfile_id,
-                session_date_in_salon_tz=( session_date_in_salon_tz ),
-                salon_opening_time=( salon_opening_time ),
-                salon_closing_time=( salon_closing_time ),
+                staff_profile_id=staff_profile_id,
+                session_date_in_salon_tz=session_date_in_salon_tz,
+                salon_opening_time=salon_opening_time,
+                salon_closing_time=salon_closing_time,
                 salon_timezone=salon_timezone,
-                booking_slot_interval=( booking_slot_interval ),
+                booking_slot_interval=booking_slot_interval,
             )
         )
 
         available_start_time = (
             self.available_start_time_for_the_service_in_salon_tz(
                 free_periods=barber_free_periods,
-                total_service_duration=( total_service_duration ),
+                total_service_duration=total_service_duration,
                 salon_timezone=salon_timezone,
-                booking_slot_interval=( booking_slot_interval ),
+                booking_slot_interval=booking_slot_interval,
             )
         )
 

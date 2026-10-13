@@ -20,7 +20,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 
 from backend.bookings.models import Booking
-from backend.custom_permissions.permissions import Is_Authenticated_Staff_User, Is_SalonManager
+from backend.custom_permissions.permissions import Is_SalonManager
 from backend.inventory.models import InventoryItem
 from backend.salon_settings import services_salon_config
 
@@ -33,9 +33,7 @@ MONEY_FIELD = DecimalField( max_digits=12, decimal_places=2, )
 
 def get_completed_bookings():
 
-    return Booking.objects.filter(
-        status=Booking.STATUS.COMPLETED
-    )
+    return Booking.objects.filter( status=Booking.STATUS.COMPLETED )
 
 
 def get_booking_summary(queryset):
@@ -174,15 +172,9 @@ def get_service_performance(queryset):
 
     return list(
 
-        queryset
+        queryset.values( "service__name" )
 
-        .values(
-            "service__name"
-        )
-
-        .annotate(
-
-            booking_count=Count("id"),
+        .annotate( booking_count=Count("id"),
 
             revenue=Coalesce(
                 Sum("price"),
@@ -192,10 +184,7 @@ def get_service_performance(queryset):
 
         )
 
-        .order_by(
-            "-booking_count",
-            "-revenue",
-        )[:10]
+        .order_by( "-booking_count", "-revenue", )[:10]
 
     )
 
@@ -204,15 +193,9 @@ def get_service_performance(queryset):
 # GROUPING
 # ==========================================================
 
-def determine_report_grouping(
-    start_date,
-    end_date
-):
+def determine_report_grouping( start_date, end_date):
 
-    days = (
-        end_date -
-        start_date
-    ).days + 1
+    days = ( end_date - start_date  ).days + 1
 
 
     if days <= 31:
@@ -232,9 +215,9 @@ def determine_report_grouping(
 # WEEK START
 # ==========================================================
 
-def get_week_start(date) -> date:
+def get_week_start(date1) -> date:
 
-    return date - timedelta( days=date.weekday() )
+    return date1 - timedelta( days=date1.weekday() )
 
 
 # ==========================================================
@@ -481,7 +464,7 @@ class ManagerReportView(APIView):
 
     permission_classes = [ Is_SalonManager  ]
 
-    def get( self, request, *args, **kwargs ):
+    def get( self ):
 
         salon_info = services_salon_config.get_salon_info_config()
         salon_tz = ZoneInfo(salon_info["time_zone"])
@@ -499,9 +482,9 @@ class ManagerReportView(APIView):
         end_today_date_time_in_salon_tz = datetime.combine(
                             today_date_in_salon_tz, salon_close_time, tzinfo=salon_tz, )
 
-        start_today_date_time_in_utc = start_today_date_time_in_salon_tz.astimezone((dt_timezone.utc))
+        start_today_date_time_in_utc = start_today_date_time_in_salon_tz.astimezone(dt_timezone.utc)
 
-        end_today_date_time_in_utc = end_today_date_time_in_salon_tz.astimezone((dt_timezone.utc))
+        end_today_date_time_in_utc = end_today_date_time_in_salon_tz.astimezone(dt_timezone.utc)
 
         bookings = Booking.objects.all()
 
@@ -554,7 +537,7 @@ class ManagerDateRangeReportView(APIView):
     permission_classes = [ Is_SalonManager ]
 
 
-    def get( self, request, *args, **kwargs ):
+    def get( self, request, ):
 
         today_date_time_in_utc = timezone.now()
 
@@ -567,24 +550,23 @@ class ManagerDateRangeReportView(APIView):
         end_date_param = request.query_params.get( "end_date" )
 
         salon_info = services_salon_config.get_salon_info_config()
-        salon_open_time = salon_info["open_time"]
-        salon_close_time = salon_info["close_time"]
         salon_tz = ZoneInfo(salon_info["time_zone"])
 
 
         # --------------------------------------------------
         # START DATE
         # --------------------------------------------------
-
+        start_date = None
         if not start_date_param:
 
             start_date_utc = today_date_time_in_utc
+            start_date = today_date_time_in_utc.astimezone(salon_tz)
 
         else:
 
             try:
 
-                start_date = timezone.datetime.strptime( start_date_param, "%Y-%m-%d" ).date()
+                start_date = datetime.strptime( start_date_param, "%Y-%m-%d" ).date()
 
                 start_date_utc = datetime.combine(start_date, datetime.min.time(), tzinfo=salon_tz,
                                                 ).astimezone(dt_timezone.utc)
@@ -600,16 +582,17 @@ class ManagerDateRangeReportView(APIView):
         # --------------------------------------------------
         # END DATE
         # --------------------------------------------------
-
+        end_date = None
         if not end_date_param:
 
             end_date_utc = today_date_time_in_utc
+            end_date = today_date_time_in_utc.astimezone(salon_tz)
 
         else:
 
             try:
 
-                end_date = (timezone.datetime.strptime( end_date_param, "%Y-%m-%d" ).date())
+                end_date = (datetime.strptime( end_date_param, "%Y-%m-%d" ).date())
 
                 end_date_utc = datetime.combine( end_date, datetime.min.time(), tzinfo=salon_tz,
                                                                             ).astimezone(dt_timezone.utc)
@@ -695,7 +678,7 @@ class ManagerDateRangeReportView(APIView):
         # TREND
         # --------------------------------------------------
 
-        trend = build_report_trend( bookings, start_date, end_date, grouping )
+        trend = build_report_trend( bookings, start_date_utc, end_date_utc, grouping )
 
         # --------------------------------------------------
         # INVENTORY
@@ -709,9 +692,9 @@ class ManagerDateRangeReportView(APIView):
 
         return Response({
 
-            "start_date": start_date.isoformat(),
+            "start_date": start_date.date().isoformat(),
 
-            "end_date": end_date.isoformat(),
+            "end_date": end_date.date().isoformat(),
 
             "grouping": grouping,
 
