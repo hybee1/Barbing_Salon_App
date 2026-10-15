@@ -11,6 +11,7 @@ from phonenumber_field.modelfields import PhoneNumberField
 from phonenumbers import NumberParseException
 
 from core_config import settings_base
+from backend.utils.image_field_custom import OptimizedImageField
 
 
 
@@ -51,7 +52,7 @@ class User(AbstractUser):
 
     phone_number = PhoneNumberField()
 
-    image = models.ImageField(upload_to=get_photo_upload_path, blank=True, null=True)
+    image = OptimizedImageField(upload_to=get_photo_upload_path, blank=True, null=True)
 
 
     def get_full_name(self):

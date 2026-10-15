@@ -156,6 +156,12 @@ MEDIA_ROOT = BASE_DIR / "media"
 # Django session to expire after 1 hour
 # SESSION_COOKIE_AGE = 60 * 60 * 1
 
+# Maximum uploaded request body: 11 MB.
+DATA_UPLOAD_MAX_MEMORY_SIZE = 11 * 1024 * 1024
+
+# Maximum individual uploaded file: 10 MB.
+FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024
+
 AUTHENTICATION_BACKENDS = [
     "backend.custom_authentication.custom_auth_backend.AuthUsingUserNameOrPhone",
 ]

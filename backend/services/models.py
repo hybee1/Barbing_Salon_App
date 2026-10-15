@@ -1,6 +1,7 @@
 from django.db import models
 
 from backend.salon_settings.models import TimeStampedModel
+from backend.utils.image_field_custom import OptimizedImageField
 
 
 # --------------------
@@ -9,7 +10,7 @@ from backend.salon_settings.models import TimeStampedModel
 
 class Service(TimeStampedModel):
     name = models.CharField(max_length=100, unique=True)
-    image = models.ImageField(upload_to="services_image/", blank=True, null=True)
+    image = OptimizedImageField(upload_to="services_image/", blank=True, null=True)
     price = models.DecimalField(max_digits = 10, decimal_places = 2)
     duration_minutes = models.PositiveIntegerField()
     description = models.TextField(blank=True)
@@ -51,7 +52,7 @@ class Hairstyle(TimeStampedModel):
 
     name = models.CharField(max_length=100)
 
-    image = models.ImageField(upload_to="hairstyles_image/", blank=True, null=True)
+    image = OptimizedImageField(upload_to="hairstyles_image/", blank=True, null=True)
 
     description = models.TextField(blank=True)
 
