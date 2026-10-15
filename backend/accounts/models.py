@@ -12,8 +12,14 @@ from phonenumbers import NumberParseException
 
 from core_config import settings_base
 from backend.utils.image_field_custom import OptimizedImageField
+from core_config.settings_dev import ENVIRONMENT as env_dev
+from core_config.settings_prod import ENVIRONMENT as env_prod
 
 
+if env_dev:
+    PREFIX = env_dev
+elif env_prod:
+    PREFIX = env_prod
 
 def get_photo_upload_path(obj, filename):
 
@@ -29,7 +35,7 @@ def get_photo_upload_path(obj, filename):
     else:
         folder = "customers"
 
-    return f"{folder}/{filename}"
+    return f"{PREFIX}/{folder}/{filename}"
 
 
 class User(AbstractUser):

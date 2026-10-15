@@ -2,7 +2,14 @@ from django.db import models
 
 from backend.salon_settings.models import TimeStampedModel
 from backend.utils.image_field_custom import OptimizedImageField
+from core_config.settings_dev import ENVIRONMENT as env_dev
+from core_config.settings_prod import ENVIRONMENT as env_prod
 
+
+if env_dev:
+    PREFIX = env_dev
+elif env_prod:
+    PREFIX = env_prod
 
 # --------------------
 # SERVICES
@@ -52,7 +59,7 @@ class Hairstyle(TimeStampedModel):
 
     name = models.CharField(max_length=100)
 
-    image = OptimizedImageField(upload_to="hairstyles_image/", blank=True, null=True)
+    image = OptimizedImageField(upload_to=f"{PREFIX}/hairstyles_image/", blank=True, null=True)
 
     description = models.TextField(blank=True)
 

@@ -194,7 +194,25 @@ REST_FRAMEWORK = {
 
 AUTH_USER_MODEL = "accounts.User"
 
+# WhiteNoise and cloudinary
+STORAGES = {
+    # "default": {
+    #     "BACKEND": "django.core.files.storage.FileSystemStorage",
+    # },
+    "default": {
+        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
+    },
+    "staticfiles": {
+        "BACKEND": (
+            "whitenoise.storage."
+            "CompressedManifestStaticFilesStorage"
+        ),
+    },
+}
 
 
-
-
+CLOUDINARY_STORAGE = {
+    "CLOUD_NAME": os.environ.get("CLOUDINARY_CLOUD_NAME", ""),
+    "API_KEY": os.environ.get("CLOUDINARY_API_KEY", ""),
+    "API_SECRET": os.environ.get("CLOUDINARY_API_SECRET", ""),
+}
