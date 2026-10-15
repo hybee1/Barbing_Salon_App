@@ -6,9 +6,9 @@ from core_config.settings_dev import ENVIRONMENT as env_dev
 from core_config.settings_prod import ENVIRONMENT as env_prod
 
 
-if env_dev:
+if env_dev in ["dev", "development"]:
     PREFIX = env_dev
-elif env_prod:
+elif env_prod in ["prod", "production"]:
     PREFIX = env_prod
 
 # --------------------
