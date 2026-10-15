@@ -1,5 +1,3 @@
-from django.shortcuts import render
-
 
 # ==========================================================
 # inventory_views.py
@@ -16,20 +14,10 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 
-from .models import (
-    InventoryCategory,
-    InventoryItem,
-    InventoryTransaction,
-    EquipmentProfile,
-)
+from .models import ( InventoryItem, InventoryTransaction,)
 
-from .serializers import (
-    InventoryCategorySerializer,
-    InventoryItemSerializer,
-    InventoryTransactionSerializer,
-    EquipmentProfileSerializer,
-)
-from ..custom_permissions.permissions import Is_Authenticated_Staff_User, Is_SalonManager
+from .serializers import (InventoryItemSerializer, InventoryTransactionSerializer,)
+from ..custom_permissions.permissions import IsSalonManager
 
 
 # ----------------------------------------------------------
@@ -46,7 +34,7 @@ from ..custom_permissions.permissions import Is_Authenticated_Staff_User, Is_Sal
 
 class InventoryItemListCreateAPIView(APIView):
 
-    permission_classes = [Is_SalonManager]
+    permission_classes = [IsSalonManager]
 
     def get(self, request):
 
@@ -66,20 +54,13 @@ class InventoryItemListCreateAPIView(APIView):
 
     def post(self, request):
 
-        serializer = InventoryItemSerializer(
-            data=request.data
-        )
+        serializer = InventoryItemSerializer( data=request.data  )
 
-        serializer.is_valid(
-            raise_exception=True
-        )
+        serializer.is_valid( raise_exception=True )
 
         item = serializer.save()
 
-        return Response(
-            InventoryItemSerializer(item).data,
-            status=status.HTTP_201_CREATED
-        )
+        return Response( InventoryItemSerializer(item).data, status=status.HTTP_201_CREATED  )
 
 
 # ==========================================================
@@ -88,15 +69,12 @@ class InventoryItemListCreateAPIView(APIView):
 
 class InventoryItemDetailAPIView(APIView):
 
-    permission_classes = [Is_SalonManager]
+    permission_classes = [IsSalonManager]
 
     def get_object(self, pk):
 
         return (
-            InventoryItem.objects
-            .select_related("category")
-            .filter(pk=pk)
-            .first()
+            InventoryItem.objects.select_related("category").filter(pk=pk).first()
         )
 
     def get(self, request, pk):
@@ -106,10 +84,7 @@ class InventoryItemDetailAPIView(APIView):
         if not item:
 
             return Response(
-                {
-                    "detail":
-                        "Inventory item not found."
-                },
+                { "detail": "Inventory item not found." },
                 status=status.HTTP_404_NOT_FOUND
             )
 
@@ -203,17 +178,13 @@ class InventoryItemDetailAPIView(APIView):
 
 class InventoryItemSummaryAPIView(APIView):
 
-    permission_classes = [Is_SalonManager]
+    permission_classes = [IsSalonManager]
 
     def get(self, request):
 
-        active_items = InventoryItem.objects.filter(
-            status=InventoryItem.Status.ACTIVE
-        )
+        active_items = InventoryItem.objects.filter( status=InventoryItem.Status.ACTIVE )
 
-        low_stock_items = active_items.filter(
-            quantity__lte=F("reorder_level")
-        )
+        low_stock_items = active_items.filter( quantity__lte=F("reorder_level") )
 
         total_stock_value = (
             active_items
@@ -255,7 +226,7 @@ class InventoryItemSummaryAPIView(APIView):
 
 class InventoryStockInAPIView(APIView):
 
-    permission_classes = [Is_SalonManager]
+    permission_classes = [IsSalonManager]
 
     @transaction.atomic
     def post(self, request, pk):
@@ -300,20 +271,14 @@ class InventoryStockInAPIView(APIView):
         except Exception:
 
             return Response(
-                {
-                    "quantity":
-                        "Enter a valid number."
-                },
+                { "quantity": "Enter a valid number." },
                 status=status.HTTP_400_BAD_REQUEST
             )
 
         if quantity <= 0:
 
             return Response(
-                {
-                    "quantity":
-                        "Quantity must be greater than zero."
-                },
+                { "quantity": "Quantity must be greater than zero."  },
                 status=status.HTTP_400_BAD_REQUEST
             )
 
@@ -436,7 +401,7 @@ class InventoryStockInAPIView(APIView):
 
 class InventoryStockOutAPIView(APIView):
 
-    permission_classes = [Is_SalonManager]
+    permission_classes = [IsSalonManager]
 
     @transaction.atomic
     def post(self, request, pk):

@@ -1,6 +1,6 @@
 
-from django.urls import path
-from api.services.views import ColorsView
+# from django.urls import path
+# from api.services.views import ColorsView
 
 
 # urlpatterns = [

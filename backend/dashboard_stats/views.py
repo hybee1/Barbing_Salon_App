@@ -1,7 +1,7 @@
 from zoneinfo import ZoneInfo
 
 from django.db.models import Q
-from datetime import timezone as dt_timezone
+from datetime import timezone as dt_timezone, datetime
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.response import Response
@@ -9,35 +9,52 @@ from rest_framework.views import APIView
 from backend.accounts.models import StaffProfile
 from backend.bookings.models import Booking
 from backend.breakperiods.models import BreakTimeAndOffDays
-from backend.custom_permissions.permissions import Is_Authenticated_Staff_User, Is_SalonManager
+from backend.custom_permissions.permissions import IsSalonManager
 from backend.salon_settings import services_salon_config
+from backend.utils.convert_str_time_to_time_obj import convert_to_time
 
 
 class SalonManagerDashboardStatsView(APIView):
 
-    permission_classes = [Is_SalonManager]
+    permission_classes = [IsSalonManager]
 
     def get(self, request):
 
         salon_info = services_salon_config.get_salon_info_config()
         salon_tz = ZoneInfo(salon_info["time_zone"])
+        salon_open_time = salon_info["open_time"]
+        salon_close_time = salon_info["close_time"]
+
+        salon_open_time = convert_to_time(salon_open_time)
+        salon_close_time = convert_to_time(salon_close_time)
 
         now_date_time_in_utc = timezone.now()
 
         now_date_time_in_salon_tz = now_date_time_in_utc.astimezone(salon_tz)
 
         date_today_in_salon_tz = now_date_time_in_salon_tz.date()
-        current_time_in_salon_tz = now_date_time_in_salon_tz.time()
 
-        today_bookings_count = Booking.objects.filter( booking_date=date_today_in_salon_tz).count()
+        today_start_date_time_in_utc = datetime.combine(date_today_in_salon_tz, salon_open_time,
+                                                        tzinfo=salon_tz).astimezone(dt_timezone.utc)
+
+        today_end_date_time_in_utc = datetime.combine(date_today_in_salon_tz, salon_close_time,
+                                                      tzinfo=salon_tz).astimezone(dt_timezone.utc)
+
+        today_bookings_count = Booking.objects.filter(
+                                                session_start_date_time__gte=today_start_date_time_in_utc,
+                                                session_start_date_time__lt=today_end_date_time_in_utc).count()
+
+        future_bookings_count = Booking.objects.filter(
+            session_start_date_time__gt=today_end_date_time_in_utc).count()
 
         completed_bookings_today_count = Booking.objects.filter(
-                    booking_date=date_today_in_salon_tz, status=Booking.STATUS.COMPLETED).count()
+                                                session_start_date_time__gte=today_start_date_time_in_utc,
+                                                session_start_date_time__lt=today_end_date_time_in_utc,
+                                                status=Booking.STATUS.COMPLETED).count()
 
         breaktime_or_off_days__date_utc = now_date_time_in_salon_tz.astimezone(dt_timezone.utc)
 
-        active_staffs = (
-            StaffProfile.objects.filter(
+        active_staffs = ( StaffProfile.objects.filter(
                 status=StaffProfile.StaffStatus.ACTIVE,
             )
             .exclude(
@@ -67,6 +84,7 @@ class SalonManagerDashboardStatsView(APIView):
         data = {
             "username": request.user.username,
             "today_bookings_count": today_bookings_count,
+            "future_bookings_count": future_bookings_count,
             "completed_bookings_today": completed_bookings_today_count,
             "active_staffs_count": active_staffs_count,
             "active_break_count": active_break_count

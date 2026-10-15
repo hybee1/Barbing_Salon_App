@@ -14,13 +14,13 @@ from backend.breakperiods.models import BreakTimeAndOffDays
 from backend.breakperiods.serializers import (BarberBreakTimeAndOffDaySerializer,
                                               BreakTimeAndOffDaysSerializer,
                                                 ActiveBreakTimeSerializer)
-from backend.custom_permissions.permissions import Is_Authenticated_Staff_User, Is_SalonManager
+from backend.custom_permissions.permissions import IsAuthenticatedStaffUser, IsSalonManager
 from backend.salon_settings import services_salon_config
 
 
 class CreateBarberBreakTimeAndOffDayAPIView(APIView):
 
-    permission_classes = [Is_Authenticated_Staff_User]  # user must be authenticated
+    permission_classes = [IsAuthenticatedStaffUser]  # user must be authenticated
 
     def post(self, request):
         data = request.data.copy()
@@ -59,7 +59,7 @@ class CreateBarberBreakTimeAndOffDayAPIView(APIView):
 
 
 class Last3daysAnd3DaysAheadBarberBreakTimeAndOffDayAPIView(APIView):
-    permission_classes = [Is_SalonManager]  # only salon manager
+    permission_classes = [IsSalonManager]  # only salon manager
 
     def get(self, request):
 
@@ -90,7 +90,7 @@ class Last3daysAnd3DaysAheadBarberBreakTimeAndOffDayAPIView(APIView):
 
 
 class ActiveBreakTimeAndOffDayAPIView(APIView):
-    permission_classes = [Is_SalonManager] # only salon manager
+    permission_classes = [IsSalonManager] # only salon manager
 
     def get(self, request):
         # today_date_time_utc = timezone.localtime()
@@ -117,7 +117,7 @@ class ActiveBreakTimeAndOffDayAPIView(APIView):
 
 class OneBarberBreakTimeAndOffDayAPIView(APIView):
 
-    permission_classes = [Is_Authenticated_Staff_User]  # user must be authenticated
+    permission_classes = [IsAuthenticatedStaffUser]  # user must be authenticated
 
     #  this return between seven days ago and three days ahead for that barber
     def get(self, request):
@@ -152,7 +152,7 @@ class OneBarberBreakTimeAndOffDayAPIView(APIView):
 
 class BarberBreakTimeAndOffDayStatusesAPIView(APIView):
 
-    permission_classes = [Is_Authenticated_Staff_User]
+    permission_classes = [IsAuthenticatedStaffUser]
 
     def get(self, request):
 

@@ -6,7 +6,7 @@ from django.db.models import Q
 User = get_user_model()
 
 
-class Auth_Using_UsernameOrPhone(ModelBackend):
+class AuthUsingUserNameOrPhone(ModelBackend):
 
     def authenticate( self, request, username=None, password=None, username_or_phone=None, **kwargs ):
 
@@ -15,7 +15,7 @@ class Auth_Using_UsernameOrPhone(ModelBackend):
         if not identifier or not password:
             return None
 
-        user = (
+        user: User = (
             User.objects .filter( Q(username__iexact=identifier) | Q(phone_number=identifier) ).first()
         )
 

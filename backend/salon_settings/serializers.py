@@ -80,9 +80,7 @@ class SalonInfoWriteSerializer(serializers.ModelSerializer):
 
         if country is not None and time_zone is not None:
 
-            from .services_salon_config import (
-                validate_timezone_for_country,
-            )
+            from .validators import ( validate_timezone_for_country, )
 
             try:
                 attrs["salon_time_zone"] = (validate_timezone_for_country( country=country, timezone=time_zone, )  )

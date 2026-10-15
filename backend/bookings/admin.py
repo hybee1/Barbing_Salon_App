@@ -1,13 +1,11 @@
-from zoneinfo import ZoneInfo
+
 
 from django.contrib import admin
-from django.core.exceptions import ValidationError
 from django.db import transaction
 
 from backend.bookings.booking_services import create_booking, update_booking
 from backend.bookings.models import Booking
 from backend.salon_settings.services_salon_config import get_salon_info_config
-from backend.utils.services import BarberScheduler
 
 
 @admin.register(Booking)
@@ -79,10 +77,10 @@ class BookingAdmin(admin.ModelAdmin):
             salon_timezone = ZoneInfo( salon_info["time_zone"] )
 
             # Django Admin has already supplied the datetime values
-            # as timezone-aware datetimes according to Django's
+            # as timezone-aware datetime according to Django's
             # configured/current timezone.
             #
-            # create_booking() expects salon-local datetimes.
+            # create_booking() expects salon-local datetime.
             #
             # Therefore, because your project uses TIME_ZONE="UTC",
             # convert the Admin values from UTC to the salon timezone
@@ -96,12 +94,12 @@ class BookingAdmin(admin.ModelAdmin):
             booking = create_booking(
                 barber_id=obj.barber.pk, service=obj.service, hairstyle=obj.hairstyle,
                 color=obj.color, total_price=obj.price,
-                session_start_date_time_in_salon_tz=( session_start_in_salon_tz ),
-                session_end_date_time_in_salon_tz=( session_end_in_salon_tz ),
+                session_start_date_time_in_salon_tz=session_start_in_salon_tz,
+                session_end_date_time_in_salon_tz=session_end_in_salon_tz,
                 customer_name=obj.customer_name,
                 phone_number=obj.phone_number,
                 booking_source=obj.booking_source,
-                booked_by=( request.user.username ),
+                booked_by=request.user.username,
                 salon_timezone=salon_timezone,
                 status=Booking.STATUS(obj.status),
             )
@@ -142,7 +140,7 @@ class BookingAdmin(admin.ModelAdmin):
 
         update_booking(
             booking_reference=existing_booking.booking_reference, new_status=new_status,
-            reason_for_cancellation=( obj.reason_for_cancellation ),
+            reason_for_cancellation=obj.reason_for_cancellation,
             salon_timezone=salon_timezone,
         )
 

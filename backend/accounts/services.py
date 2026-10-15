@@ -625,10 +625,9 @@ def delete_staff( *, staff, ):
 
     The StaffProfile belongs to the User through:
 
-        StaffProfile.user = OneToOneField(...,
-                                          on_delete=CASCADE)
+        StaffProfile.user = OneToOneField(..., on_delete=CASCADE)
 
-    Therefore deleting the User automatically deletes the
+    Therefore, deleting the User automatically deletes the
     StaffProfile.
 
     We deliberately delete the User rather than only deleting

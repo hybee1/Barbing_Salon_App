@@ -116,7 +116,7 @@ class ServicesWithColorsButOnlyServiceSerializer(serializers.ModelSerializer):
         fields = [ "id", "name", ]
 
 
-class Service_With_It_Hairstyles_And_Colors_Serializer(serializers.ModelSerializer):
+class ServiceWithItHairstylesAndColorsSerializer(serializers.ModelSerializer):
 
     hairstyles = HairstylesWithoutServiceSerializer(many=True, read_only=True)
     colors = ColorsWithoutServiceSerializer(many=True, read_only=True)

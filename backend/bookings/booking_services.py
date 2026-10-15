@@ -141,7 +141,7 @@ def update_booking(*, booking_reference:str, new_status:Booking.STATUS, reason_f
             "booking_id": booking.pk,
             "booking_reference": booking.booking_reference,
             "booking_source": booking.booking_source,
-            "booking_date": booking.booking_date,
+            # "booking_date": booking.booking_date,
             "booking_price": booking.price,
             "customer_name": booking.customer_name,
             "booking_old_status": old_status,
@@ -184,17 +184,21 @@ def booking_data_with_timezone(*, data: dict | list[dict]) -> dict | list[dict]:
 
         session_start_date_time_str = data['session_start_date_time']
 
-        session_start_date_time = convert_utc_iso_to_salon_time(session_start_date_time_str, salon_timezone)
+        session_start_date_time_in_salon_tz = convert_utc_iso_to_salon_time(session_start_date_time_str,
+                                                                            salon_timezone)
 
         if "session_end_date_time" not in data:
             raise ValidationError({"details": "A booking 'session_end_date_time' is required."})
 
         session_end_date_time_str = data['session_end_date_time']
 
-        session_end_date_time = convert_utc_iso_to_salon_time(session_end_date_time_str, salon_timezone)
+        session_end_date_time_in_salon_tz = convert_utc_iso_to_salon_time(session_end_date_time_str,
+                                                                          salon_timezone)
 
-        data['start_time'] = session_start_date_time.time()
-        data['end_time'] = session_end_date_time.time()
+        data['start_date'] = session_start_date_time_in_salon_tz.date()
+
+        data['start_time'] = session_start_date_time_in_salon_tz.time()
+        data['end_time'] = session_end_date_time_in_salon_tz.time()
 
         return data
 
@@ -217,16 +221,20 @@ def booking_data_with_timezone(*, data: dict | list[dict]) -> dict | list[dict]:
                 raise ValidationError({"details": "A booking 'session_start_date_time' is required."})
             session_start_date_time_str = item['session_start_date_time']
 
-            session_start_date_time = convert_utc_iso_to_salon_time(session_start_date_time_str, salon_timezone)
+            session_start_date_time_in_salon_tz = convert_utc_iso_to_salon_time(session_start_date_time_str,
+                                                                                salon_timezone)
 
             if "session_end_date_time" not in item:
                 raise ValidationError({"details": "A booking 'session_end_date_time' is required."})
             session_end_date_time_str = item['session_end_date_time']
 
-            session_end_date_time = convert_utc_iso_to_salon_time(session_end_date_time_str, salon_timezone)
+            session_end_date_time_in_salon_tz = convert_utc_iso_to_salon_time(session_end_date_time_str,
+                                                                              salon_timezone)
 
-            item['start_time'] = session_start_date_time.time()
-            item['end_time'] = session_end_date_time.time()
+            item['start_date'] = session_start_date_time_in_salon_tz.date()
+
+            item['start_time'] = session_start_date_time_in_salon_tz.time()
+            item['end_time'] = session_end_date_time_in_salon_tz.time()
 
             res_list.append(item)
 

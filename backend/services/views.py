@@ -6,7 +6,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from backend.custom_permissions.permissions import Is_Authenticated_Staff_User, Is_SalonManager
+from backend.custom_permissions.permissions import IsAuthenticatedStaffUser, IsSalonManager
 from backend.pagination.pagination import StandardResultsSetPagination
 from backend.salon_settings.services_salon_config import get_salon_info_config
 from backend.services.models import Service, Hairstyle, Color
@@ -14,7 +14,7 @@ from backend.services.models import Service, Hairstyle, Color
 from backend.services.serializers import (
     ServiceSerializer, HairstyleSerializer,
     ColorSerializer, ServiceAndItHairstylesSerializer, ServiceAndItColorsSerializer,
-    Service_With_It_Hairstyles_And_Colors_Serializer, HairstyleReadSerializer,
+    ServiceWithItHairstylesAndColorsSerializer, HairstyleReadSerializer,
     ColorReadSerializer, ServicesWithColorsButOnlyServiceSerializer,
     ServicesWithHairstylesButOnlyServiceSerializer
 )
@@ -33,7 +33,7 @@ class ServicesView(APIView):
         if self.request.method == "GET":
             permission_classes = [AllowAny]
         else:
-            permission_classes = [ Is_SalonManager, ]
+            permission_classes = [IsSalonManager, ]
 
         return [permission() for permission in permission_classes]
 
@@ -182,7 +182,7 @@ class HairstylesView(APIView):
             permission_classes = [AllowAny]
         else:
             permission_classes = [
-                Is_SalonManager,
+                IsSalonManager,
                 # OtherPermission,
                 # AnotherPermission,
             ]
@@ -215,7 +215,7 @@ class HairstylesView(APIView):
         # service_name
         if service_id is not None:
 
-            if (not isinstance(service_id, str) and not isinstance(service_id, int)):
+            if not isinstance(service_id, str) and not isinstance(service_id, int):
                 raise serializers.ValidationError()
 
             if isinstance(service_id, str):
@@ -251,7 +251,7 @@ class HairstylesView(APIView):
 
             if isinstance(hairstyle_duration_minutes, str):
                 try:
-                    service_duration_minutes = int(hairstyle_duration_minutes)
+                    hairstyle_duration_minutes = int(hairstyle_duration_minutes)
                 except ValueError:
                     raise serializers.ValidationError()
 
@@ -259,6 +259,7 @@ class HairstylesView(APIView):
 
         # hairstyle_is_active
         if hairstyle_is_active is not None:
+            is_active = None
 
             if not isinstance(hairstyle_is_active, str) and not isinstance(hairstyle_is_active, bool):
                 raise serializers.ValidationError()
@@ -342,7 +343,7 @@ class ColorsView(APIView):
             permission_classes = [AllowAny]
         else:
             permission_classes = [
-                Is_SalonManager,
+                IsSalonManager,
                 # OtherPermission,
                 # AnotherPermission,
             ]
@@ -376,7 +377,7 @@ class ColorsView(APIView):
         # service_id
         if service_id is not None:
 
-            if (not isinstance(service_id, str) and not isinstance(service_id, int)):
+            if not isinstance(service_id, str) and not isinstance(service_id, int):
                 raise serializers.ValidationError()
 
             if isinstance(service_id, str):
@@ -412,7 +413,7 @@ class ColorsView(APIView):
 
             if isinstance(color_duration_minutes, str):
                 try:
-                    service_duration_minutes = int(color_duration_minutes)
+                    color_duration_minutes = int(color_duration_minutes)
                 except ValueError:
                     raise serializers.ValidationError()
 
@@ -420,6 +421,8 @@ class ColorsView(APIView):
 
         # hairstyle_is_active
         if color_is_active is not None:
+
+            is_active = None
 
             if not isinstance(color_is_active, str) and not isinstance(color_is_active, bool):
                 raise serializers.ValidationError()
@@ -499,7 +502,7 @@ class ColorsView(APIView):
 
 class ServicesWithHairstylesButOnlyServiceView(APIView):
 
-    permission_classes = [Is_SalonManager]
+    permission_classes = [IsSalonManager]
 
     def get(self, request ):
         services = Service.objects.filter(hairstyles__isnull=False).distinct()
@@ -518,7 +521,7 @@ class ServiceAndItsHairstylesView(APIView):
             permission_classes = [AllowAny]
         else:
             permission_classes = [
-                Is_SalonManager,
+                IsSalonManager,
                 # OtherPermission,
                 # AnotherPermission,
             ]
@@ -543,7 +546,7 @@ class ServiceAndItsHairstylesView(APIView):
 
 class ServicesWithColorsButOnlyServiceView(APIView):
 
-    permission_classes = [Is_SalonManager]
+    permission_classes = [IsSalonManager]
 
     def get(self, request ):
         services = Service.objects.filter(colors__isnull=False).distinct()
@@ -561,7 +564,7 @@ class ServiceAndItsColorsView(APIView):
             permission_classes = [AllowAny]
         else:
             permission_classes = [
-                Is_SalonManager,
+                IsSalonManager,
                 # OtherPermission,
                 # AnotherPermission,
             ]
@@ -594,14 +597,14 @@ class ServiceAndItsColorsView(APIView):
 # --------------------
 # SERVICE WITH HAIRSTYLE AND COLORS
 # --------------------
-class Service_With_It_Hairstyles_And_Colors_Api_View(APIView):
+class ServiceWithItHairstylesAndColorsApiView(APIView):
 
     def get_permissions(self):
         if self.request.method == "GET":
             permission_classes = [AllowAny]
         else:
             permission_classes = [
-                Is_Authenticated_Staff_User,
+                IsAuthenticatedStaffUser,
                 # OtherPermission,
                 # AnotherPermission,
             ]
@@ -613,6 +616,6 @@ class Service_With_It_Hairstyles_And_Colors_Api_View(APIView):
         service = get_object_or_404(
                         Service.objects.prefetch_related("hairstyles", "colors"), pk=pk )
 
-        serializer = Service_With_It_Hairstyles_And_Colors_Serializer(service)
+        serializer = ServiceWithItHairstylesAndColorsSerializer(service)
 
         return Response(serializer.data, status=status.HTTP_200_OK)

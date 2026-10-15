@@ -255,7 +255,8 @@
 
                 <div class="card-header">
 
-                    <h2> Upcoming Bookings For Today </h2>
+                    <!-- <h2> Upcoming Bookings For Today </h2> -->
+                    <h2> Upcoming Bookings </h2>
 
                 </div>
 
@@ -265,6 +266,8 @@
                     <thead>
 
                     <tr>
+
+                        <th> Date </th>
 
                         <th> Time </th>
 
@@ -312,9 +315,9 @@
 
                     <div>
 
-                        <h2> Today's Bookings </h2>
+                        <h2> View and Manage Bookings  </h2>
 
-                        <p> View and manage your bookings for today. </p>
+                        <!--<p> View and manage your bookings for today. </p>-->
 
                     </div>
 
@@ -375,9 +378,7 @@
                  SELECTED BOOKING / UPDATE STATUS
             ================================================== -->
 
-            <div class="card booking-status-card"
-                 id="bookingStatusCard"
-                 hidden>
+            <div class="card booking-status-card" id="bookingStatusCard" hidden>
 
                 <div class="booking-status-layout">
 
@@ -399,19 +400,13 @@
 
                             <div>
 
-                                <span class="section-label">
-                                    Selected Booking
-                                </span>
+                                <span class="section-label"> Selected Booking </span>
 
 
-                                <h2 id="selectedBookingCustomer">
-                                    -
-                                </h2>
+                                <h2 id="selectedBookingCustomer"> - </h2>
 
 
-                                <p id="selectedBookingDetails">
-                                    -
-                                </p>
+                                <p id="selectedBookingDetails"> - </p>
 
                             </div>
 
@@ -426,15 +421,12 @@
 
                                 <i class="fa-solid fa-rotate"></i>
 
-                                <span>
-                                    Current Status
-                                </span>
+                                <span> Current Status </span>
 
                             </div>
 
 
-                            <span id="selectedBookingCurrentStatus"
-                                  class="booking-status-badge">
+                            <span id="selectedBookingCurrentStatus" class="booking-status-badge">
 
                                 -
 
@@ -457,13 +449,9 @@
 
                             <div>
 
-                                <span class="section-label">
-                                    Update Status
-                                </span>
+                                <span class="section-label"> Update Status </span>
 
-                                <label for="bookingStatusSelect">
-                                    New Status
-                                </label>
+                                <label for="bookingStatusSelect"> New Status </label>
 
                             </div>
 
@@ -474,17 +462,12 @@
 
                             <select id="bookingStatusSelect">
 
-                                <option value="">
-                                    Select status
-                                </option>
+                                <option value=""> Select status </option>
 
                             </select>
 
 
-                            <button type="button"
-                                    class="gold-btn"
-                                    id="updateBookingStatusBtn"
-                                    disabled>
+                            <button type="button" class="gold-btn" id="updateBookingStatusBtn" disabled>
 
                                 <i class="fa-solid fa-check"></i>
 
@@ -499,25 +482,18 @@
                              CANCELLATION REASON
                         ====================================================== -->
 
-                        <div class="cancellation-reason-group"
-                             id="cancellationReasonGroup"
-                             hidden>
+                        <div class="cancellation-reason-group" id="cancellationReasonGroup" hidden>
 
-                            <label for="reasonCancellation">
-                                Cancellation Reason
-                            </label>
+                            <label for="reasonCancellation"> Cancellation Reason </label>
 
-                            <textarea
-                                id="reasonCancellation"
-                                name="reason_cancellation"
-                                rows="3"
-                                placeholder="Enter the reason for cancelling this booking..."
-                            ></textarea>
+                            <textarea id="reasonCancellation" name="reason_cancellation"
+                                rows="3" >
+
+                            </textarea>
 
                         </div>
 
                     </div>
-
 
 
                 </div>
@@ -544,9 +520,9 @@
 
                     <div>
 
-                        <h2> My Break Records </h2>
+                        <h2> View and Manage Break Records </h2>
 
-                        <p> View your scheduled and previous breaks. </p>
+                        <!--<p> View your scheduled and previous breaks. </p>-->
 
                     </div>
 
@@ -587,7 +563,6 @@
             </div>
 
 
-
             <!-- =================================================
                  SCHEDULE BREAK
             ================================================== -->
@@ -600,7 +575,7 @@
 
                         <h2> Schedule Break </h2>
 
-                        <p> Schedule a break during your working time. </p>
+<!--                        <p> Schedule a break during your working time. </p>-->
 
                     </div>
 

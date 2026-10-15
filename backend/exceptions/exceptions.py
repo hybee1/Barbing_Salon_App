@@ -30,7 +30,7 @@ class BookingDateException(APIException):
 class BookingException(APIException):
 
     status_code = status.HTTP_400_BAD_REQUEST
-    default_detail = (f"booking exception")
+    default_detail = f"booking exception"
 
     def __init__(self, msg):
 

@@ -57,7 +57,7 @@ class SalonInfo(TimeStampedModel):
                     country=self.salon_country,
                 )
             except ( InvalidCountryError, InvalidPhoneNumberError,  ):
-                errors["salon_phone_number"] = ( "Invalid phone number for the selected country." )
+                errors["salon_phone_number"] = "Invalid phone number for the selected country."
 
         # ---------------------------------------------------------
         # Opening / closing hours.
@@ -67,7 +67,7 @@ class SalonInfo(TimeStampedModel):
             and self.salon_close_time is not None
             and self.salon_close_time <= self.salon_open_time
         ):
-            errors["salon_close_time"] = ( "Close time must be after open time." )
+            errors["salon_close_time"] = "Close time must be after open time."
 
         if errors:
             raise ValidationError(errors)

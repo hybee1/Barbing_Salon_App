@@ -23,10 +23,10 @@ class BreakTimeAndOffDaysAdmin(admin.ModelAdmin):
         TIME_ZONE = "UTC"
         USE_TZ = True
 
-    Therefore Django Admin supplies timezone-aware datetime values
+    Therefore, Django Admin supplies timezone-aware datetime values
     in UTC.
 
-    create_break_period(), however, expects salon-local datetimes.
+    create_break_period(), however, expects salon-local datetime.
 
     Therefore, before calling create_break_period(), the Admin
     datetime values are converted from UTC to the salon timezone.
@@ -97,9 +97,9 @@ class BreakTimeAndOffDaysAdmin(admin.ModelAdmin):
             TIME_ZONE = "UTC"
             USE_TZ = True
 
-        the values received here are UTC-aware datetimes.
+        the values received here are UTC-aware datetime.
 
-        create_break_period() expects salon-local datetimes.
+        create_break_period() expects salon-local datetime.
 
         Therefore:
 

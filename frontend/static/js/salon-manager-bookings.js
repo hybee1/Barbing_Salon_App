@@ -249,10 +249,7 @@ function renderManagerBookings(){
        NO BOOKINGS
     ====================================================== */
 
-    if(
-        !managerBookings ||
-        managerBookings.length === 0
-    ){
+    if( !managerBookings || managerBookings.length === 0 ){
 
         body.innerHTML = `
             <tr>
@@ -296,7 +293,7 @@ function renderManagerBookings(){
 
                     <td> ${booking.service_name} </td>
 
-                    <td> ${booking.booking_date} </td>
+                    <td> ${booking.start_date} </td>
 
                     <td> ${booking.start_time} </td>
 
@@ -603,20 +600,14 @@ function renderBookingModal(bookings) {
 
         <div class="booking-header-left">
 
-            <h2>
-                ${booking.booking_reference}
-            </h2>
+            <h2> ${booking.booking_reference} </h2>
 
-            <small>
-                ${booking.booking_date}
-            </small>
+            <small> ${booking.start_date} </small>
 
         </div>
 
 
-        <span class="booking-status ${statusClass}">
-            ${booking.status}
-        </span>
+        <span class="booking-status ${statusClass}"> ${booking.status} </span>
 
 
     </div>
@@ -635,9 +626,7 @@ function renderBookingModal(bookings) {
                     Customer
                 </label>
 
-                <span>
-                    ${booking.customer_name}
-                </span>
+                <span> ${booking.customer_name} </span>
 
             </div>
 
@@ -649,9 +638,7 @@ function renderBookingModal(bookings) {
                     Phone
                 </label>
 
-                <span>
-                    ${booking.phone_number}
-                </span>
+                <span> ${booking.phone_number} </span>
 
             </div>
 
@@ -683,9 +670,7 @@ function renderBookingModal(bookings) {
                     Price
                 </label>
 
-                <span class="booking-price">
-                    ₦${booking.price}
-                </span>
+                <span class="booking-price"> {booking.currency}${booking.price} </span>
 
             </div>
 

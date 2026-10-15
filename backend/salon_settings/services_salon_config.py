@@ -72,7 +72,6 @@ def normalize_currency(value):
     return currency.alpha_3
 
 
-@staticmethod
 def get_salon_info_config():
     key = "salon_info_data"
     config = cache.get(key)
@@ -91,7 +90,6 @@ def get_salon_info_config():
     return config
 
 
-@staticmethod
 def get_salon_booking_config():
     key = "salon_booking_config"
     config = cache.get(key)

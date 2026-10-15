@@ -1,5 +1,5 @@
 
-from django.db.models import Count, Sum, F
+from django.db.models import Count, Sum
 from django.utils import timezone
 from .models import Booking
 

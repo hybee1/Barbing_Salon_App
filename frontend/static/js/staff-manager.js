@@ -275,7 +275,7 @@ Service: ${booking.service}
 
 Staff: ${booking.barber}
 
-Date: ${booking.booking_date}
+Date: ${booking.start_date}
 
 Time:
 ${booking.start_time} - ${booking.end_time}

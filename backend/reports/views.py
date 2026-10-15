@@ -20,7 +20,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 
 from backend.bookings.models import Booking
-from backend.custom_permissions.permissions import Is_SalonManager
+from backend.custom_permissions.permissions import IsSalonManager
 from backend.inventory.models import InventoryItem
 from backend.salon_settings import services_salon_config
 import re
@@ -414,7 +414,7 @@ def build_monthly_trend( bookings: Booking, start_date_in_salon_tz: date, end_da
         # Convert salon-local calendar boundaries to UTC.
         start_local = datetime.combine( range_start, salon_open_time, tzinfo=salon_tz, )
 
-        # end_local = datetime.combine( range_end + timedelta(days=1), salon_close_time, tzinfo=salon_tz, )
+        # end_local = datetime.combine( range_end + timedelta(days=1), salon_close_time, tzinfo=salon_tz )
         end_local = datetime.combine(range_end, salon_close_time, tzinfo=salon_tz, )
 
         start_utc = start_local.astimezone(dt_timezone.utc)
@@ -473,7 +473,7 @@ def build_report_trend( bookings, start_date,  end_date, grouping ):
 
 class ManagerReportView(APIView):
 
-    permission_classes = [ Is_SalonManager  ]
+    permission_classes = [IsSalonManager]
 
     def get( self, request):
 
@@ -545,7 +545,7 @@ class ManagerReportView(APIView):
 
 class ManagerDateRangeReportView(APIView):
 
-    permission_classes = [ Is_SalonManager ]
+    permission_classes = [IsSalonManager]
 
 
     def get( self, request, ):
@@ -574,8 +574,10 @@ class ManagerDateRangeReportView(APIView):
             start_date = ( parse_report_date(start_date_param, "start_date")
                            if start_date_param else today_date_in_salon_tz
             )
-        except ValueError:
-            return Response( {"detail": "start_date must use YYYY-MM-DD format."},
+        except ValueError as exc:
+            return Response(
+                # {"detail": "start_date must use YYYY-MM-DD format."},
+                {"detail": str(exc)},
                 status=400,
             )
 
@@ -586,9 +588,10 @@ class ManagerDateRangeReportView(APIView):
             end_date = ( parse_report_date(end_date_param, "end_date")
                          if end_date_param else today_date_in_salon_tz
             )
-        except ValueError:
+        except ValueError as exc:
             return Response(
-                {"detail": "end_date must use YYYY-MM-DD format."},
+                # {"detail": "end_date must use YYYY-MM-DD format."},
+                {"detail": str(exc)},
                 status=400,
             )
 

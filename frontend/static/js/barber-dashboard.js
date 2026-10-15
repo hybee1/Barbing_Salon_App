@@ -313,6 +313,8 @@ function renderDashboardBookings( bookings, table ) {
 
                 <tr>
 
+                    <td> ${booking.start_date || "-"} </td>
+
                     <td> ${booking.start_time || "-"} </td>
 
                     <td> ${booking.customer_name || "-"} </td>

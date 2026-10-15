@@ -448,7 +448,7 @@ class StaffWriteSerializer(serializers.Serializer):
         return StaffProfileSerializer_2(instance).data
 
 # former class BarberSelfUpdateSerializer(serializers.ModelSerializer):
-class AllStaff_Self_UpdateSerializer(serializers.ModelSerializer):
+class AllStaffSelfUpdateSerializer(serializers.ModelSerializer):
     """
     Serializer for the currently authenticated barber.
 

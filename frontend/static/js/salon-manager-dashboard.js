@@ -113,6 +113,8 @@ window.loadDashboardStatistics = async function () {
 
         document.getElementById("todayBookings").textContent = stats.today_bookings_count ?? 0;
 
+        document.getElementById("futureBookings").textContent = stats.future_bookings_count ?? 0;
+
         document.getElementById("staffCount").textContent = stats.active_staffs_count ?? 0;
 
         document.getElementById("activeBreaks").textContent = stats.active_breaks ?? 0;

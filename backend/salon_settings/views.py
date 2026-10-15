@@ -6,12 +6,12 @@ from .models import SalonInfo, SalonBookingSetting
 from .serializers import (SalonInfoReadSerializer, SalonBookingSettingSerializer,
                           SalonInfoWriteSerializer)
 
-from ..custom_permissions.permissions import Is_SalonManager
+from ..custom_permissions.permissions import IsSalonManager
 
 
-class SalonConfig_And_Info_View(APIView):
+class SalonConfigAndInfoView(APIView):
 
-    permission_classes = (Is_SalonManager,)
+    permission_classes = (IsSalonManager,)
 
     def get(self, request):
         salon_info = SalonInfo.objects.all().first()
@@ -42,7 +42,7 @@ class SalonInfoWebView(APIView):
 
 class SalonInfoModifyView(APIView):
 
-    permission_classes = (Is_SalonManager,)
+    permission_classes = (IsSalonManager,)
 
     def post(self, request):
         serializer = SalonInfoWriteSerializer(data=request.data)
@@ -57,7 +57,7 @@ class SalonInfoModifyView(APIView):
 
 class SalonBookingSettingView(APIView):
 
-    permission_classes = [Is_SalonManager]
+    permission_classes = [IsSalonManager]
 
     def get(self, request):
 

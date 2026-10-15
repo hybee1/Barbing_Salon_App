@@ -12,18 +12,16 @@ from rest_framework.views import APIView
 from backend.accounts.models import User, StaffProfile
 from backend.accounts.serializers import StaffProfileSerializer, StaffProfileUserDetailsSerializer, \
     StaffsWorkingTodaySerializer, StaffProfileSerializer_2, StaffWriteSerializer, \
-    AllStaff_Self_UpdateSerializer, PublicBarberSerializer
+    AllStaffSelfUpdateSerializer, PublicBarberSerializer
 from backend.accounts.services import delete_staff
 from backend.breakperiods.models import BreakTimeAndOffDays
 
-from rest_framework_simplejwt.views import TokenRefreshView
-
-from backend.custom_permissions.permissions import Is_Authenticated_Staff_User, Is_SalonManager
+from backend.custom_permissions.permissions import IsAuthenticatedStaffUser, IsSalonManager
 from backend.pagination.pagination import StandardResultsSetPagination
 from backend.salon_settings import services_salon_config
 
 
-class Barbers_Web_View(APIView):
+class BarbersWebView(APIView):
     permission_classes = [AllowAny ]
     def get(self, request, pk=None):
 
@@ -74,9 +72,9 @@ class Barbers_Web_View(APIView):
         return Response( serializer.data, status=status.HTTP_200_OK, )
 
 
-class Barbers_Api_View(APIView):
+class BarbersApiView(APIView):
 
-    permission_classes = [ Is_Authenticated_Staff_User, ]
+    permission_classes = [IsAuthenticatedStaffUser, ]
 
     parser_classes = [ MultiPartParser, FormParser, JSONParser, ]
 
@@ -127,7 +125,7 @@ class Barbers_Api_View(APIView):
 
         return Response( serializer.data, status=status.HTTP_200_OK, )
 
-    def patch(self, request, pk=None):
+    def patch(self, request):
         """
         Update the currently authenticated barber.
 
@@ -164,7 +162,7 @@ class Barbers_Api_View(APIView):
         # Validate/update User
         # -----------------------------------------
 
-        serializer = AllStaff_Self_UpdateSerializer(user, data=request.data, partial=True, )
+        serializer = AllStaffSelfUpdateSerializer(user, data=request.data, partial=True, )
 
         serializer.is_valid( raise_exception=True )
 
@@ -212,7 +210,7 @@ class Barbers_Api_View(APIView):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
-        serializer = AllStaff_Self_UpdateSerializer(user, data=request.data, partial=False, )
+        serializer = AllStaffSelfUpdateSerializer(user, data=request.data, partial=False, )
 
         serializer.is_valid( raise_exception=True )
 
@@ -225,9 +223,9 @@ class Barbers_Api_View(APIView):
         return Response( response_serializer.data, status=status.HTTP_200_OK, )
 
 
-class AllStaffs_Api_View(APIView):
+class AllstaffsApiView(APIView):
     #  this view give salon-manager group access to administrate over staffs
-    permission_classes = [Is_SalonManager]
+    permission_classes = [IsSalonManager]
 
     def get(self, request, pk=None):
 
@@ -367,11 +365,11 @@ class AllStaffs_Api_View(APIView):
         return Response( status=status.HTTP_204_NO_CONTENT )
 
 
-class StaffUserDetails_Api_View(APIView):
+class StaffuserdetailsApiView(APIView):
 
     # this method should only allow the authenticated user get it own details
 
-    permission_classes = [Is_Authenticated_Staff_User]  # user must be authenticated
+    permission_classes = [IsAuthenticatedStaffUser]  # user must be authenticated
 
 
     def get(self, request):
@@ -419,8 +417,8 @@ class StaffUserDetails_Api_View(APIView):
         return Response( StaffProfileSerializer_2(staff).data, status=status.HTTP_200_OK, )
 
 
-class StaffsWorkingToday_Api_View(APIView):
-    permission_classes = [Is_SalonManager]
+class StaffsworkingtodayApiView(APIView):
+    permission_classes = [IsSalonManager]
 
     def get(self, request):
 
@@ -432,7 +430,6 @@ class StaffsWorkingToday_Api_View(APIView):
         now_date_time_in_salon_tz = now_date_time_in_utc.astimezone(salon_tz)
 
         date_today_in_salon_tz = now_date_time_in_salon_tz.date()
-        current_time_in_salon_tz = now_date_time_in_salon_tz.time()
 
         blocked_today = BreakTimeAndOffDays.objects.filter(
             staff=OuterRef("pk"),
@@ -454,8 +451,8 @@ class StaffsWorkingToday_Api_View(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class StaffDepartmentAndPositionAndStatus_Api_View(APIView):
-    permission_classes = [Is_Authenticated_Staff_User]
+class StaffdepartmentandpositionandstatusApiView(APIView):
+    permission_classes = [IsAuthenticatedStaffUser]
 
     def get(self, request):
 
@@ -480,9 +477,9 @@ class StaffDepartmentAndPositionAndStatus_Api_View(APIView):
         return Response(data, status=status.HTTP_200_OK)
 
 
-class AllStaff_Self_Account_Update_Api_View(APIView):
+class AllstaffSelfAccountUpdateApiView(APIView):
 
-    permission_classes = [ Is_Authenticated_Staff_User, ]
+    permission_classes = [IsAuthenticatedStaffUser, ]
 
     parser_classes = [ MultiPartParser, FormParser, JSONParser, ]
 
@@ -491,13 +488,13 @@ class AllStaff_Self_Account_Update_Api_View(APIView):
 
         user = request.user
 
-        if (user.role != User.Role.STAFF or not hasattr(user, "staffprofile") ):
+        if user.role != User.Role.STAFF or not hasattr(user, "staffprofile"):
             return Response(
                 { "detail": "Only authenticated barbers can update this account." },
                 status=status.HTTP_403_FORBIDDEN,
             )
 
-        serializer = AllStaff_Self_UpdateSerializer(user, data=request.data, partial=True, )
+        serializer = AllStaffSelfUpdateSerializer(user, data=request.data, partial=True, )
 
         serializer.is_valid(  raise_exception=True )
 
@@ -522,7 +519,7 @@ class AllStaff_Self_Account_Update_Api_View(APIView):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
-        serializer = AllStaff_Self_UpdateSerializer(user, data=request.data, partial=False, )
+        serializer = AllStaffSelfUpdateSerializer(user, data=request.data, partial=False, )
 
         serializer.is_valid( raise_exception=True )
 

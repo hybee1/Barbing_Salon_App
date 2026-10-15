@@ -1,5 +1,5 @@
 import logging
-from datetime import timezone as dt_timezone, datetime
+from datetime import timezone as dt_timezone
 from zoneinfo import ZoneInfo
 
 from django.db import transaction
@@ -36,7 +36,6 @@ def create_break_period(*, staff_id, break_start_date_time_in_salon_tz,
     # convert the start and end time to utc time
     break_start_date_time_utc = break_start_date_time_in_salon_tz.astimezone(dt_timezone.utc)
     break_end_date_time_utc = break_end_date_time_in_salon_tz.astimezone(dt_timezone.utc)
-    # break_date_in_salon_tz = break_start_date_time_in_salon_tz.date()
 
     # the date the break was created/made by the staff not the break start date
     salon_timezone = break_end_date_time_in_salon_tz.tzinfo
@@ -44,7 +43,7 @@ def create_break_period(*, staff_id, break_start_date_time_in_salon_tz,
 
     # Lock this staff for the duration of the transaction.
     # Any other booking attempt for this same barber must wait.
-    staff = ( StaffProfile.objects.select_for_update().get(pk=staff_id) )
+    staff: StaffProfile = ( StaffProfile.objects.select_for_update().get(pk=staff_id) )
 
     # Overlap validation
     overlap = BreakTimeAndOffDays.objects.filter(
@@ -79,55 +78,6 @@ def create_break_period(*, staff_id, break_start_date_time_in_salon_tz,
     )
 
     return break_period
-
-# @transaction.atomic
-# def update_break_period(*, obj, break_start_date_time_in_salon_tz,):
-#     staff = ( StaffProfile.objects.select_for_update().get(pk=obj.staff_id) )
-#
-#     if obj.break_start_date_time.tzinfo is None:
-#         raise ValidationError({
-#             "break_start_date_time":
-#                 "Datetime must be timezone-aware."
-#         })
-#
-#     if obj.break_end_date_time.tzinfo is None:
-#         raise ValidationError({
-#             "break_end_date_time":
-#                 "Datetime must be timezone-aware."
-#         })
-#
-#     # Interpret the submitted datetimes in the salon timezone.
-#     # start_salon = obj.break_start_date_time.astimezone( salon_timezone  )
-#     start_salon = obj.break_start_date_time
-#
-#     # end_salon = obj.break_end_date_time.astimezone( salon_timezone )
-#     end_salon = obj.break_end_date_time
-#
-#     if start_salon >= end_salon:
-#         raise ValidationError({ "details": "Break end time must be after start time." })
-#
-#     # Convert salon-local datetime to UTC for storage.
-#     start_utc = start_salon.astimezone(dt_timezone.utc)
-#     end_utc = end_salon.astimezone(dt_timezone.utc)
-#
-#     # ---------------------------------------------------------
-#     # OVERLAP CHECK
-#     # ---------------------------------------------------------
-#     overlap = (
-#         BreakTimeAndOffDays.objects
-#         .filter(
-#             staff=staff,
-#             break_start_date_time__lt=end_utc,
-#             break_end_date_time__gt=start_utc,
-#         )
-#         .exclude(pk=obj.pk)
-#     )
-#
-#     if overlap.exists():
-#         raise ValidationError({
-#             "break_start_date_time":
-#                 "This availability block overlaps with an existing one."
-#         })
 
 
 def break_time_and_offDays_data_with_timezone(*, data: dict | list[dict]) -> dict | list[dict]:

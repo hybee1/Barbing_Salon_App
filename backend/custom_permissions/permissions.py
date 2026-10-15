@@ -19,7 +19,7 @@ class AnyOf(BasePermission):
         )
 
 
-class Is_Authenticated_Staff_User(BasePermission):
+class IsAuthenticatedStaffUser(BasePermission):
     message = "Only active staff users can access this resource."
 
     def has_permission(self, request, view):
@@ -32,7 +32,7 @@ class Is_Authenticated_Staff_User(BasePermission):
         )
 
 
-class Is_SalonManager(BasePermission):
+class IsSalonManager(BasePermission):
     message = "Only salon managers can access this resource."
 
     def has_permission(self, request, view):
@@ -46,7 +46,7 @@ class Is_SalonManager(BasePermission):
         )
 
 
-class Is_Receptionist(BasePermission):
+class IsReceptionist(BasePermission):
     message = "Only reception staff can access this resource."
 
     def has_permission(self, request, view):
@@ -60,7 +60,7 @@ class Is_Receptionist(BasePermission):
         )
 
 
-class Is_Barber(BasePermission):
+class IsBarber(BasePermission):
     message = "Only barbers can access this resource."
 
     def has_permission(self, request, view):
@@ -74,7 +74,7 @@ class Is_Barber(BasePermission):
         )
 
 
-class Is_Barber_Stylist(BasePermission):
+class IsBarberStylist(BasePermission):
     message = "Only barber-stylists can access this resource."
 
     def has_permission(self, request, view):
@@ -88,7 +88,7 @@ class Is_Barber_Stylist(BasePermission):
         )
 
 
-class Is_Stylist(BasePermission):
+class IsStylist(BasePermission):
     message = "Only stylists can access this resource."
 
     def has_permission(self, request, view):
@@ -102,14 +102,18 @@ class Is_Stylist(BasePermission):
         )
 
 
-class SalonManager_Or_Barber_Or_Stylist_Or_Is_Barber_Stylist(AnyOf):
-    permission_classes = [Is_SalonManager, Is_Barber, Is_Stylist, Is_Barber_Stylist]
+class SalonManagerOrBarberOrStylistOrIsBarberStylist(AnyOf):
+    permission_classes = [IsSalonManager, IsBarber, IsStylist, IsBarberStylist]
 
-class Barber_Or_Stylist_Or_Is_Barber_Stylist(AnyOf):
-    permission_classes = [Is_Barber, Is_Stylist, Is_Barber_Stylist]
 
-class SalonManager_Or_Barber_Or_Stylist_Or_Is_Barber_Stylist_Or_Receptionist(AnyOf):
-    permission_classes = [Is_SalonManager, Is_Barber, Is_Stylist, Is_Barber_Stylist, Is_Receptionist]
+class BarberOrStylistOrIsBarberStylist(AnyOf):
+    permission_classes = [IsBarber, IsStylist, IsBarberStylist]
 
-class SalonManager_Or_Receptionist(AnyOf):
-    permission_classes = [Is_SalonManager, Is_Receptionist]
+
+class SalonManagerOrBarberOrStylistOrIsBarberStylistOrReceptionist(AnyOf):
+    permission_classes = [IsSalonManager, IsBarber, IsStylist, IsBarberStylist, IsReceptionist]
+
+
+class SalonManagerOrReceptionist(AnyOf):
+    permission_classes = [IsSalonManager, IsReceptionist]
+

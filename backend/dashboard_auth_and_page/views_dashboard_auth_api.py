@@ -1,4 +1,4 @@
-import os
+
 
 from django.contrib.auth import login, logout
 from django.http import JsonResponse
@@ -10,7 +10,7 @@ from django.conf import settings
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from backend.accounts.models import User, StaffProfile
-from backend.custom_authentication.custom_auth_backend import Auth_Using_UsernameOrPhone
+from backend.custom_authentication.custom_auth_backend import AuthUsingUserNameOrPhone
 from backend.rate_limit_or_throttling.login_rate_throttle import LoginRateThrottle
 
 
@@ -60,7 +60,7 @@ def staff_dashboard_login_api(request):
     username_or_phone = request.data.get("username")
     password = request.data.get("password")
 
-    user = Auth_Using_UsernameOrPhone().authenticate(
+    user = AuthUsingUserNameOrPhone().authenticate(
         request=request, username_or_phone=username_or_phone, password=password, )
 
     if user is None:
@@ -129,7 +129,7 @@ def staff_dashboard_login_api(request):
     # 3. Response
     # ---------------------------------------------------------
 
-    response = JsonResponse({ "redirect_url": user_based_dashboard(user) })
+    response = JsonResponse({ "redirect_url": user_based_dashboard() })
 
     # Access token cookie
     response.set_cookie(
@@ -154,9 +154,9 @@ def staff_dashboard_login_api(request):
     return response
 
 
-def user_based_dashboard(user):
+def user_based_dashboard():
 
-    '''
+    """
     # the reason for this method is, for you to access the staff/salon manager 
     # dashboard, you must have been authenticated, and the dashboard to show depends 
     # on the authenticated user's permissions, that is why you were first directed to 
@@ -169,8 +169,8 @@ def user_based_dashboard(user):
     # 
     # notice the leading slash
     # the view for which is below will return the right template based on permission
-    '''
-    return (f"/web/staff/staff-dashboard/")
+    """
+    return f"/web/staff/staff-dashboard/"
 
 
 
