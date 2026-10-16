@@ -12,10 +12,10 @@ urlpatterns = [
 
     path('bookings/', include('backend.bookings.urls_bookings_web')),
 
-    path('services/', include('backend.services.urls_services_web')),
+    path('services/', include('backend.salon_services.urls_services_web')),
 
-    path('hairstyles/', include('backend.services.urls_hairstyles_web')),
-    # path('colors/', include('api.services.urls_colors_web')),
+    path('hairstyles/', include('backend.salon_services.urls_hairstyles_web')),
+    # path('colors/', include('api.salon_services.urls_colors_web')),
 
     # CORE SALON SETTINGS
     path('settings/', include('backend.salon_settings.urls_web')),

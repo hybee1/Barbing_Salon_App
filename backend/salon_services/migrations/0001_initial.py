@@ -43,7 +43,7 @@ class Migration(migrations.Migration):
                 ('price', models.DecimalField(decimal_places=2, default=0, max_digits=10)),
                 ('duration_minutes', models.PositiveIntegerField(default=10)),
                 ('is_active', models.BooleanField(default=True)),
-                ('service', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='hairstyles', to='services.service')),
+                ('service', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='hairstyles', to='salon_services.service')),
             ],
             options={
                 'verbose_name': 'Hairstyle',
@@ -63,7 +63,7 @@ class Migration(migrations.Migration):
                 ('price', models.DecimalField(decimal_places=2, default=0, max_digits=10)),
                 ('duration_minutes', models.PositiveIntegerField(default=5)),
                 ('is_active', models.BooleanField(default=True)),
-                ('service', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='colors', to='services.service')),
+                ('service', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='colors', to='salon_services.service')),
             ],
             options={
                 'verbose_name': 'Color',

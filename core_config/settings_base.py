@@ -61,6 +61,9 @@ INSTALLED_APPS = [
     "corsheaders",
     "rest_framework_simplejwt.token_blacklist",
 
+    "cloudinary",
+    "cloudinary_storage",
+
     'observability',
     'django_prometheus',
 
@@ -68,6 +71,7 @@ INSTALLED_APPS = [
     'backend.bookings',
     'backend.breakperiods',
     'backend.inventory',
+    'backend.salon_services',
     'backend.services',
     'backend.salon_settings',
 

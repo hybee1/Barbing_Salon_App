@@ -41,15 +41,15 @@ class Booking(TimeStampedModel):
     )
 
     service = models.ForeignKey(
-        "services.Service", on_delete=models.CASCADE, related_name="bookings",
+        "salon_services.Service", on_delete=models.CASCADE, related_name="bookings",
     )
 
     hairstyle = models.ForeignKey(
-        "services.Hairstyle", null=True,  blank=True, on_delete=models.SET_NULL, related_name="bookings",
+        "salon_services.Hairstyle", null=True,  blank=True, on_delete=models.SET_NULL, related_name="bookings",
     )
 
     color = models.ForeignKey(
-        "services.Color",  null=True,  blank=True, on_delete=models.SET_NULL, related_name="bookings",
+        "salon_services.Color",  null=True,  blank=True, on_delete=models.SET_NULL, related_name="bookings",
     )
 
     price = models.DecimalField( max_digits=10, decimal_places=2, )

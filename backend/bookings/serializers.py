@@ -10,7 +10,7 @@ from backend.bookings.booking_services import create_booking, update_booking
 from backend.bookings.models import Booking
 from backend.custom_serializer.custom_phone_number_serializer import SalonPhoneNumberFieldCustomSerializer
 from backend.salon_settings.services_salon_config import get_salon_info_config
-from backend.services.models import Service, Hairstyle, Color
+from backend.salon_services.models import Service, Hairstyle, Color
 from observability.metrics.metrics import BOOKING_STATUS_CHANGE_REJECTED
 
 

@@ -11,7 +11,7 @@ from backend.accounts.models import StaffProfile
 from backend.bookings.models import Booking
 from backend.exceptions.exceptions import BookingException
 from backend.salon_settings.services_salon_config import get_salon_info_config
-from backend.services.models import Service, Hairstyle, Color
+from backend.salon_services.models import Service, Hairstyle, Color
 from backend.utils.services import BarberScheduler, convert_utc_iso_to_salon_time
 from observability.metrics.metrics import BOOKINGS_CREATED, BOOKING_STATUS_CHANGED
 

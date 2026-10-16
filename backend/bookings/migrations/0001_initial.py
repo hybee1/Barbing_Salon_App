@@ -12,7 +12,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('accounts', '0001_initial'),
-        ('services', '0001_initial'),
+        ('salon_services', '0001_initial'),
     ]
 
     operations = [
@@ -36,9 +36,9 @@ class Migration(migrations.Migration):
                 ('booking_source', models.CharField(choices=[('ONLINE', 'Online'), ('WALK_IN', 'Walk In')], default='ONLINE', max_length=20)),
                 ('booked_by', models.CharField(max_length=15)),
                 ('barber', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='bookings', to='accounts.staffprofile')),
-                ('color', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='bookings', to='services.color')),
-                ('hairstyle', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='bookings', to='services.hairstyle')),
-                ('service', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='bookings', to='services.service')),
+                ('color', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='bookings', to='salon_services.color')),
+                ('hairstyle', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='bookings', to='salon_services.hairstyle')),
+                ('service', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='bookings', to='salon_services.service')),
             ],
             options={
                 'indexes': [models.Index(fields=['barber', 'booking_date', 'session_start_date_time'], name='bookings_bo_barber__2008c9_idx'), models.Index(fields=['booking_date', 'status'], name='bookings_bo_booking_b730a0_idx'), models.Index(fields=['booking_date', 'barber', 'status'], name='bookings_bo_booking_0ed96d_idx')],

@@ -9,9 +9,9 @@ from rest_framework.views import APIView
 from backend.custom_permissions.permissions import IsAuthenticatedStaffUser, IsSalonManager
 from backend.pagination.pagination import StandardResultsSetPagination
 from backend.salon_settings.services_salon_config import get_salon_info_config
-from backend.services.models import Service, Hairstyle, Color
+from backend.salon_services.models import Service, Hairstyle, Color
 
-from backend.services.serializers import (
+from backend.salon_services.serializers import (
     ServiceSerializer, HairstyleSerializer,
     ColorSerializer, ServiceAndItHairstylesSerializer, ServiceAndItColorsSerializer,
     ServiceWithItHairstylesAndColorsSerializer, HairstyleReadSerializer,

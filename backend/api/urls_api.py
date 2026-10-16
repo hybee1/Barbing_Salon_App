@@ -17,9 +17,9 @@ urlpatterns = [
     path('break-periods/', include('backend.breakperiods.urls_break_periods_dashboard')),
 
     # SERVICES, HAIRSTYLE AND COLORS URLS
-    path('services/', include('backend.services.urls_services_dashboard')),
-    path('hairstyles/', include('backend.services.urls_hairstyles_dashboard')),
-    path('colors/', include('backend.services.urls_colors_dashboard')),
+    path('services/', include('backend.salon_services.urls_services_dashboard')),
+    path('hairstyles/', include('backend.salon_services.urls_hairstyles_dashboard')),
+    path('colors/', include('backend.salon_services.urls_colors_dashboard')),
 
     # CORE SALON SETTINGS
     path('settings/', include('backend.salon_settings.urls_api')),

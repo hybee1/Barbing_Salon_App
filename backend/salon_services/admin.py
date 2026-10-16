@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from backend.services.models import Service, Hairstyle, Color
+from backend.salon_services.models import Service, Hairstyle, Color
 
 
 @admin.register(Service)

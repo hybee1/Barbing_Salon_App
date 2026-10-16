@@ -1,7 +1,7 @@
 
 from rest_framework import serializers
 
-from backend.services.models import Service, Hairstyle, Color
+from backend.salon_services.models import Service, Hairstyle, Color
 
 
 class ServiceSerializer(serializers.ModelSerializer):

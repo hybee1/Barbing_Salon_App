@@ -1,6 +1,6 @@
 
 from django.urls import path
-from backend.services.views import HairstylesView
+from backend.salon_services.views import HairstylesView
 
 urlpatterns = [
 
