@@ -42,8 +42,7 @@ window.initHairstylePage = function () {
     }
 
 
-    const clearButton =
-        document.getElementById("clearHairstyleFiltersBtn");
+    const clearButton = document.getElementById("clearHairstyleFiltersBtn");
 
     if (clearButton) {
 
@@ -55,8 +54,7 @@ window.initHairstylePage = function () {
     }
 
 
-    const createButton =
-        document.getElementById("createHairstyleBtn");
+    const createButton = document.getElementById("createHairstyleBtn");
 
     if (createButton) {
 
@@ -70,8 +68,7 @@ window.initHairstylePage = function () {
     }
 
 
-    const editButton =
-        document.getElementById("editHairstyleBtn");
+    const editButton = document.getElementById("editHairstyleBtn");
 
     if (editButton) {
 
@@ -83,8 +80,7 @@ window.initHairstylePage = function () {
     }
 
 
-    const deleteButton =
-        document.getElementById("deleteHairstyleBtn");
+    const deleteButton = document.getElementById("deleteHairstyleBtn");
 
     if (deleteButton) {
 
@@ -100,11 +96,9 @@ window.initHairstylePage = function () {
        PAGINATION BUTTONS
     ====================================================== */
 
-    const previousButton =
-        document.getElementById("prevHairstylePage");
+    const previousButton = document.getElementById("prevHairstylePage");
 
-    const nextButton =
-        document.getElementById("nextHairstylePage");
+    const nextButton = document.getElementById("nextHairstylePage");
 
 
     if (previousButton) {
@@ -198,9 +192,7 @@ async function loadServicesForHairstyleFilter() {
 
             select.innerHTML += `
 
-                <option value="${service.id}">
-                    ${service.name}
-                </option>
+                <option value="${service.id}"> ${service.name} </option>
 
             `;
 

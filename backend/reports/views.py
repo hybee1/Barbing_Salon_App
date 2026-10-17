@@ -245,6 +245,10 @@ def build_daily_trend( bookings: Booking, start_date_in_salon_tz: date, end_date
     salon_close_time = salon_info["close_time"]
     salon_tz = ZoneInfo(salon_info["time_zone"])
 
+    salon_open_time = datetime.strptime(salon_open_time, "%H:%M:%S").time()
+
+    salon_close_time = datetime.strptime(salon_close_time, "%H:%M:%S").time()
+
     trend = []
 
     current_date = start_date_in_salon_tz
@@ -562,6 +566,9 @@ class ManagerDateRangeReportView(APIView):
         salon_tz = ZoneInfo(salon_info["time_zone"])
         salon_open_time = salon_info["open_time"]
         salon_close_time = salon_info["close_time"]
+
+        salon_open_time = datetime.strptime(salon_open_time, "%H:%M:%S").time()
+        salon_close_time = datetime.strptime(salon_close_time, "%H:%M:%S").time()
 
         # Always use date objects for report periods.
         today_date_time_in_utc = timezone.now()

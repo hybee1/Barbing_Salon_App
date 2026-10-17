@@ -211,18 +211,26 @@ function loadStylesForSelectedServiceFromCache(){
 
     const styles = selectedServiceCache.hairstyles;
 
-    box.innerHTML = styles.map(style => `
+    box.innerHTML = styles.map(style => {
+        const imageUrl = `${IMAGE_BASE_URL}${style.image}`;
 
-        <div class="card" onclick=" selectStyle( this,  ${style.id}, '${style.name}',
-            ${style.price || 0}, ${style.duration_minutes || 0} )">
+        console.log("Image URL:", imageUrl);
+        /*<img src="${IMAGE_BASE_URL}${style.image}" alt="${style.name}">*/
 
-            <img src="${IMAGE_BASE_URL}${style.image}" alt="${style.name}">
+        return `
 
-            <h3>${style.name}</h3>
+            <div class="card" onclick="selectStyle( this,  ${style.id}, '${style.name}',
+                ${style.price || 0}, ${style.duration_minutes || 0})" >
 
-        </div>
 
-    `).join("");
+                <img src="${style.image}" alt="${style.name}">
+
+                <h3>${style.name}</h3>
+
+            </div>
+
+        `;
+    }).join("");
 
 }
 
