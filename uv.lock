@@ -45,6 +45,7 @@ dependencies = [
     { name = "opentelemetry-exporter-otlp" },
     { name = "opentelemetry-instrumentation-django" },
     { name = "opentelemetry-instrumentation-psycopg" },
+    { name = "opentelemetry-instrumentation-requests" },
     { name = "pillow" },
     { name = "psycopg", extra = ["binary"] },
     { name = "pycountry" },
@@ -79,6 +80,7 @@ requires-dist = [
     { name = "opentelemetry-exporter-otlp", specifier = ">=1.45.1" },
     { name = "opentelemetry-instrumentation-django", specifier = ">=0.66b1" },
     { name = "opentelemetry-instrumentation-psycopg", specifier = ">=0.66b1" },
+    { name = "opentelemetry-instrumentation-requests", specifier = ">=0.66b1" },
     { name = "pillow", specifier = ">=12.3.0" },
     { name = "psycopg", extras = ["binary"], specifier = ">=3.3.5" },
     { name = "pycountry", specifier = ">=26.2.16" },
@@ -751,6 +753,21 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/07/a1/e29ea07e2cbd122b0075c59afd1131ffe98dd61ba6ef0224e6d258a87bdc/opentelemetry_instrumentation_psycopg-0.66b1.tar.gz", hash = "sha256:5ac2ef4a413c8349e9d9fb959c937edfaa681c58b494fe643a278d26d9a4ae9e", size = 13874, upload-time = "2026-10-06T17:36:32.021Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/ac/b4/58651d6254b18a17f2cd9acd8bc5156fe5f24adafcdf0434df12db6396a3/opentelemetry_instrumentation_psycopg-0.66b1-py3-none-any.whl", hash = "sha256:67c1ef5f8a3bc76eb5b64f6c4d2d9ab0901c8ca164587eb4582a126cffb7004a", size = 11109, upload-time = "2026-10-06T17:35:43.75Z" },
+]
+
+[[package]]
+name = "opentelemetry-instrumentation-requests"
+version = "0.66b1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "opentelemetry-api" },
+    { name = "opentelemetry-instrumentation" },
+    { name = "opentelemetry-semantic-conventions" },
+    { name = "opentelemetry-util-http" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/08/62/dcca0b7a2008675056040c61b70d37b5a24439613c7822068908ad3255ae/opentelemetry_instrumentation_requests-0.66b1.tar.gz", hash = "sha256:28578f72e68e3a5be3226c618ac9570ed360ef1dd22d5d6e0721c6905a4ccc67", size = 17985, upload-time = "2026-10-06T17:36:37.478Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/88/01/98e9bb7fef12784cd19811e454cf25bce4d774fd3e46b3f5fd2bce237075/opentelemetry_instrumentation_requests-0.66b1-py3-none-any.whl", hash = "sha256:7ba17d984a2bd876b88bf0aafcca27b5e3ff4c1821e0fe07641e380a3cf3a3a2", size = 13320, upload-time = "2026-10-06T17:35:52.477Z" },
 ]
 
 [[package]]

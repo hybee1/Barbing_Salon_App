@@ -9,17 +9,24 @@ https://docs.djangoproject.com/en/6.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
-from datetime import timedelta
-from pathlib import Path
+
+from typing import Dict
+
 from .settings_base import *
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
-DEBUG = env_bool("DEBUG", True)
-
 load_dotenv(BASE_DIR / ".env-dev")
+
+DEBUG = env_bool("DEBUG", False)
+
+ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
+
+APP_VERSION = os.getenv(
+    "APP_VERSION",
+    "unknown",
+)
 
 SECRET_KEY = os.getenv("SECRET_KEY_DEV")
 
@@ -27,36 +34,36 @@ if not SECRET_KEY:
     raise ValueError("SECRET_KEY_DEV not found")
 
 
-ALLOWED_HOSTS = []
-CORS_ALLOWED_ORIGINS = [ ]
+ALLOWED_HOSTS = ["*"]
+CORS_ALLOWED_ORIGINS = [ "http://127.0.0.1:8000", "http://localhost:8000",
+                         "https://untyped-hippopotamic-rosa.ngrok-free.dev"]
+
+
 # CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
-# Application definition
+AUTH_COOKIE_HTTPONLY = env_bool("AUTH_COOKIE_HTTPONLY")
 
-INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
+AUTH_COOKIE_SECURE = env_bool("AUTH_COOKIE_SECURE")
 
-    'backend.accounts',
-    'backend.bookings',
-    'backend.breakperiods',
-    'backend.inventory',
-    'backend.services',
-    'backend.salon_settings',
+AUTH_COOKIE_SAMESITE = os.environ["AUTH_COOKIE_SAMESITE"]
 
-]
+SESSION_LIFETIME = int(os.getenv("SESSION_LIFETIME"))
+
 
 MIDDLEWARE = [
+
+    "django_prometheus.middleware.PrometheusBeforeMiddleware",
+
     "corsheaders.middleware.CorsMiddleware",
 
     'django.middleware.security.SecurityMiddleware',
 
-    # "whitenoise.middleware.WhiteNoiseMiddleware",
+    'observability.middleware.add_request_correlation_id.AddRequestCorrelationIDMiddleware',
+    'observability.middleware.request_logging.RequestLoggingMiddleware',
+    'observability.middleware.security_logging.SecurityLoggingMiddleware',
+
+    "whitenoise.middleware.WhiteNoiseMiddleware",
 
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -64,6 +71,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
+    "django_prometheus.middleware.PrometheusAfterMiddleware",
 ]
 
 ROOT_URLCONF = 'core_config.urls'
@@ -118,14 +127,6 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
-
-TIME_ZONE = ''
-
-USE_I18N = True
-
-USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
@@ -144,15 +145,129 @@ MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
 
-
 AUTH_USER_MODEL = "accounts.User"
+
+
+
+throttle_rates: Dict[str, str] = REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"]
+
+throttle_rates.update({
+    "login": os.getenv("THROTTLING_VALUE", "5/minute"),
+})
+
+
+# ---------------------------------------------------------
+# LOGGING
+# ---------------------------------------------------------
+LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+
+    "formatters": {
+        "verbose": {
+            "format": (
+                "{levelname} {asctime} "
+                "{name} {message}"
+            ),
+            "style": "{",
+        },
+    },
+
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
+        },
+    },
+
+    "loggers": {
+        # ---------------------------------------------------------
+        # Django
+        # ---------------------------------------------------------
+        "django": {
+            "handlers": ["console"],
+            "level": LOG_LEVEL,
+            "propagate": False,
+        },
+        # ---------------------------------------------------------
+        # HTTP 4xx/5xx and request failures
+        # ---------------------------------------------------------
+        "django.request": {
+            "handlers": ["console"],
+            "level": "WARNING",
+            "propagate": False,
+        },
+        # ---------------------------------------------------------
+        # Security-related Django messages
+        # ---------------------------------------------------------
+        "django.security": {
+            "handlers": ["console"],
+            "level": "WARNING",
+            "propagate": False,
+        },
+        # ---------------------------------------------------------
+        # Database
+        # ---------------------------------------------------------
+        # Keep SQL quiet normally.
+        # Change to DEBUG temporarily when investigating queries.
+        "django.db.backends": {
+            "handlers": ["console"],
+            "level": "WARNING",
+            "propagate": False,
+        },
+
+        # ---------------------------------------------------------
+        # Your application
+        # ---------------------------------------------------------
+        "bookings": {
+            "handlers": ["console"],
+            "level": LOG_LEVEL,
+            "propagate": False,
+        },
+
+        "breakperiods": {
+            "handlers": ["console"],
+            "level": LOG_LEVEL,
+            "propagate": False,
+        },
+
+        "observability": {
+            "handlers": ["console"],
+            "level": LOG_LEVEL,
+            "propagate": False,
+        },
+
+        # Add other domain apps here as they grow.
+        "staff": {
+            "handlers": ["console"],
+            "level": LOG_LEVEL,
+            "propagate": False,
+        },
+
+        "customers": {
+            "handlers": ["console"],
+            "level": LOG_LEVEL,
+            "propagate": False,
+        },
+        # ---------------------------------------------------------
+        # backend
+        # ---------------------------------------------------------
+        "backend": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
+        },
+    },
+}
 
 
 
 SIMPLE_JWT = {
     # Token lifetimes
-    "ACCESS_TOKEN_LIFETIME": '',
-    "REFRESH_TOKEN_LIFETIME": '',
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=int(os.environ["SIMPLE_JWT_ACCESS_TOKEN_LIFETIME"])),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=int(os.environ["SIMPLE_JWT_REFRESH_TOKEN_LIFETIME"])),
 
     # Refresh behavior
     "ROTATE_REFRESH_TOKENS": True,
@@ -169,4 +284,35 @@ SIMPLE_JWT = {
     # JTI claim (used for blacklisting)
     "JTI_CLAIM": "jti",
 
+    "TOKEN_REFRESH_SERIALIZER": (
+            "backend.session_and_jwt_auth.serializers."
+            "SessionBoundTokenRefreshSerializer"
+        ),
+
 }
+
+# CLOUDINARY Configuration
+CLOUDINARY_STORAGE = {
+    "CLOUD_NAME": os.environ["CLOUDINARY_CLOUD_NAME"],
+    "API_KEY": os.environ["CLOUDINARY_API_KEY"],
+    "API_SECRET": os.environ["CLOUDINARY_API_SECRET"],
+}
+
+
+# SENTRY
+SENTRY_DSN = os.environ["SENTRY_DSN"]
+if SENTRY_DSN:
+    import sentry_sdk
+
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+
+        environment=ENVIRONMENT,
+
+        release=APP_VERSION,
+
+        # Start conservatively.
+        traces_sample_rate=0.1,
+
+        send_default_pii=False,
+    )

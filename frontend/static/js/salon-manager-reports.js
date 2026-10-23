@@ -88,38 +88,24 @@ function setupReportFilters() {
 
 function setDefaultReportDates() {
 
-    const startInput =
-        document.getElementById(
-            "reportStartDate"
-        );
+    const startInput = document.getElementById( "reportStartDate" );
 
-    const endInput =
-        document.getElementById(
-            "reportEndDate"
-        );
+    const endInput = document.getElementById( "reportEndDate"  );
 
     if (!startInput || !endInput) return;
 
 
-    const today =
-        new Date();
+    const today = new Date();
 
 
-    const formatted =
-        formatDateForInput(
-            today
-        );
+    const formatted = formatDateForInput( today );
 
 
-    startInput.value =
-        formatted;
+    startInput.value = formatted;
 
-    endInput.value =
-        formatted;
+    endInput.value = formatted;
 
-
-    endInput.min =
-        formatted;
+    endInput.min = formatted;
 
 }
 
@@ -130,50 +116,35 @@ function setDefaultReportDates() {
 
 async function loadReports() {
 
-    const container =
-        document.getElementById(
-            "reportsContainer"
-        );
+    const container = document.getElementById( "reportsContainer" );
 
     if (!container) return;
 
 
-    const startInput =
-        document.getElementById(
-            "reportStartDate"
-        );
+    const startInput = document.getElementById( "reportStartDate" );
 
-    const endInput =
-        document.getElementById(
-            "reportEndDate"
-        );
+    const endInput = document.getElementById( "reportEndDate" );
 
 
-    let startDate =
-        startInput?.value || "";
+    let startDate = startInput?.value || "";
 
-    let endDate =
-        endInput?.value || "";
+    let endDate = endInput?.value || "";
 
 
     if (!startDate || !endDate) {
 
         setDefaultReportDates();
 
-        startDate =
-            startInput?.value || "";
+        startDate = startInput?.value || "";
 
-        endDate =
-            endInput?.value || "";
+        endDate = endInput?.value || "";
 
     }
 
 
     if (startDate > endDate) {
 
-        showReportError(
-            "Start date cannot be after end date."
-        );
+        showReportError( "Start date cannot be after end date." );
 
         return;
 
@@ -185,42 +156,24 @@ async function loadReports() {
 
     try {
 
-        const query =
-            new URLSearchParams({
-
-                start_date: startDate,
-
-                end_date: endDate,
-
-            });
+        const query = new URLSearchParams({ start_date: startDate, end_date: endDate, });
 
 
-        const data =
-            await apiRequest(
-                `/reports/range/?${query.toString()}`
-            );
+        const data = await apiRequest( `/reports/range/?${query.toString()}` );
 
 
-        currentReport =
-            data;
+        currentReport = data;
 
 
-        renderReports(
-            data
-        );
+        renderReports( data  );
 
 
     } catch (error) {
 
-        console.error(
-            "Failed to load reports:",
-            error
-        );
+        console.error( "Failed to load reports:", error  );
 
 
-        showReportError(
-            "Unable to load reports. Please try again."
-        );
+        showReportError( "Unable to load reports. Please try again." );
 
     }
 
@@ -233,10 +186,7 @@ async function loadReports() {
 
 function showReportsLoading() {
 
-    const container =
-        document.getElementById(
-            "reportsContainer"
-        );
+    const container = document.getElementById( "reportsContainer" );
 
     if (!container) return;
 
@@ -268,10 +218,7 @@ function showReportsLoading() {
 
 function showReportError(message) {
 
-    const container =
-        document.getElementById(
-            "reportsContainer"
-        );
+    const container = document.getElementById( "reportsContainer" );
 
     if (!container) return;
 
@@ -303,50 +250,36 @@ function showReportError(message) {
 
 function renderReports(data) {
 
-    const container =
-        document.getElementById(
-            "reportsContainer"
-        );
+    const container = document.getElementById( "reportsContainer" );
 
     if (!container) return;
 
 
-    const bookings =
-        data.bookings || {};
+    const bookings = data.bookings || {};
 
 
-    const revenue =
-        data.revenue || {};
+    const revenue = data.revenue || {};
 
 
-    const services =
-        data.services || [];
+    const services = data.services || [];
 
 
-    const staff =
-        data.staff || [];
+    const staff = data.staff || [];
 
 
-    const trend =
-        data.trend || [];
+    const trend = data.trend || [];
 
 
-    const completionRate =
-        Number(
-            data.completion_rate || 0
-        );
+    const completionRate = Number( data.completion_rate || 0 );
 
 
-    const startDate =
-        data.start_date || "";
+    const startDate = data.start_date || "";
 
 
-    const endDate =
-        data.end_date || "";
+    const endDate = data.end_date || "";
 
 
-    const grouping =
-        data.grouping || "day";
+    const grouping = data.grouping || "day";
 
 
     container.innerHTML = `
@@ -361,13 +294,9 @@ function renderReports(data) {
 
                 <div>
 
-                    <h2>
-                        Report Period
-                    </h2>
+                    <h2> Report Period </h2>
 
-                    <p>
-                        Select the period you want to analyse.
-                    </p>
+                    <p> Select the period you want to analyse. </p>
 
                 </div>
 
@@ -375,61 +304,36 @@ function renderReports(data) {
 
                     <i class="fa-solid fa-calendar-days"></i>
 
-                    ${formatReportDateRange(
-                        startDate,
-                        endDate
-                    )}
+                    ${formatReportDateRange( startDate, endDate )}
 
                 </span>
 
             </div>
 
 
-            <form
-                id="reportFilterForm"
-                class="reports-filter-form"
-            >
+            <form id="reportFilterForm" class="reports-filter-form" >
 
                 <div class="reports-date-group">
 
-                    <label for="reportStartDate">
-                        Start Date
-                    </label>
+                    <label for="reportStartDate"> Start Date </label>
 
-                    <input
-                        type="date"
-                        id="reportStartDate"
-                        value="${escapeReportAttribute(
-                            startDate
-                        )}"
-                    >
+                    <input type="date" id="reportStartDate" value="${escapeReportAttribute( startDate )}" >
 
                 </div>
 
 
                 <div class="reports-date-group">
 
-                    <label for="reportEndDate">
-                        End Date
-                    </label>
+                    <label for="reportEndDate"> End Date </label>
 
-                    <input
-                        type="date"
-                        id="reportEndDate"
-                        value="${escapeReportAttribute(
-                            endDate
-                        )}"
-                    >
+                    <input type="date" id="reportEndDate" value="${escapeReportAttribute( endDate  )}" >
 
                 </div>
 
 
                 <div class="reports-filter-actions">
 
-                    <button
-                        type="submit"
-                        class="gold-btn"
-                    >
+                    <button type="submit" class="gold-btn" >
 
                         <i class="fa-solid fa-chart-line"></i>
 
@@ -438,15 +342,7 @@ function renderReports(data) {
                     </button>
 
 
-                    <button
-                        type="button"
-                        class="gold-btn"
-                        id="clearReportFilters"
-                    >
-
-                        Clear
-
-                    </button>
+                    <button type="button" class="gold-btn" id="clearReportFilters" > Clear </button>
 
                 </div>
 
@@ -465,17 +361,11 @@ function renderReports(data) {
 
                 <div class="report-stat-content">
 
-                    <small>
-                        Total Bookings
-                    </small>
+                    <small> Total Bookings </small>
 
-                    <h2>
-                        ${bookings.total ?? 0}
-                    </h2>
+                    <h2> ${bookings.total ?? 0} </h2>
 
-                    <p>
-                        All bookings in period
-                    </p>
+                    <p> All bookings in period </p>
 
                 </div>
 
@@ -492,17 +382,11 @@ function renderReports(data) {
 
                 <div class="report-stat-content">
 
-                    <small>
-                        Completed
-                    </small>
+                    <small> Completed </small>
 
-                    <h2>
-                        ${bookings.completed ?? 0}
-                    </h2>
+                    <h2> ${bookings.completed ?? 0} </h2>
 
-                    <p>
-                        Completed bookings
-                    </p>
+                    <p> Completed bookings </p>
 
                 </div>
 
@@ -519,19 +403,11 @@ function renderReports(data) {
 
                 <div class="report-stat-content">
 
-                    <small>
-                        Revenue
-                    </small>
+                    <small> Revenue </small>
 
-                    <h2>
-                        ${formatReportMoney(
-                            revenue.total
-                        )}
-                    </h2>
+                    <h2> ${formatReportMoney( revenue.total  )} </h2>
 
-                    <p>
-                        Completed bookings
-                    </p>
+                    <p> Completed bookings </p>
 
                 </div>
 
@@ -548,19 +424,11 @@ function renderReports(data) {
 
                 <div class="report-stat-content">
 
-                    <small>
-                        Completion Rate
-                    </small>
+                    <small> Completion Rate </small>
 
-                    <h2>
-                        ${formatReportPercent(
-                            completionRate
-                        )}
-                    </h2>
+                    <h2> ${formatReportPercent( completionRate  )} </h2>
 
-                    <p>
-                        Completed ÷ total bookings
-                    </p>
+                    <p> Completed ÷ total bookings </p>
 
                 </div>
 
@@ -590,15 +458,9 @@ function renderReports(data) {
 
                     <div>
 
-                        <h2>
-                            Performance Trend
-                        </h2>
+                        <h2> Performance Trend </h2>
 
-                        <p>
-                            ${getGroupingDescription(
-                                grouping
-                            )}
-                        </p>
+                        <p> ${getGroupingDescription( grouping )} </p>
 
                     </div>
 
@@ -616,9 +478,7 @@ function renderReports(data) {
 
                 <div class="report-chart-wrapper">
 
-                    ${renderRevenueChart(
-                        trend
-                    )}
+                    ${renderRevenueChart( trend )}
 
                 </div>
 
@@ -633,22 +493,16 @@ function renderReports(data) {
 
                     <div>
 
-                        <h2>
-                            Booking Status
-                        </h2>
+                        <h2> Booking Status </h2>
 
-                        <p>
-                            Booking distribution
-                        </p>
+                        <p> Booking distribution </p>
 
                     </div>
 
                 </div>
 
 
-                ${renderStatusReport(
-                    bookings
-                )}
+                ${renderStatusReport( bookings )}
 
             </section>
 
@@ -665,16 +519,9 @@ function renderReports(data) {
 
                 <div>
 
-                    <h2>
-                        ${getGroupingTitle(
-                            grouping
-                        )} Breakdown
-                    </h2>
+                    <h2> ${getGroupingTitle( grouping )} Breakdown </h2>
 
-                    <p>
-                        Booking and revenue performance
-                        throughout the selected period.
-                    </p>
+                    <p> Booking and revenue performance throughout the selected period. </p>
 
                 </div>
 
@@ -689,27 +536,15 @@ function renderReports(data) {
 
                         <tr>
 
-                            <th>
-                                ${getPeriodColumnTitle(
-                                    grouping
-                                )}
-                            </th>
+                            <th> ${getPeriodColumnTitle( grouping )} </th>
 
-                            <th>
-                                Bookings
-                            </th>
+                            <th> Bookings </th>
 
-                            <th>
-                                Completed
-                            </th>
+                            <th> Completed </th>
 
-                            <th>
-                                Revenue
-                            </th>
+                            <th> Revenue </th>
 
-                            <th>
-                                Completion
-                            </th>
+                            <th> Completion </th>
 
                         </tr>
 
@@ -719,22 +554,11 @@ function renderReports(data) {
                     <tbody>
 
                         ${
-                            trend.length
-                            ? trend.map(
-                                renderTrendRow
-                            ).join("")
+                            trend.length ? trend.map( renderTrendRow ).join("")
                             : `
                                 <tr>
 
-                                    <td
-                                        colspan="5"
-                                        class="report-empty-state"
-                                    >
-
-                                        No report data
-                                        available.
-
-                                    </td>
+                                    <td colspan="5" class="report-empty-state" > No report data available. </td>
 
                                 </tr>
                             `
@@ -764,14 +588,9 @@ function renderReports(data) {
 
                     <div>
 
-                        <h2>
-                            Top Services
-                        </h2>
+                        <h2> Top Services </h2>
 
-                        <p>
-                            Services generating the most
-                            completed bookings.
-                        </p>
+                        <p> Services generating the most completed bookings. </p>
 
                     </div>
 
@@ -786,17 +605,11 @@ function renderReports(data) {
 
                             <tr>
 
-                                <th>
-                                    Service
-                                </th>
+                                <th> Service </th>
 
-                                <th>
-                                    Bookings
-                                </th>
+                                <th> Bookings </th>
 
-                                <th>
-                                    Revenue
-                                </th>
+                                <th> Revenue </th>
 
                             </tr>
 
@@ -805,38 +618,23 @@ function renderReports(data) {
 
                         <tbody>
 
-                            ${
-                                services.length
-                                ? services.map(
+                            ${ services.length ? services.map(
                                     service => `
 
                                         <tr>
 
                                             <td>
-
-                                                ${escapeReportHtml(
-                                                    service.service__name ||
-                                                    "Unknown Service"
-                                                )}
+                                                ${escapeReportHtml( service.service__name || "Unknown Service" )}
 
                                             </td>
 
 
-                                            <td>
-
-                                                ${
-                                                    service.booking_count ??
-                                                    0
-                                                }
-
-                                            </td>
+                                            <td> ${ service.booking_count ?? 0 } </td>
 
 
                                             <td class="report-revenue">
 
-                                                ${formatReportMoney(
-                                                    service.revenue
-                                                )}
+                                                ${formatReportMoney( service.revenue )}
 
                                             </td>
 
@@ -848,10 +646,7 @@ function renderReports(data) {
 
                                     <tr>
 
-                                        <td
-                                            colspan="3"
-                                            class="report-empty-state"
-                                        >
+                                        <td colspan="3" class="report-empty-state" >
 
                                             No completed bookings.
 
@@ -879,14 +674,9 @@ function renderReports(data) {
 
                     <div>
 
-                        <h2>
-                            Staff Performance
-                        </h2>
+                        <h2> Staff Performance </h2>
 
-                        <p>
-                            Performance across the
-                            selected period.
-                        </p>
+                        <p> Performance across the selected period. </p>
 
                     </div>
 
@@ -901,17 +691,11 @@ function renderReports(data) {
 
                             <tr>
 
-                                <th>
-                                    Staff
-                                </th>
+                                <th> Staff </th>
 
-                                <th>
-                                    Bookings
-                                </th>
+                                <th> Bookings </th>
 
-                                <th>
-                                    Revenue
-                                </th>
+                                <th> Revenue </th>
 
                             </tr>
 
@@ -929,29 +713,17 @@ function renderReports(data) {
 
                                             <td>
 
-                                                ${escapeReportHtml(
-                                                    member.staff_name ||
-                                                    "Unknown Staff"
-                                                )}
+                                                ${escapeReportHtml( member.staff_name || "Unknown Staff" )}
 
                                             </td>
 
 
-                                            <td>
-
-                                                ${
-                                                    member.booking_count ??
-                                                    0
-                                                }
-
-                                            </td>
+                                            <td> ${ member.booking_count ?? 0 } </td>
 
 
                                             <td class="report-revenue">
 
-                                                ${formatReportMoney(
-                                                    member.revenue
-                                                )}
+                                                ${formatReportMoney( member.revenue )}
 
                                             </td>
 
@@ -963,10 +735,7 @@ function renderReports(data) {
 
                                     <tr>
 
-                                        <td
-                                            colspan="3"
-                                            class="report-empty-state"
-                                        >
+                                        <td colspan="3" class="report-empty-state" >
 
                                             No completed bookings.
 
@@ -1677,16 +1446,10 @@ function parseReportDate(value) {
 
 function syncReportDateConstraints() {
 
-    const startInput =
-        document.getElementById(
-            "reportStartDate"
-        );
+    const startInput = document.getElementById( "reportStartDate" );
 
 
-    const endInput =
-        document.getElementById(
-            "reportEndDate"
-        );
+    const endInput = document.getElementById( "reportEndDate" );
 
 
     if (!startInput || !endInput) {
@@ -1696,26 +1459,18 @@ function syncReportDateConstraints() {
     }
 
 
-    endInput.min =
-        startInput.value;
+    endInput.min = startInput.value;
 
 
-    startInput.addEventListener(
-        "change",
+    startInput.addEventListener( "change",
         function () {
 
-            endInput.min =
-                startInput.value;
+            endInput.min = startInput.value;
 
 
-            if (
-                endInput.value &&
-                endInput.value <
-                startInput.value
-            ) {
+            if ( endInput.value && endInput.value < startInput.value ) {
 
-                endInput.value =
-                    startInput.value;
+                endInput.value = startInput.value;
 
             }
 
@@ -1731,9 +1486,7 @@ function syncReportDateConstraints() {
 
 function formatReportMoney(value) {
 
-    return `₦${Number(
-        value || 0
-    ).toLocaleString(
+    return `₦${Number( value || 0  ).toLocaleString(
         "en-NG",
         {
             minimumFractionDigits: 2,
@@ -1746,42 +1499,31 @@ function formatReportMoney(value) {
 
 function formatCompactMoney(value) {
 
-    const amount =
-        Number(
-            value || 0
-        );
+    const amount = Number( value || 0 );
 
 
     if (amount >= 1000000) {
 
-        return `₦${(
-            amount / 1000000
-        ).toFixed(1)}m`;
+        return `₦${( amount / 1000000 ).toFixed(1)}m`;
 
     }
 
 
     if (amount >= 1000) {
 
-        return `₦${(
-            amount / 1000
-        ).toFixed(0)}k`;
+        return `₦${( amount / 1000  ).toFixed(0)}k`;
 
     }
 
 
-    return `₦${Math.round(
-        amount
-    )}`;
+    return `₦${Math.round( amount )}`;
 
 }
 
 
 function formatReportPercent(value) {
 
-    return `${Number(
-        value || 0
-    ).toFixed(1)}%`;
+    return `${Number( value || 0 ).toFixed(1)}%`;
 
 }
 
@@ -1792,37 +1534,23 @@ function formatReportPercent(value) {
 
 function escapeReportHtml(value) {
 
-    return String(
-        value ?? ""
-    )
-        .replaceAll(
-            "&",
-            "&amp;"
-        )
-        .replaceAll(
-            "<",
-            "&lt;"
-        )
-        .replaceAll(
-            ">",
-            "&gt;"
-        )
-        .replaceAll(
-            '"',
-            "&quot;"
-        )
-        .replaceAll(
-            "'",
-            "&#039;"
-        );
+    return String( value ?? "" )
+
+        .replaceAll( "&", "&amp;" )
+
+        .replaceAll( "<", "&lt;" )
+
+        .replaceAll( ">",  "&gt;" )
+
+        .replaceAll( '"',  "&quot;" )
+
+        .replaceAll(  "'", "&#039;"  );
 
 }
 
 
 function escapeReportAttribute(value) {
 
-    return escapeReportHtml(
-        value
-    );
+    return escapeReportHtml( value );
 
 }

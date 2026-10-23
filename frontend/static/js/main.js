@@ -13,11 +13,11 @@ API BASE
 // const API_BASE = "http://localhost:8000/web";
 // const BASE_URL = "http://localhost:8000";
 
-// const API_BASE = "http://127.0.0.1:8000/web";
-// const BASE_URL = "http://127.0.0.1:8000";
+ const API_BASE = "http://127.0.0.1:8000/web";
+ const BASE_URL = "http://127.0.0.1:8000";
 
- const API_BASE = "https://untyped-hippopotamic-rosa.ngrok-free.dev/web";
- const BASE_URL = "https://untyped-hippopotamic-rosa.ngrok-free.dev";
+// const API_BASE = "https://untyped-hippopotamic-rosa.ngrok-free.dev/web";
+// const BASE_URL = "https://untyped-hippopotamic-rosa.ngrok-free.dev";
 
 /* ==========================================
 MOBILE MENU
